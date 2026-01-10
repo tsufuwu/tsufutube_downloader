@@ -1,21 +1,90 @@
-# --- File hệ thống & Python ---
+# ======================
+# Python
+# ======================
 __pycache__/
-*.pyc
-.DS_Store
-.vscode/
+*.py[cod]
+*.pyo
+*.pyd
 
-# --- File rác Media (Video/Nhạc) ---
-*.mp4
+# Virtual environment
+venv/
+.venv/
+ENV/
+env/
+
+# ======================
+# Build / Distribution (PyInstaller)
+# ======================
+build/
+dist/
+*.spec
+
+# Executables
+*.exe
+*.dll
+*.so
+*.dylib
+
+# ======================
+# Logs & Temp files
+# ======================
+*.log
+*.tmp
+*.temp
+
+# ======================
+# App runtime data
+# ======================
+# User config & history (tự sinh khi chạy app)
+tsufu_settings.json
+tsufu_history.json
+
+# Nếu app tạo thư mục riêng
+Tsufutube/
+config/
+data/
+
+# ======================
+# ffmpeg & external tools
+# ======================
+ffmpeg.exe
+ffprobe.exe
+
+# ======================
+# Media files (downloaded content)
+# ======================
 *.mp3
+*.m4a
+*.wav
+*.flac
+*.ogg
+*.opus
+*.mp4
+*.mkv
 *.webm
 *.avi
-*.mkv
-*.wav
+*.mov
 
-# --- File phụ đề & Ảnh Thumbnail ---
-# Lưu ý: Nếu logo app của bạn là .png thì ĐỪNG dòng *.png
-*.vtt
+# Subtitles
 *.srt
-*.webp
+*.vtt
+*.ass
+
+# Thumbnails
 *.jpg
 *.jpeg
+*.webp
+
+# ======================
+# IDE / Editor
+# ======================
+.vscode/
+.idea/
+*.swp
+
+# ======================
+# OS junk
+# ======================
+.DS_Store
+Thumbs.db
+desktop.ini
