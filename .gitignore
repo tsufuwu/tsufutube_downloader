@@ -44,3 +44,23 @@ cookies.txt
 *.mp4
 *.mp3
 *.m4a
+
+
+# Bỏ qua các file video/âm thanh tạm
+*.mp4
+*.mp3
+*.webm
+*.avi
+*.mkv
+*.wav
+
+# Bỏ qua file phụ đề, thumbnail
+*.vtt
+*.jpg
+*.png
+*.webp
+
+# Bỏ qua các file tạm của hệ thống/Python
+__pycache__/
+*.pyc
+.DS_Store
