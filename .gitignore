@@ -1,52 +1,10 @@
---- Python ---
-
-pycache/
-*.py[cod]
-*$py.class
-
---- Virtual Environment ---
-
-venv/
-env/
-ENV/
-.venv/
-
---- Build / Packaging (PyInstaller) ---
-
-build/
-dist/
-*.spec
-
---- IDE / Editor ---
-
-.vscode/
-.idea/
-*.swp
-
---- OS Generated ---
-
-Thumbs.db
-Desktop.ini
+# --- File hệ thống & Python ---
+__pycache__/
+*.pyc
 .DS_Store
+.vscode/
 
---- App Specific ---
-
-
-
-tsufu_settings.json
-
-
-ffmpeg.exe
-
-
-
-cookies.txt
-*.mp4
-*.mp3
-*.m4a
-
-
-# Bỏ qua các file video/âm thanh tạm
+# --- File rác Media (Video/Nhạc) ---
 *.mp4
 *.mp3
 *.webm
@@ -54,13 +12,10 @@ cookies.txt
 *.mkv
 *.wav
 
-# Bỏ qua file phụ đề, thumbnail
+# --- File phụ đề & Ảnh Thumbnail ---
+# Lưu ý: Nếu logo app của bạn là .png thì ĐỪNG dòng *.png
 *.vtt
-*.jpg
-*.png
+*.srt
 *.webp
-
-# Bỏ qua các file tạm của hệ thống/Python
-__pycache__/
-*.pyc
-.DS_Store
+*.jpg
+*.jpeg
