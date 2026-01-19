@@ -79,14 +79,17 @@ class DownloaderEngine:
     def execute_ffmpeg_cmd(self, cmd_args, duration=0, callback=None):
         if not os.path.exists(self.ffmpeg_path): return False, "FFmpeg not found"
         full_cmd = [self.ffmpeg_path] + cmd_args
-        startupinfo = subprocess.STARTUPINFO()
-        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        startupinfo = None
+        if sys.platform == 'win32':
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         
+        try:
             creation_flags = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
             process = subprocess.Popen(
                 full_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                 universal_newlines=True, encoding='utf-8', errors='ignore',
-                startupinfo=startupinfo if sys.platform == 'win32' else None, 
+                startupinfo=startupinfo, 
                 creationflags=creation_flags
             )
             while True:
