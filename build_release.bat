@@ -1,0 +1,138 @@
+@echo off
+setlocal
+title Tsufutube Downloader Build Tool
+color 0A
+
+echo =======================================================
+echo          TSUFUTUBE DOWNLOADER BUILD TOOL
+echo =======================================================
+echo.
+
+:: --- 1. KIEM TRA MOI TRUONG ---
+echo [1/5] Checking environment...
+
+if not exist "Tsufutube downloader.py" (
+    color 0C
+    echo [ERROR] Cannot find 'Tsufutube downloader.py'. Make sure you are in the project root!
+    pause
+    exit /b
+)
+
+if not exist "ffmpeg\ffmpeg.exe" (
+    color 0C
+    echo [ERROR] FFmpeg not found in 'ffmpeg\' folder!
+    echo Please create 'ffmpeg' folder and put 'ffmpeg.exe' inside.
+    pause
+    exit /b
+)
+
+:: Check PyInstaller
+python -m PyInstaller --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo [INFO] PyInstaller not found. Attempting to install...
+    pip install pyinstaller pillow
+    if %errorlevel% neq 0 (
+        color 0C
+        echo [ERROR] Failed to install PyInstaller via pip.
+        echo Please try running: pip install pyinstaller pillow
+        pause
+        exit /b
+    )
+)
+
+if not exist "assets\icon.ico" (
+    color 0E
+    echo [WARNING] Icon not found in 'assets\icon.ico'. Build will utilize default icon.
+)
+
+:: Check FFprobe (Optional but recommended)
+set "FFPROBE_ARG="
+if exist "ffmpeg\ffprobe.exe" (
+    echo [INFO] Found ffprobe.exe, including it in build.
+    set FFPROBE_ARG=--add-binary "ffmpeg\ffprobe.exe;ffmpeg"
+) else (
+    color 0E
+    echo [WARNING] ffprobe.exe NOT found in 'ffmpeg\' folder.
+    echo           Advanced features ^(Merge 1080p, Metadata^) will NOT work properly in the built app.
+    echo           Continuing anyway...
+    color 0A
+)
+
+:: --- 2. CLEANUP ---
+echo [2/5] Cleaning up old builds...
+if exist "build" rmdir /s /q "build"
+if exist "dist" rmdir /s /q "dist"
+if exist "*.spec" del "*.spec"
+
+:: --- 3. BUILD VOI PYINSTALLER ---
+echo [3/5] Building executable with PyInstaller (This may take a while)...
+echo.
+
+:: Note: We use variable expansion inside the command for FFPROBE_ARG
+python -m PyInstaller --onedir ^
+  --windowed ^
+  --icon="assets\icon.ico" ^
+  --name="Tsufutube-Downloader" ^
+  --add-data="assets;assets" ^
+  --add-data="data.py;." ^
+  --add-data="splash_screen.py;." ^
+  --add-data="fetcher.py;." ^
+  --add-binary="ffmpeg\ffmpeg.exe;ffmpeg" ^
+  %FFPROBE_ARG% ^
+  --hidden-import=PIL._tkinter_finder ^
+  --hidden-import=selenium ^
+  --hidden-import=yt_dlp ^
+  --exclude-module=matplotlib ^
+  --exclude-module=numpy ^
+  --exclude-module=pandas ^
+  --noconsole ^
+  --clean ^
+  "Tsufutube downloader.py"
+
+if %errorlevel% neq 0 (
+    color 0C
+    echo.
+    echo [ERROR] PyInstaller build failed!
+    pause
+    exit /b
+)
+
+:: --- 4. POST-BUILD: Copy Python scripts to dist root ---
+echo.
+echo [4/5] Copying additional files to dist folder...
+
+:: Copy Python scripts that need to be next to exe (for subprocess splash)
+copy /Y "splash_screen.py" "dist\Tsufutube-Downloader\" >nul 2>&1
+copy /Y "fetcher.py" "dist\Tsufutube-Downloader\" >nul 2>&1
+copy /Y "data.py" "dist\Tsufutube-Downloader\" >nul 2>&1
+
+:: Copy assets and ffmpeg to root (for ISS compatibility & consistency with Nuitka)
+xcopy /E /I /Y "dist\Tsufutube-Downloader\_internal\assets" "dist\Tsufutube-Downloader\assets" >nul 2>&1
+xcopy /E /I /Y "dist\Tsufutube-Downloader\_internal\ffmpeg" "dist\Tsufutube-Downloader\ffmpeg" >nul 2>&1
+
+echo      splash_screen.py - OK
+echo      fetcher.py - OK
+echo      data.py - OK
+echo      assets folder - OK
+echo      ffmpeg folder - OK
+
+:: --- 5. FINISH ---
+echo.
+echo [5/5] Build Process Finished!
+echo =======================================================
+echo.
+echo [SUCCESS] Build output located in 'dist\' folder:
+echo.
+echo   UNPACKED FOLDER: dist\Tsufutube-Downloader\
+echo.
+echo   (Create ZIP manually with WinRAR if needed)
+echo.
+echo =======================================================
+echo [NEXT STEP - CREATE INSTALLER]
+echo.
+echo   1. Install Inno Setup 6 (https://jrsoftware.org/isdl.php)
+echo   2. Right-click 'installer.iss' file in this folder
+echo   3. Select 'Compile'
+echo.
+echo =======================================================
+pause

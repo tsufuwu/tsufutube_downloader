@@ -1,90 +1,99 @@
-# ======================
 # Python
-# ======================
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
-# Virtual environment
+# Virtual Environment
 venv/
-.venv/
 ENV/
 env/
+.venv
 
-# ======================
-# Build / Distribution (PyInstaller)
-# ======================
-build/
-dist/
+# PyInstaller
+*.manifest
 *.spec
 
-# Executables
-*.exe
-*.dll
-*.so
-*.dylib
+# Unit test / coverage
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
 
-# ======================
-# Logs & Temp files
-# ======================
-*.log
-*.tmp
-*.temp
-
-# ======================
-# App runtime data
-# ======================
-# User config & history (tự sinh khi chạy app)
-tsufu_settings.json
-tsufu_history.json
-
-# Nếu app tạo thư mục riêng
-Tsufutube/
-config/
-data/
-
-# ======================
-# ffmpeg & external tools
-# ======================
-ffmpeg.exe
-ffprobe.exe
-
-# ======================
-# Media files (downloaded content)
-# ======================
-*.mp3
-*.m4a
-*.wav
-*.flac
-*.ogg
-*.opus
-*.mp4
-*.mkv
-*.webm
-*.avi
-*.mov
-
-# Subtitles
-*.srt
-*.vtt
-*.ass
-
-# Thumbnails
-*.jpg
-*.jpeg
-*.webp
-
-# ======================
-# IDE / Editor
-# ======================
+# IDEs
 .vscode/
 .idea/
 *.swp
-
-# ======================
-# OS junk
-# ======================
+*.swo
+*~
 .DS_Store
+
+# Project specific
+config/user_*.json
+cookies/
+downloads/
+*.log
+*.tmp
+temp/
+cache/
+
+# FFmpeg (if not bundled)
+ffmpeg.exe
+ffprobe.exe
+
+# Secrets & Credentials
+.env
+*.key
+*.pem
+secrets.json
+
+# OS
 Thumbs.db
-desktop.ini
+Desktop.ini
+$RECYCLE.BIN/
+
+# Build artifacts
+*.exe
+*.msi
+*.dmg
+*.deb
+*.rpm
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Temporary Download Files
+*.part
+*.vtt
+nuitka-crash-report.xml
