@@ -216,5 +216,22 @@
     "val_unknown": "Unknown",
     "msg_playlist_range": "Playlist has {} videos.\nEnter range (e.g. 1-10, 5, all):",
     "msg_restart_confirm": "Restart app to apply changes?",
-    "grp_sys_title": "System"
+    "msg_cookie_required": "Cookie Required",
+    "msg_cookie_hint_no_browser": "Select a browser to extract cookies",
+    "msg_cookie_hint_browser_failed": "{} cookies didn't work",
+    "msg_cookie_guide_browser": "Go to Settings and select your browser (Chrome, Edge, Firefox, Brave, etc.) to automatically extract login cookies.",
+    "msg_cookie_guide_extension": "Try using a browser extension to export cookies as a .txt file. Click the button below to install the extension.",
+    "btn_install_extension": "Install Extension",
+    "btn_load_cookie_file": "Load Cookie File",
+    "msg_cookie_loaded": "Cookie file loaded successfully! Try downloading again.",
+    "val_none": "None",
+    "grp_sys_title": "System",
+    "msg_cookie_setup": "Cookie Setup",
+    "lbl_method_browser": "Method 1: Browser Cookies (Quick)",
+    "desc_method_browser": "Automatically extract cookies from your browser. Select browser in Settings.",
+    "lbl_method_extension": "Method 2: Cookie Extension (Recommended)",
+    "desc_method_extension": "Install extension to export cookies.txt file. Works with all browsers.",
+    "lbl_current": "Current",
+    "lbl_tips": "Tips",
+    "tips_cookie_usage": "• Cookies required for age-restricted, premium, or region-locked videos\n• Keep your browser logged in before extracting\n• Cookie files may expire - refresh if downloads fail"
 }

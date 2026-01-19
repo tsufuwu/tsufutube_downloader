@@ -192,7 +192,12 @@ class DownloaderEngine:
     def _classify_error(self, e):
         msg = str(e).lower()
         if "412" in msg: return "ERR_WBI", "Bilibili chặn (Lỗi 412). Vui lòng cập nhật Cookie."
-        if any(k in msg for k in ["sign in", "confirm your age", "member-only", "private"]): return "ERR_LOGIN", "Video yêu cầu đăng nhập/Cookie."
+        
+        # Cookie/Login related errors - return specific code for smart guidance
+        cookie_keywords = ["sign in", "confirm your age", "age-restricted", "member-only", "private", "login required", "cookies"]
+        if any(k in msg for k in cookie_keywords): 
+            return "ERR_COOKIE", "Video yêu cầu đăng nhập/Cookie."
+        
         if "ffmpeg" in msg: return "ERR_SYSTEM", "Thiếu file ffmpeg.exe."
         return "ERR_UNKNOWN", f"Lỗi: {msg[:100]}..."
 
@@ -219,11 +224,8 @@ class DownloaderEngine:
     def download_single(self, task, settings, callbacks):
         self.is_cancelled = False
         
-        # Auto Cookies
-        browser_source = settings.get("browser_source", "none")
-        if browser_source and browser_source != "none" and not settings.get("cookie_file"):
-            auto_cookie = self._auto_extract_cookies(browser_source, callbacks)
-            if auto_cookie: settings["cookie_file"] = auto_cookie
+        # Cookie handling is now done directly in _download_general_ytdlp
+        # using either cookiefile (priority) or cookiesfrombrowser (fallback)
         
         platform = self._identify_platform(task["url"])
         if platform == "INSTAGRAM": return self._download_instagram(task, settings, callbacks)
@@ -347,9 +349,23 @@ class DownloaderEngine:
         elif settings.get("add_metadata", False):
             ydl_opts['embed_chapters'] = True
 
-        # Cookie (Task -> Global)
-        user_cookie = task.get("cookie_file") or settings.get("cookie_file", "")
-        if user_cookie and os.path.exists(user_cookie): ydl_opts['cookiefile'] = user_cookie
+        # Cookie Support (Dual Method - FILE takes priority)
+        # Method 1: Cookie file from extension (PRIORITY - if file exists, use it)
+        user_cookie_file = task.get("cookie_file") or settings.get("cookie_file", "")
+        print(f"[DEBUG] Cookie - cookie_file: '{user_cookie_file}'")
+        
+        if user_cookie_file and os.path.exists(user_cookie_file):
+            ydl_opts['cookiefile'] = user_cookie_file
+            print(f"[DEBUG] Cookie - Using cookiefile: {ydl_opts['cookiefile']}")
+            # Skip browser extraction if file is provided
+        else:
+            # Method 2: Direct browser extraction (fallback if no file)
+            browser_source = settings.get("browser_source", "none")
+            print(f"[DEBUG] Cookie - browser_source: '{browser_source}'")
+            if browser_source and browser_source.lower() not in ["none", ""]:
+                # yt-dlp expects a tuple: (browser_name,) or (browser_name, keyring, profile, container)
+                ydl_opts['cookiesfrombrowser'] = (browser_source.lower(),)
+                print(f"[DEBUG] Cookie - Set cookiesfrombrowser: {ydl_opts['cookiesfrombrowser']}")
 
         # Cut Mode
         # [CUT LOGIC] method: 'direct_cut' (stream) vs 'download_then_cut' (full dl -> cut)
@@ -415,60 +431,61 @@ class DownloaderEngine:
                         final_path = self._get_final_path(ydl, info)
             finally:
                 pass # Context manager handles cleanup
-                
-                if dtype == "sub_only":
-                    final_path = self._handle_sub_conversion(final_path, task.get("sub_format", "srt"), callbacks)
+            
+            # Post-processing (outside finally block)
+            if dtype == "sub_only":
+                final_path = self._handle_sub_conversion(final_path, task.get("sub_format", "srt"), callbacks)
 
-                # [CUT LOGIC] If 'download_then_cut' was selected, perform cut now
-                if cut_mode and cut_method == "download_then_cut" and final_path and os.path.exists(final_path):
-                     try:
-                         # Send status
-                         callbacks.get('on_status', lambda x:None)("MSG_CUT_WAIT")
-                         callbacks.get('on_progress', lambda x,y:None)(101, "MSG_CUT_WAIT")
+            # [CUT LOGIC] If 'download_then_cut' was selected, perform cut now
+            if cut_mode and cut_method == "download_then_cut" and final_path and os.path.exists(final_path):
+                 try:
+                     # Send status
+                     callbacks.get('on_status', lambda x:None)("MSG_CUT_WAIT")
+                     callbacks.get('on_progress', lambda x,y:None)(101, "MSG_CUT_WAIT")
+                     
+                     start_t = task.get("start_time", 0)
+                     end_t = task.get("end_time", 0)
+                     
+                     # Generate temp output path
+                     folder = os.path.dirname(final_path)
+                     name, ext = os.path.splitext(os.path.basename(final_path))
+                     cut_out = os.path.join(folder, f"{name}_cut{ext}")
+                     
+                     # Run FFmpeg
+                     # -ss Start -to End -i Input -c copy Output
+                     success, msg = self.fast_cut(final_path, cut_out, str(timedelta(seconds=start_t)), str(timedelta(seconds=end_t)))
+                     
+                     if success and os.path.exists(cut_out):
+                         # Delete original full video
+                         try: os.remove(final_path)
+                         except: pass
                          
-                         start_t = task.get("start_time", 0)
-                         end_t = task.get("end_time", 0)
-                         
-                         # Generate temp output path
-                         folder = os.path.dirname(final_path)
-                         name, ext = os.path.splitext(os.path.basename(final_path))
-                         cut_out = os.path.join(folder, f"{name}_cut{ext}")
-                         
-                         # Run FFmpeg
-                         # -ss Start -to End -i Input -c copy Output
-                         success, msg = self.fast_cut(final_path, cut_out, str(timedelta(seconds=start_t)), str(timedelta(seconds=end_t)))
-                         
-                         if success and os.path.exists(cut_out):
-                             # Delete original full video
-                             try: os.remove(final_path)
-                             except: pass
-                             
-                             # Rename cut video to original name (or keep as is? User expects the result)
-                             # Since base_name already has "(Cut)" appended if cut_mode is True (see line 373),
-                             # the current final_path HAS "(Cut)".
-                             # So we should swap cut_out to final_path to maintain the expected filename.
-                             os.rename(cut_out, final_path)
-                         else: 
-                             # Cut failed, keep full video but warn?
-                             pass
-                     except Exception as e:
-                         print(f"Cut Error: {e}")
+                         # Rename cut video to original name (or keep as is? User expects the result)
+                         # Since base_name already has "(Cut)" appended if cut_mode is True (see line 373),
+                         # the current final_path HAS "(Cut)".
+                         # So we should swap cut_out to final_path to maintain the expected filename.
+                         os.rename(cut_out, final_path)
+                     else: 
+                         # Cut failed, keep full video but warn?
                          pass
+                 except Exception as e:
+                     print(f"Cut Error: {e}")
+                     pass
 
 
-                # History Item
-                history_item = None
-                if final_path and os.path.exists(final_path):
-                    size_mb = os.path.getsize(final_path) / (1024 * 1024)
-                    history_item = {
-                        "platform": info.get('extractor_key', 'Web'),
-                        "title": unique_base_name, # Dùng tên đã unique
-                        "path": final_path,
-                        "format": os.path.splitext(final_path)[1].replace(".", "").upper(),
-                        "size": f"{size_mb:.2f} MB",
-                        "date": datetime.now().strftime("%Y-%m-%d %H:%M")
-                    }
-                return True, "Success", history_item
+            # History Item
+            history_item = None
+            if final_path and os.path.exists(final_path):
+                size_mb = os.path.getsize(final_path) / (1024 * 1024)
+                history_item = {
+                    "platform": info.get('extractor_key', 'Web'),
+                    "title": unique_base_name, # Dùng tên đã unique
+                    "path": final_path,
+                    "format": os.path.splitext(final_path)[1].replace(".", "").upper(),
+                    "size": f"{size_mb:.2f} MB",
+                    "date": datetime.now().strftime("%Y-%m-%d %H:%M")
+                }
+            return True, "Success", history_item
 
         except Exception as e:
             if self.is_cancelled: return False, "Đã hủy", None

@@ -217,5 +217,22 @@
     "val_unknown": "Không xác định",
     "msg_playlist_range": "Playlist có {} video.\nNhập khoảng (VD: 1-10, 5, all):",
     "msg_restart_confirm": "Khởi động lại để áp dụng thay đổi?",
-    "grp_sys_title": "Hệ thống"
+    "msg_cookie_required": "Cần Cookie để tải",
+    "msg_cookie_hint_no_browser": "Chọn trình duyệt để lấy cookie",
+    "msg_cookie_hint_browser_failed": "Cookie từ {} không hoạt động",
+    "msg_cookie_guide_browser": "Vào Cài đặt và chọn trình duyệt (Chrome, Edge, Firefox, Brave, v.v.) để tự động trích xuất cookie đăng nhập.",
+    "msg_cookie_guide_extension": "Thử dùng extension trình duyệt để xuất cookie thành file .txt. Nhấn nút dưới để cài extension.",
+    "btn_install_extension": "Cài Extension",
+    "btn_load_cookie_file": "Tải File Cookie",
+    "msg_cookie_loaded": "Đã tải file cookie thành công! Hãy thử tải lại video.",
+    "val_none": "Không",
+    "grp_sys_title": "Hệ thống",
+    "msg_cookie_setup": "Thiết lập Cookie",
+    "lbl_method_browser": "Cách 1: Cookie Trình duyệt (Nhanh)",
+    "desc_method_browser": "Tự động lấy cookie từ trình duyệt. Chọn trình duyệt trong Cài đặt.",
+    "lbl_method_extension": "Cách 2: Extension Cookie (Khuyên dùng)",
+    "desc_method_extension": "Cài extension để xuất file cookies.txt. Hoạt động với mọi trình duyệt.",
+    "lbl_current": "Hiện tại",
+    "lbl_tips": "Mẹo",
+    "tips_cookie_usage": "• Cookie cần cho video giới hạn tuổi, premium, hoặc bị khóa vùng\n• Giữ trình duyệt đăng nhập trước khi lấy cookie\n• File cookie có thể hết hạn - làm mới nếu tải thất bại"
 }

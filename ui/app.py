@@ -95,11 +95,7 @@ class YoutubeDownloaderApp(ctk.CTk):
         self.proxy_var = tk.StringVar(value=self.settings.get("proxy_url", ""))
         self.history_data = self.config_mgr.load_history()
         
-        # Show language selection on first run BEFORE continuing initialization
-        if not os.path.exists(self.config_mgr.settings_file):
-            # Close splash screen first so it doesn't appear above the dialog
-            self._close_splash_screen()
-            self.show_first_run_language_dialog()
+        # Note: First-run language selection is now handled in main entry point (before splash)
             
         # Initialize Engine
         # [FFMPEG HYBRID CHECKS]
@@ -239,6 +235,26 @@ class YoutubeDownloaderApp(ctk.CTk):
     # --- UTILS ---
     def T(self, key):
         return self.translations.get(key, f"[{key}]")
+
+    def process_msg_queue(self):
+        """Process messages from background threads (thread-safe UI updates)"""
+        try:
+            while not self.msg_queue.empty():
+                msg_type, msg_data = self.msg_queue.get_nowait()
+                
+                if msg_type == "tray_open":
+                    self.deiconify()
+                    self.lift()
+                    self.focus_force()
+                elif msg_type == "tray_exit":
+                    self.quit()
+                # Add more message types as needed
+                    
+        except Exception as e:
+            print(f"Queue processing error: {e}")
+        finally:
+            # Re-schedule this check
+            self.after(100, self.process_msg_queue)
 
     def style_treeview(self):
         style = ttk.Style()
@@ -955,7 +971,7 @@ class YoutubeDownloaderApp(ctk.CTk):
         # Clear image reference first to avoid "image doesn't exist" error
         self.thumb_image_ref = None
         try:
-            self.thumb_label.configure(text="", image="")
+            self.thumb_label.configure(text="", image=None)
         except:
             pass  # Ignore if image was garbage collected
     
@@ -975,7 +991,7 @@ class YoutubeDownloaderApp(ctk.CTk):
         # [FIX] Clear thumbnail properly
         self.thumb_image_ref = None
         try:
-            self.thumb_label.configure(image="", text="⏳")
+            self.thumb_label.configure(image=None, text="⏳")
         except:
             pass
         
@@ -1070,7 +1086,7 @@ class YoutubeDownloaderApp(ctk.CTk):
         # [FIX] Clear existing image reference first to prevent "pyimage doesn't exist" error
         self.thumb_image_ref = None
         try:
-            self.thumb_label.configure(text="⏳", image="")
+            self.thumb_label.configure(text="⏳", image=None)
         except:
             pass
         
@@ -1078,7 +1094,7 @@ class YoutubeDownloaderApp(ctk.CTk):
             threading.Thread(target=self._load_thumbnail, args=(thumbnail_url, cancel_event), daemon=True).start()
         else:
             try:
-                self.thumb_label.configure(text="No thumbnail", image="")
+                self.thumb_label.configure(text="No thumbnail", image=None)
             except:
                 pass
         
@@ -1118,7 +1134,7 @@ class YoutubeDownloaderApp(ctk.CTk):
         """Safely set thumbnail error state with proper exception handling."""
         try:
             self.thumb_image_ref = None
-            self.thumb_label.configure(text="Err", image="")
+            self.thumb_label.configure(text="Err", image=None)
         except Exception:
             pass
     
@@ -1135,7 +1151,7 @@ class YoutubeDownloaderApp(ctk.CTk):
             print(f"Thumbnail update error: {e}")
             try:
                 self.thumb_image_ref = None
-                self.thumb_label.configure(text="No PIL", image="")
+                self.thumb_label.configure(text="No PIL", image=None)
             except:
                 pass
     
@@ -1217,10 +1233,8 @@ class YoutubeDownloaderApp(ctk.CTk):
             os.startfile(self.path_var.get())
     
     def select_cookies(self):
-        f = filedialog.askopenfilename(filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
-        if f: 
-            self.cookies_path_var.set(f)
-            self.cookie_status.configure(text="OK", text_color="green")
+        """Show cookie helper dialog with guidance + file upload option"""
+        self.show_cookie_helper_dialog(error_msg="")
     
     def add_placeholder(self, entry, text):
         entry.configure(placeholder_text=text)
@@ -1344,84 +1358,117 @@ class YoutubeDownloaderApp(ctk.CTk):
             "This works for age-restricted & premium videos.")
     
     def show_cookie_helper_dialog(self, error_msg=""):
-        """Show smart cookie helper dialog when download fails"""
+        """Show smart cookie helper dialog with contextual guidance"""
         dialog = ctk.CTkToplevel(self)
-        dialog.title("Cookie Helper")
-        dialog.geometry("450x280")
+        
+        # Title based on whether there's an error
+        if error_msg:
+            dialog.title(self.T("pop_error"))
+            header_text = "⚠️ " + self.T("msg_cookie_required")
+            header_color = "#FF5722"
+        else:
+            dialog.title("🍪 Cookies Helper")
+            header_text = "🍪 " + self.T("msg_cookie_setup")
+            header_color = "#4FC3F7"
+        
+        dialog.geometry("550x500")
         dialog.resizable(False, False)
         dialog.transient(self)
         dialog.grab_set()
         
         # Center dialog
         dialog.update_idletasks()
-        x = self.winfo_x() + (self.winfo_width() // 2) - (450 // 2)
-        y = self.winfo_y() + (self.winfo_height() // 2) - (280 // 2)
+        x = self.winfo_x() + (self.winfo_width() // 2) - (550 // 2)
+        y = self.winfo_y() + (self.winfo_height() // 2) - (500 // 2)
         dialog.geometry(f"+{x}+{y}")
         
+        # Main scroll frame
+        scroll = ctk.CTkScrollableFrame(dialog, fg_color="transparent")
+        scroll.pack(fill="both", expand=True, padx=20, pady=10)
+        
         # Header
-        ctk.CTkLabel(dialog, text="⚠️ Download Failed", 
-                    font=("Segoe UI", 18, "bold"), text_color="#FF5722").pack(pady=15)
+        ctk.CTkLabel(scroll, text=header_text, 
+                    font=("Segoe UI", 18, "bold"), text_color=header_color).pack(pady=(10, 5))
         
-        # Error message
+        # Error message if present
         if error_msg:
-            error_frame = ctk.CTkFrame(dialog, fg_color="#37474F", corner_radius=8)
-            error_frame.pack(fill="x", padx=20, pady=(0, 15))
-            ctk.CTkLabel(error_frame, text=f"Error: {error_msg[:60]}...", 
-                        font=("Consolas", 10), text_color="#FFAB91", wraplength=400).pack(pady=8, padx=10)
+            error_frame = ctk.CTkFrame(scroll, fg_color="#37474F", corner_radius=8)
+            error_frame.pack(fill="x", pady=(5, 10))
+            ctk.CTkLabel(error_frame, text=f"❌ {error_msg[:120]}", 
+                        font=("Consolas", 10), text_color="#FFAB91", wraplength=480).pack(pady=8, padx=10)
         
-        # Info
-        ctk.CTkLabel(dialog, text="💡 This video may require cookies", 
-                    font=("Segoe UI", 13, "bold")).pack(pady=(0, 10))
+        # Check current browser setting
+        current_browser = self.browser_var.get() if hasattr(self, 'browser_var') else 'none'
+        browser_set = current_browser.lower() not in ['none', '']
         
-        ctk.CTkLabel(dialog, text="Enable Browser Cookies to access:", 
-                    font=("Segoe UI", 11), text_color="gray").pack()
-        ctk.CTkLabel(dialog, text="• Age-restricted videos\n• Premium content\n• Private videos", 
-                    font=("Segoe UI", 10), text_color="#90CAF9", justify="left").pack(pady=5)
+        # === SECTION 1: Browser Cookies (Quick Method) ===
+        section1 = ctk.CTkFrame(scroll, fg_color="#1E3A5F", corner_radius=10)
+        section1.pack(fill="x", pady=8)
+        
+        ctk.CTkLabel(section1, text="🌐 " + self.T("lbl_method_browser"), 
+                    font=("Segoe UI", 13, "bold"), text_color="#90CAF9").pack(anchor="w", padx=15, pady=(10, 5))
+        ctk.CTkLabel(section1, text=self.T("desc_method_browser"), 
+                    font=("Segoe UI", 10), text_color="gray", wraplength=480).pack(anchor="w", padx=15)
         
         # Current browser status
-        current_browser = self.browser_var.get() if hasattr(self, 'browser_var') else 'none'
-        if current_browser.lower() == 'none':
-            status_text = "❌ Cookies: Disabled"
-            status_color = "#EF5350"
-        else:
-            status_text = f"✓ Cookies: {current_browser.capitalize()}"
+        if browser_set:
+            status_text = f"✓ {self.T('lbl_current')}: {current_browser.capitalize()}"
             status_color = "#66BB6A"
+        else:
+            status_text = f"❌ {self.T('lbl_current')}: {self.T('val_none')}"
+            status_color = "#EF5350"
         
-        ctk.CTkLabel(dialog, text=status_text, font=("Segoe UI", 11, "bold"), 
-                    text_color=status_color).pack(pady=10)
-        
-        # Buttons
-        btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
-        btn_frame.pack(pady=15)
-        
-        result = {"action": None}
-        
-        def on_try_chrome():
-            result["action"] = "try_chrome"
-            dialog.destroy()
+        ctk.CTkLabel(section1, text=status_text, font=("Segoe UI", 10, "bold"), 
+                    text_color=status_color).pack(anchor="w", padx=15, pady=(5, 0))
         
         def on_goto_settings():
-            result["action"] = "settings"
             dialog.destroy()
-        
-        def on_cancel():
-            dialog.destroy()
-        
-        ctk.CTkButton(btn_frame, text=self.T("cookie_try_chrome"), command=on_try_chrome,
-                     fg_color="#4CAF50", hover_color="#388E3C", width=150).pack(side="left", padx=5)
-        ctk.CTkButton(btn_frame, text=self.T("cookie_goto_settings"), command=on_goto_settings,
-                     fg_color="#2196F3", hover_color="#1976D2", width=130).pack(side="left", padx=5)
-        ctk.CTkButton(btn_frame, text=self.T("btn_close"), command=on_cancel,
-                     fg_color="gray", hover_color="#616161", width=80).pack(side="left", padx=5)
-        
-        # Wait for result
-        self.wait_window(dialog)
-        
-        # Process action
-        if result["action"] == "try_chrome":
-            self._apply_browser_cookies_and_retry("chrome")
-        elif result["action"] == "settings":
             self.jump_to_cookie_settings()
+        
+        ctk.CTkButton(section1, text="⚙ " + self.T("cookie_goto_settings"), 
+                     command=on_goto_settings, fg_color="#2196F3", hover_color="#1976D2",
+                     width=200, height=32).pack(pady=10)
+        
+        # === SECTION 2: Extension Method ===
+        section2 = ctk.CTkFrame(scroll, fg_color="#1E4A3F", corner_radius=10)
+        section2.pack(fill="x", pady=8)
+        
+        ctk.CTkLabel(section2, text="📦 " + self.T("lbl_method_extension"), 
+                    font=("Segoe UI", 13, "bold"), text_color="#80CBC4").pack(anchor="w", padx=15, pady=(10, 5))
+        ctk.CTkLabel(section2, text=self.T("desc_method_extension"), 
+                    font=("Segoe UI", 10), text_color="gray", wraplength=480).pack(anchor="w", padx=15)
+        
+        # Extension name
+        ctk.CTkLabel(section2, text="\"Get cookies.txt LOCALLY\"", 
+                    font=("Consolas", 11, "bold"), text_color="#4FC3F7").pack(pady=5)
+        
+        btn_row = ctk.CTkFrame(section2, fg_color="transparent")
+        btn_row.pack(pady=10)
+        
+        ctk.CTkButton(btn_row, text="📥 " + self.T("btn_install_extension"), 
+                     command=lambda: webbrowser.open("https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc"),
+                     fg_color="#00BCD4", hover_color="#0097A7", width=180, height=32).pack(side="left", padx=5)
+        
+        def on_load_cookie_file():
+            dialog.destroy()
+            self._browse_and_load_cookie_file()
+        
+        ctk.CTkButton(btn_row, text="📂 " + self.T("btn_load_cookie_file"), 
+                     command=on_load_cookie_file, fg_color="#FF9800", hover_color="#F57C00",
+                     width=180, height=32).pack(side="left", padx=5)
+        
+        # === SECTION 3: Tips ===
+        tips_frame = ctk.CTkFrame(scroll, fg_color="#37474F", corner_radius=8)
+        tips_frame.pack(fill="x", pady=8)
+        
+        ctk.CTkLabel(tips_frame, text="💡 " + self.T("lbl_tips"), 
+                    font=("Segoe UI", 11, "bold")).pack(anchor="w", padx=15, pady=(8, 5))
+        ctk.CTkLabel(tips_frame, text=self.T("tips_cookie_usage"), 
+                    font=("Segoe UI", 10), text_color="gray", wraplength=480, justify="left").pack(anchor="w", padx=15, pady=(0, 8))
+        
+        # Close button
+        ctk.CTkButton(scroll, text=self.T("btn_close"), command=dialog.destroy,
+                     fg_color="gray", hover_color="#616161", width=100).pack(pady=10)
     
     def _apply_browser_cookies_and_retry(self, browser="chrome"):
         """Apply browser cookies and retry last download"""
@@ -1437,6 +1484,25 @@ class YoutubeDownloaderApp(ctk.CTk):
         # Retry download
         threading.Thread(target=self.run_download_process, daemon=True).start()
     
+    def jump_to_cookie_settings(self):
+        """Switch to Settings tab and scroll to cookie section"""
+        self.tab_view.set(self.T("tab_settings"))
+        # Trigger tab load if not loaded
+        if not self.is_settings_loaded:
+            self.setup_settings_tab()
+            self.is_settings_loaded = True
+    
+    def _browse_and_load_cookie_file(self):
+        """Browse for cookies.txt file and load it"""
+        file_path = filedialog.askopenfilename(
+            title=self.T("btn_load_cookie_file"),
+            filetypes=[("Cookie files", "*.txt"), ("All files", "*.*")]
+        )
+        if file_path and os.path.exists(file_path):
+            self.settings["cookie_file"] = file_path
+            self.config_mgr.save_settings(self.settings)
+            messagebox.showinfo(self.T("pop_success"), self.T("msg_cookie_loaded"))
+    
     def _should_suggest_cookies(self, error_msg):
         """Detect if error message suggests cookies might help"""
         if not error_msg:
@@ -1444,17 +1510,20 @@ class YoutubeDownloaderApp(ctk.CTk):
         
         error_lower = error_msg.lower()
         
-        # Keywords that indicate cookie-related issues
+        # Keywords that indicate cookie-related issues (matches yt-dlp error format)
         cookie_keywords = [
             '403', 'forbidden',
-            'restricted', 'age-restricted', 'age restricted',
-            'private', 'members-only', 'members only',
+            'restricted', 'age-restricted', 'age restricted', 'confirm your age',
+            'private', 'members-only', 'members only', 'member-only',
             'premium', 'requires login', 'sign in', 'login required',
             'unavailable', 'not available',
-            'cookies', 'authentication'
+            'cookies', 'authentication', 'dpapi', 'failed to decrypt',
+            'yêu cầu đăng nhập', 'cần cookie'  # Vietnamese messages
         ]
         
-        return any(keyword in error_lower for keyword in cookie_keywords)
+        result = any(keyword in error_lower for keyword in cookie_keywords)
+        print(f"[DEBUG] _should_suggest_cookies: '{error_msg[:50]}...' -> {result}")
+        return result
     
     # ==========================
     # TOOLS TAB FUNCTIONS
@@ -2143,6 +2212,18 @@ class YoutubeDownloaderApp(ctk.CTk):
         self.download_btn.configure(state="normal", text=self.T("btn_download"), fg_color=self.current_theme["accent"])
         self.cancel_btn.configure(state="disabled", fg_color="gray")
 
+    def _show_first_run_dialog_safe(self):
+        """Safe wrapper to show first run dialog after mainloop has started"""
+        try:
+            # Close splash screen first
+            self._close_splash_screen()
+            # Show the dialog
+            self.show_first_run_language_dialog()
+        except Exception as e:
+            print(f"Error showing first run dialog: {e}")
+            # If dialog fails, save default English settings so app doesn't crash on next start
+            self.config_mgr.save_settings(self.settings)
+
     def _close_splash_screen(self):
         """Close the splash screen process if it's running"""
         try:
@@ -2249,16 +2330,11 @@ class YoutubeDownloaderApp(ctk.CTk):
             self.lang = lang
             self.config_mgr.save_settings(self.settings)
             
-            # Reload translations
-            try:
-                locale_path = resource_path(os.path.join("assets", "locales", f"{lang}.json"))
-                with open(locale_path, "r", encoding="utf-8") as f:
-                    self.translations = json.load(f)
-            except Exception as e:
-                print(f"Error loading locale {lang}: {e}")
-                self.translations = {}
-            
             dialog.destroy()
+            
+            # Restart app to apply new language to all UI elements
+            # Since tabs were already created with old language, we need a full restart
+            self.restart_app(save_first=False)
         
         ctk.CTkButton(
             main_frame,
@@ -2816,13 +2892,11 @@ class YoutubeDownloaderApp(ctk.CTk):
 
             def after_click(icon, query):
                 if str(query) == "Open":
-                    # icon.stop() # persist
-                    # Schedule UI update on main thread
-                    self.after(0, self.deiconify)
-                    self.after(0, self.lift)
+                    # Use msg_queue for thread-safe UI update (self.after doesn't work from pystray thread)
+                    self.msg_queue.put(("tray_open", None))
                 elif str(query) == "Exit":
                     icon.stop()
-                    self.after(0, self.quit)
+                    self.msg_queue.put(("tray_exit", None))
             
             try:
                 image = PILImage.open(resource_path(os.path.join("assets", "icon.ico")))
