@@ -240,18 +240,32 @@ class YoutubeDownloaderApp(ctk.CTk):
         """Process messages from background threads (thread-safe UI updates)"""
         try:
             while not self.msg_queue.empty():
-                msg_type, msg_data = self.msg_queue.get_nowait()
+                item = self.msg_queue.get_nowait()
                 
-                if msg_type == "tray_open":
-                    self.deiconify()
-                    self.lift()
-                    self.focus_force()
-                elif msg_type == "tray_exit":
-                    self.quit()
-                # Add more message types as needed
+                # Case 1: Callable task (e.g. from queue_update)
+                if callable(item):
+                    try:
+                        item()
+                    except Exception as e:
+                        print(f"Queue Task Error: {e}")
+                    continue
+
+                # Case 2: Tuple Message (e.g. ("tray_open", None))
+                if isinstance(item, (tuple, list)) and len(item) >= 1:
+                    msg_type = item[0]
+                    # data = item[1] if len(item) > 1 else None
+                    
+                    if msg_type == "tray_open":
+                        self.deiconify()
+                        self.lift()
+                        self.focus_force()
+                    elif msg_type == "tray_exit":
+                        self.quit()
+                    # Add more message types as needed
                     
         except Exception as e:
-            print(f"Queue processing error: {e}")
+            # print(f"Queue processing error: {e}")
+            pass
         finally:
             # Re-schedule this check
             self.after(100, self.process_msg_queue)
@@ -2625,16 +2639,6 @@ class YoutubeDownloaderApp(ctk.CTk):
         self.lbl_del_sel.pack(side="right", padx=5)
         ctk.CTkButton(footer_bar, text=self.T("btn_sel_all"), command=self.history_select_all, width=100).pack(side="right", padx=5)
 
-    def process_msg_queue(self):
-        try:
-            while True:
-                task = self.msg_queue.get_nowait()
-                try: task()
-                except Exception as e: print(f"Task Err: {e}")
-        except queue.Empty:
-            pass
-        self.after(50, self.process_msg_queue)
-
     def queue_update(self, func):
         self.msg_queue.put(func)
 
@@ -2890,24 +2894,35 @@ class YoutubeDownloaderApp(ctk.CTk):
                 self.after(0, self.destroy)
                 return
 
-            def after_click(icon, query):
-                if str(query) == "Open":
-                    # Use msg_queue for thread-safe UI update (self.after doesn't work from pystray thread)
-                    self.msg_queue.put(("tray_open", None))
-                elif str(query) == "Exit":
-                    icon.stop()
-                    self.msg_queue.put(("tray_exit", None))
-            
+            image = None
             try:
                 image = PILImage.open(resource_path(os.path.join("assets", "icon.ico")))
             except:
-                image = PILImage.new('RGB', (64, 64), color = 'red')
+                try:
+                    image = PILImage.new('RGB', (64, 64), color = 'red')
+                except: pass
 
-            self.tray_icon = pystray.Icon("Tsufutube", image, "Tsufutube Downloader", menu=pystray.Menu(
-                pystray.MenuItem("Open", after_click, default=True),
-                pystray.MenuItem("Exit", after_click)
-            ))
-            self.tray_icon.run()
+            if image:
+                self.tray_icon = pystray.Icon("Tsufutube", image, "Tsufutube Downloader", menu=pystray.Menu(
+                    pystray.MenuItem("Open", self._on_tray_open, default=True),
+                    pystray.MenuItem("Exit", self._on_tray_exit)
+                ))
+                self.tray_icon.run()
+        except Exception as e:
+            print(f"Tray Error: {e}")
+
+    def _on_tray_open(self, icon, item):
+        try:
+            self.msg_queue.put(("tray_open", None))
+        except Exception as e:
+            print(f"Tray Open Error: {e}")
+
+    def _on_tray_exit(self, icon, item):
+        try:
+            icon.stop()
+            self.msg_queue.put(("tray_exit", None))
+        except Exception as e:
+            print(f"Tray Exit Error: {e}")
         except Exception as e:
             print(f"Tray Error: {e}")
             try: messagebox.showerror("Error", f"Tray Icon Error: {e}")
