@@ -5,6 +5,7 @@ import threading
 import queue
 import os
 import json
+import shutil
 import re
 import subprocess
 from io import BytesIO
@@ -98,8 +99,6 @@ class YoutubeDownloaderApp(ctk.CTk):
             self._close_splash_screen()
             self.show_first_run_language_dialog()
             
-import shutil
-
         # Initialize Engine
         # [FFMPEG HYBRID CHECKS]
         # 1. Bundled (Priority)
