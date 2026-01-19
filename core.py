@@ -67,7 +67,8 @@ class DownloaderEngine:
         if not os.path.exists(self.ffmpeg_path): return 0
         try:
             cmd = [self.ffmpeg_path, '-i', input_path]
-            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='utf-8', errors='ignore', creationflags=subprocess.CREATE_NO_WINDOW)
+            creation_flags = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
+            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='utf-8', errors='ignore', creationflags=creation_flags)
             match = re.search(r"Duration:\s*(\d{2}):(\d{2}):(\d{2}\.\d+)", result.stderr)
             if match:
                 h, m, s = map(float, match.groups())
@@ -81,11 +82,12 @@ class DownloaderEngine:
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         
-        try:
+            creation_flags = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
             process = subprocess.Popen(
                 full_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                 universal_newlines=True, encoding='utf-8', errors='ignore',
-                startupinfo=startupinfo, creationflags=subprocess.CREATE_NO_WINDOW
+                startupinfo=startupinfo if sys.platform == 'win32' else None, 
+                creationflags=creation_flags
             )
             while True:
                 line = process.stderr.readline()

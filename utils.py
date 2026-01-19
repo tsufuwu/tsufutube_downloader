@@ -1,6 +1,11 @@
 import os
 import sys
-import winreg
+
+# Lazy import or safeguard winreg
+try:
+    import winreg
+except ImportError:
+    winreg = None
 
 def resource_path(relative_path):
     try:
@@ -25,6 +30,9 @@ def set_autostart_registry(enable=True, app_name="TsufutubeDownloader"):
     Thêm hoặc xóa ứng dụng khỏi Registry Startup của Windows.
     Returns: (success: bool, message: str)
     """
+    if sys.platform != 'win32' or winreg is None:
+        return False
+        
     key_path = r"Software\Microsoft\Windows\CurrentVersion\Run"
     
     try:

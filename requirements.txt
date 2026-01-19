@@ -2,14 +2,10 @@
 yt-dlp>=2024.1.0
 customtkinter>=5.2.0
 pillow>=10.0.0
-requests>=2.31.0
 
-# Media Processing
-ffmpeg-python>=0.2.0
-
-# Additional Features
-selenium>=4.15.0
-webdriver-manager>=4.0.0
+# Optional Features
+instaloader>=4.10.0
+bilibili-api-python>=16.2.0
 
 # Optional but recommended
 pyinstaller>=6.0.0  # For building executable
