@@ -240,7 +240,7 @@ Nếu bạn thấy dự án hữu ích:
 
 <div align="center">
 
-Made with ❤️ by [Your Name]
+Made with ❤️ by [Tsufu]
 
 [⬆ Back to top](#-tsufutube-downloader)
 
