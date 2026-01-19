@@ -1,5 +1,6 @@
 import customtkinter as ctk
 import tkinter as tk
+import sys
 from tkinter import ttk, messagebox, filedialog, simpledialog
 import threading
 import queue
@@ -17,6 +18,7 @@ from data import THEMES
 from constant import APP_TITLE, APP_SLOGAN, REPO_API_URL, VERSION
 from utils import resource_path, time_to_seconds, set_autostart_registry
 from config import ConfigManager
+from time_spinbox import TimeSpinbox
 
 # Lazy Import Wrapper for Tray
 HAS_PYSTRAY = False
@@ -101,21 +103,31 @@ class YoutubeDownloaderApp(ctk.CTk):
             
         # Initialize Engine
         # [FFMPEG HYBRID CHECKS]
-        # 1. Bundled (Priority)
+        # Priority 1: "Portable" folder (root/ffmpeg/)
+        # This allows user to drop a portable ffmpeg folder next to the exe
+        root_dir = os.path.dirname(os.path.abspath(sys.executable))
+        portable_ffmpeg = os.path.join(root_dir, "ffmpeg", "ffmpeg.exe")
+        
+        # Priority 2: Bundled (PyInstaller _internal)
         bundled_ffmpeg = resource_path(os.path.join("ffmpeg", "ffmpeg.exe"))
-        if os.path.exists(bundled_ffmpeg):
+        
+        ffmpeg_final_path = "ffmpeg" # Default fallback
+        
+        if os.path.exists(portable_ffmpeg):
+            ffmpeg_final_path = portable_ffmpeg
+            print(f"Info: Using PORTABLE FFmpeg at {portable_ffmpeg}")
+        elif os.path.exists(bundled_ffmpeg):
             ffmpeg_final_path = bundled_ffmpeg
+            print(f"Info: Using BUNDLED FFmpeg at {bundled_ffmpeg}")
         else:
-            # 2. System PATH
+            # Priority 3: System PATH
             system_ffmpeg = shutil.which("ffmpeg")
             if system_ffmpeg:
                 ffmpeg_final_path = system_ffmpeg
-                print(f"Info: Using system FFmpeg at {system_ffmpeg}")
+                print(f"Info: Using SYSTEM FFmpeg at {system_ffmpeg}")
             else:
-                # 3. None found
-                ffmpeg_final_path = "ffmpeg" # Fallback string, will likely fail in engine but allow app init
                 print("Warning: FFmpeg not found!")
-                
+
         self.engine = DownloaderEngine(ffmpeg_final_path)
         
         # [OPTIMIZED] Initialize FastFetcher for video info
@@ -219,6 +231,10 @@ class YoutubeDownloaderApp(ctk.CTk):
         
         # Background Startup Tasks
         self.after(2000, self._run_background_startup_tasks)
+        
+        # [TRAY] Start Tray Icon if enabled (Persistent)
+        if self.settings.get("minimize_to_tray", False):
+            threading.Thread(target=self._run_tray_icon, daemon=True).start()
 
     # --- UTILS ---
     def T(self, key):
@@ -418,7 +434,14 @@ class YoutubeDownloaderApp(ctk.CTk):
         head_cut.pack(fill="x", padx=10, pady=5)
         self.cut_chk = ctk.CTkCheckBox(head_cut, text=self.T("grp_cut"), variable=self.cut_var, command=self.on_main_cut_toggle, font=("Segoe UI", 12, "bold"))
         self.cut_chk.pack(side="left")
-        ctk.CTkLabel(head_cut, text=self.T("lbl_time_fmt"), text_color="gray", font=("Segoe UI", 10, "italic")).pack(side="right")
+        # Right side info stack
+        right_frame = ctk.CTkFrame(head_cut, fg_color="transparent")
+        right_frame.pack(side="right")
+
+        ctk.CTkLabel(right_frame, text=self.T("lbl_time_fmt"), text_color="gray", font=("Segoe UI", 10, "italic")).pack(anchor="e")
+        
+        # [NEW] Performance Note (Sunk style)
+        ctk.CTkLabel(right_frame, text=self.T("hint_cut_slow"), text_color="gray", font=("Segoe UI", 9, "italic")).pack(anchor="e")
         
         time_row = ctk.CTkFrame(self.cut_card, fg_color="transparent")
         time_row.pack(fill="x", padx=10, pady=(0, 10))
@@ -427,11 +450,14 @@ class YoutubeDownloaderApp(ctk.CTk):
         b1 = ctk.CTkFrame(time_row, fg_color="transparent")
         b1.pack(side="left")
         ctk.CTkLabel(b1, text=self.T("lbl_start").upper(), font=("Segoe UI", 10, "bold"), text_color="gray").pack(anchor="w")
-        self.start_entry = ctk.CTkEntry(b1, width=100, justify="center")
+        
+        # [MOD] New TimeSpinbox
+        self.start_entry = TimeSpinbox(b1)
         self.start_entry.pack(pady=2)
+        
         self.start_chk = ctk.CTkCheckBox(b1, text=self.T("chk_from_start"), variable=self.start_chk_var, command=self.toggle_cut_inputs, font=("Segoe UI", 10))
         self.start_chk.pack(anchor="w")
-        self.add_placeholder(self.start_entry, "hh:mm:ss")
+        # self.add_placeholder(self.start_entry, "hh:mm:ss") # No longer needed
         
         ctk.CTkLabel(time_row, text="➜", font=("Segoe UI", 16)).pack(side="left", padx=20)
         
@@ -439,11 +465,14 @@ class YoutubeDownloaderApp(ctk.CTk):
         b2 = ctk.CTkFrame(time_row, fg_color="transparent")
         b2.pack(side="left")
         ctk.CTkLabel(b2, text=self.T("lbl_end").upper(), font=("Segoe UI", 10, "bold"), text_color="gray").pack(anchor="w")
-        self.end_entry = ctk.CTkEntry(b2, width=100, justify="center")
+        
+        # [MOD] New TimeSpinbox
+        self.end_entry = TimeSpinbox(b2)
         self.end_entry.pack(pady=2)
+        
         self.end_chk = ctk.CTkCheckBox(b2, text=self.T("chk_to_end"), variable=self.end_chk_var, command=self.toggle_cut_inputs, font=("Segoe UI", 10))
         self.end_chk.pack(anchor="w")
-        self.add_placeholder(self.end_entry, "hh:mm:ss")
+        # self.add_placeholder(self.end_entry, "hh:mm:ss") # No longer needed
 
         # --- FORMAT OPTIONS ---
         self.opts_card = ctk.CTkFrame(parent)
@@ -612,7 +641,7 @@ class YoutubeDownloaderApp(ctk.CTk):
             ctk.CTkRadioButton(acts_grid, text=txt, variable=self.tool_action_var, value=val, command=self.tool_update_ui).grid(row=i//2, column=i%2, sticky="w", padx=10, pady=5)
         
         # Add GIF to Video option
-        ctk.CTkRadioButton(acts_grid, text="GIF → Video", variable=self.tool_action_var, value="gif_to_video", command=self.tool_update_ui).grid(row=6, column=0, sticky="w", padx=10, pady=5)
+        ctk.CTkRadioButton(acts_grid, text=self.T("act_gif_to_video"), variable=self.tool_action_var, value="gif_to_video", command=self.tool_update_ui).grid(row=6, column=0, sticky="w", padx=10, pady=5)
 
         # Extra Options
         self.pnl_extra = ctk.CTkFrame(scroll)
@@ -719,6 +748,26 @@ class YoutubeDownloaderApp(ctk.CTk):
                         command=self.on_codec_change, width=150).pack(side="left")
                         
         ctk.CTkCheckBox(r_codec, text=self.T("chk_thumbnail"), variable=self.thumb_embed_var).pack(side="left", padx=(20, 0))
+
+        # [NEW] Cut Tool Settings
+        grp_cut = ctk.CTkFrame(scroll)
+        grp_cut.pack(fill="x", pady=10, padx=5)
+        
+        ctk.CTkLabel(grp_cut, text=self.T("lbl_cut_settings"), font=("Segoe UI", 13, "bold"), text_color="#E91E63").pack(anchor="w", padx=15, pady=(10, 5))
+        
+        self.cut_method_var = tk.StringVar(value=self.settings.get("cut_method", "download_then_cut"))
+        
+        # Option 1: Direct
+        r_c1 = ctk.CTkFrame(grp_cut, fg_color="transparent")
+        r_c1.pack(fill="x", padx=10, pady=2)
+        ctk.CTkRadioButton(r_c1, text=self.T("opt_cut_direct"), variable=self.cut_method_var, value="direct_cut").pack(side="left", padx=10)
+        ctk.CTkLabel(r_c1, text=self.T("desc_cut_direct"), font=("Segoe UI", 10), text_color="gray").pack(side="left", padx=10)
+        
+        # Option 2: Download then Cut
+        r_c2 = ctk.CTkFrame(grp_cut, fg_color="transparent")
+        r_c2.pack(fill="x", padx=10, pady=2)
+        ctk.CTkRadioButton(r_c2, text=self.T("opt_cut_download"), variable=self.cut_method_var, value="download_then_cut").pack(side="left", padx=10)
+        ctk.CTkLabel(r_c2, text=self.T("desc_cut_download"), font=("Segoe UI", 10), text_color="gray").pack(side="left", padx=10)
 
         # --- GROUP 3: SYSTEM ---
         grp_sys = ctk.CTkFrame(scroll)
@@ -1101,14 +1150,34 @@ class YoutubeDownloaderApp(ctk.CTk):
     # CUT/TRIM CONTROLS
     # ==========================
     def on_main_cut_toggle(self):
+        # [LOGIC] When Cut is enabled, AUTO UNCHECK Start/End so user can edit time immediately
+        if self.cut_var.get():
+            self.start_chk_var.set(False)
+            self.end_chk_var.set(False)
+        else:
+            # Optional: Reset to checked when disabled? Or keep last state?
+            # User wants "uncheck when enabled", doesn't specify reverse.
+            pass
+            
         self.toggle_cut_inputs()
+
+        # [UI] Update Download Button Text Immediately
+        if self.cut_var.get():
+             self.download_btn.configure(text=self.T("btn_start_cut"))
+        else:
+             self.download_btn.configure(text=self.T("btn_download"))
 
     def toggle_cut_inputs(self):
         state = "normal" if self.cut_var.get() else "disabled"
         self.start_chk.configure(state=state)
         self.end_chk.configure(state=state)
-        self.start_entry.configure(state=state if self.cut_var.get() and not self.start_chk_var.get() else "disabled")
-        self.end_entry.configure(state=state if self.cut_var.get() and not self.end_chk_var.get() else "disabled")
+        
+        # Update TimeSpinbox states
+        start_state = state if self.cut_var.get() and not self.start_chk_var.get() else "disabled"
+        self.start_entry.configure(state=start_state)
+        
+        end_state = state if self.cut_var.get() and not self.end_chk_var.get() else "disabled"
+        self.end_entry.configure(state=end_state)
     
     def monitor_clipboard(self):
         """Monitor clipboard for auto-paste"""
@@ -1172,6 +1241,7 @@ class YoutubeDownloaderApp(ctk.CTk):
             
             # Cut info
             "cut_mode": self.cut_var.get(),
+            "cut_method": self.settings.get("cut_method", "download_then_cut"), # Pass method
             "start_time": self._parse_time(self.start_entry.get()) if self.cut_var.get() else 0,
             "end_time": self._parse_time(self.end_entry.get()) if self.cut_var.get() else 0,
             
@@ -1337,11 +1407,11 @@ class YoutubeDownloaderApp(ctk.CTk):
         def on_cancel():
             dialog.destroy()
         
-        ctk.CTkButton(btn_frame, text="🔧 Try Chrome Cookies", command=on_try_chrome,
+        ctk.CTkButton(btn_frame, text=self.T("cookie_try_chrome"), command=on_try_chrome,
                      fg_color="#4CAF50", hover_color="#388E3C", width=150).pack(side="left", padx=5)
-        ctk.CTkButton(btn_frame, text="⚙ Go to Settings", command=on_goto_settings,
+        ctk.CTkButton(btn_frame, text=self.T("cookie_goto_settings"), command=on_goto_settings,
                      fg_color="#2196F3", hover_color="#1976D2", width=130).pack(side="left", padx=5)
-        ctk.CTkButton(btn_frame, text="✕ Close", command=on_cancel,
+        ctk.CTkButton(btn_frame, text=self.T("btn_close"), command=on_cancel,
                      fg_color="gray", hover_color="#616161", width=80).pack(side="left", padx=5)
         
         # Wait for result
@@ -1360,7 +1430,8 @@ class YoutubeDownloaderApp(ctk.CTk):
         self.update_cookie_indicator()
         
         # Show status
-        self.status_label.configure(text=f"Retrying with {browser.capitalize()} cookies...", 
+        # Show status
+        self.status_label.configure(text=self.T("status_retrying_cookie").format(browser.capitalize()), 
                                    text_color="#FF9800")
         
         # Retry download
@@ -1427,31 +1498,32 @@ class YoutubeDownloaderApp(ctk.CTk):
         show_extra = False
         show_param = False
         show_browse = False  # Show file browse button
-        
+        show_time = False    # Show time inputs (Start/End)
+
         # Actions that need file input (sub, cover)
         if act in ["soft_sub", "hard_sub"]:
             show_extra = True
             show_browse = True
-            self.lbl_extra.configure(text=self.T("tool_lbl_sub") + " (File .srt/.ass)", text_color=t["accent"])
+            self.lbl_extra.configure(text=self.T("tool_lbl_sub_fmt"), text_color=t["accent"])
             self.tool_extra_var.set("")
         elif act == "cover":
             show_extra = True
             show_browse = True
-            self.lbl_extra.configure(text=self.T("tool_lbl_img") + " (File .jpg/.png)", text_color=t["accent"])
+            self.lbl_extra.configure(text=self.T("tool_lbl_img_fmt"), text_color=t["accent"])
             self.tool_extra_var.set("")
         
         # Actions that need time range
         elif act == "fast_cut":
             show_extra = True
-            self.lbl_extra.configure(text=self.T("tool_lbl_time") + " (HH:MM:SS - HH:MM:SS)", text_color=t["accent"])
+            self.lbl_extra.configure(text=self.T("tool_lbl_time_range"), text_color=t["accent"])
             self.tool_extra_var.set("00:00:00 - 00:00:10")
         elif act == "to_gif":
             show_extra = True
-            self.lbl_extra.configure(text="Time Range (HH:MM:SS - HH:MM:SS)", text_color=t["accent"])
+            self.lbl_extra.configure(text=self.T("tool_lbl_time_range"), text_color=t["accent"])
             self.tool_extra_var.set("00:00:00 - 00:00:05")
         elif act == "gif_to_video":
             show_param = True
-            self.lbl_extra.configure(text="Output Format")
+            self.lbl_extra.configure(text=self.T("tool_lbl_out_fmt"))
             self.cbo_rot.configure(values=["mp4", "webm", "avi"])
             self.cbo_rot.set("mp4")
         
@@ -1471,18 +1543,20 @@ class YoutubeDownloaderApp(ctk.CTk):
         elif act == "compress":
             show_param = True
             self.lbl_extra.configure(text=self.T("tool_lbl_quality"))
-            self.cbo_rot.configure(values=["High (CRF 23)", "Medium (CRF 28)", "Low (CRF 32)"])
-            self.cbo_rot.set("Medium (CRF 28)")
+            self.cbo_rot.configure(values=[self.T("val_comp_med"), self.T("val_comp_high"), self.T("val_comp_low")])
+            self.cbo_rot.set(self.T("val_comp_med"))
             
         elif act == "extract_au":
             show_param = True
             self.lbl_extra.configure(text=self.T("tool_lbl_out_cfg"))
             self.cbo_rot.configure(values=[
-                "Original (Copy Stream)", 
-                "MP3 - 192k (Standard)", "MP3 - 320k (High)", 
-                "AAC - 256k (M4A)", "WAV - Lossless"
+                self.T("val_au_mp3_std"), 
+                self.T("val_au_original"), 
+                self.T("val_au_mp3_high"), 
+                self.T("val_au_aac"), 
+                self.T("val_au_wav")
             ])
-            self.cbo_rot.set("MP3 - 192k (Standard)")
+            self.cbo_rot.set(self.T("val_au_mp3_std"))
             
         elif act == "conv_sub":
              show_param = True
@@ -1625,6 +1699,10 @@ class YoutubeDownloaderApp(ctk.CTk):
         self.settings["proxy_url"] = self.proxy_var.get()
         self.settings["geo_bypass_country"] = self.geo_var.get()
         
+        # [CUT SETTINGS]
+        if hasattr(self, 'cut_method_var'):
+            self.settings["cut_method"] = self.cut_method_var.get()
+        
         # Handle Display Vars if they exist (were created in settings tab), else fallback to internal vars or defaults
         if hasattr(self, 'browser_display_var'):
             self.settings["browser_source"] = self.browser_display_var.get().lower()
@@ -1741,7 +1819,7 @@ class YoutubeDownloaderApp(ctk.CTk):
 
     def _prompt_restart_for_settings(self):
         """Ask user if they want to restart app after changing theme/language"""
-        if messagebox.askyesno(self.T("pop_confirm"), "Restart app to apply changes?\nKhởi động lại để áp dụng thay đổi?"):
+        if messagebox.askyesno(self.T("pop_confirm"), self.T("msg_restart_confirm")):
             self.restart_app()
 
     def restart_app(self, save_first=False):
@@ -1774,32 +1852,32 @@ class YoutubeDownloaderApp(ctk.CTk):
             if self.end_chk_var.get(): e_sec = 999999
             
             if s_sec == -1 or e_sec == -1:
-                messagebox.showerror(self.T("pop_error"), "Invalid time format!\nEx: 1:30, 2:0, 01:15:30")
+                messagebox.showerror(self.T("pop_error"), self.T("msg_err_time_fmt"))
                 return False
 
             if s_sec >= e_sec:
-                messagebox.showerror(self.T("pop_error"), "End time must be greater than start time.")
+                messagebox.showerror(self.T("pop_error"), self.T("msg_err_time_order"))
                 return False
                 
             raw_dur = getattr(self, 'fetched_duration', 0)
             if raw_dur and raw_dur > 0:
                 if s_sec >= raw_dur:
-                    messagebox.showerror(self.T("pop_error"), f"Start time ({s_sec}s) exceeds video duration ({raw_dur}s)!")
+                    messagebox.showerror(self.T("pop_error"), self.T("msg_err_start_exceed").format(s_sec, raw_dur))
                     return False
                 if not self.end_chk_var.get() and e_sec > raw_dur:
-                     messagebox.showwarning(self.T("pop_warning"), f"End time exceeds video duration ({raw_dur}s).\nSystem will cut to end.")
+                     messagebox.showwarning(self.T("pop_warning"), self.T("msg_warn_end_exceed").format(raw_dur))
 
         vid_ext = self.video_ext_var.get()
         codec = self.codec_display_var.get()
         if vid_ext == "webm" and "h264" in codec.lower():
-            if messagebox.askyesno(self.T("pop_warning"), "Container 'WebM' works poorly with 'H.264'.\n\nSwitch Codec to 'Auto'?"):
+            if messagebox.askyesno(self.T("pop_warning"), self.T("msg_warn_webm_h264")):
                 self.codec_display_var.set(self.T("val_codec_auto"))
                 self.settings["video_codec_priority"] = "auto"
             else:
                 return False 
         
         if self.type_var.get() == "sub_only" and not self.selected_sub_langs:
-            messagebox.showerror(self.T("pop_error"), "Please select at least one subtitle language!")
+            messagebox.showerror(self.T("pop_error"), self.T("msg_err_no_sub_lang"))
             self.show_subtitle_selector()
             return False
             
@@ -1808,7 +1886,17 @@ class YoutubeDownloaderApp(ctk.CTk):
     def start_download_thread(self):
         if not self._validate_download_inputs(): return
         self.is_cancelled = False
-        self.download_btn.configure(state="disabled", text="STARTING...", fg_color="#7f8c8d") 
+        
+        # [UI] Check if Cut Mode - If so, show "Start Cutting" state immediately
+        if self.cut_var.get():
+             self.download_btn.configure(state="disabled", text=self.T("status_starting"), fg_color="#7f8c8d")
+             # Immediate Feedback for Cut
+             self.progress_bar.configure(mode="determinate", progress_color="#FF9800")
+             self.progress_bar.set(1.0)
+             self.status_label.configure(text=self.T("msg_cut_wait"), text_color="#e65100")
+        else:
+             self.download_btn.configure(state="disabled", text=self.T("status_starting"), fg_color="#7f8c8d") 
+        
         self.cancel_btn.configure(state="normal", fg_color="#d32f2f")
         threading.Thread(target=self.run_download_process, daemon=True).start()
 
@@ -1819,7 +1907,7 @@ class YoutubeDownloaderApp(ctk.CTk):
         
         def ask():
             ans = simpledialog.askstring(self.T("chk_playlist"), 
-                                       f"Playlist has {total_count} videos.\nEnter range (e.g. 1-10, 5, all):",
+                                       self.T("msg_playlist_range").format(total_count),
                                        parent=self)
             result["val"] = ans
             ev.set()
@@ -1871,37 +1959,67 @@ class YoutubeDownloaderApp(ctk.CTk):
         
         self.after(0, lambda: self.download_btn.configure(text=self.T("status_downloading")))
 
+        # 2. PROCESS TASKS
+        # [FIX UI] Shared context to allow callbacks to know current task state
+        ctx = {'is_cut': False}
+
         def on_progress_callback(per, msg):
-            val = per / 100.0
+            if self.is_cancelled: return
+
+            # [STRICT FIX] If in Cut Mode, BLINDLY overwrite everything
+            if ctx['is_cut']:
+                # Force strictly 100% and Wait message
+                self.progress_bar.configure(mode="determinate", progress_color="#FF9800") 
+                try: self.progress_bar.stop() 
+                except: pass
+                self.progress_bar.set(1.0)
+                
+                # Check if it was the magic message, otherwise default to translated wait
+                final_msg = self.T("msg_cut_wait")
+                self.after(0, lambda: self.status_label.configure(text=final_msg, text_color="#e65100"))
+                return
+
+            if msg == "MSG_CUT_WAIT":
+                 # Fallback catch
+                 msg = self.T("msg_cut_wait")
+                 self.progress_bar.configure(progress_color="#FF9800", mode="determinate")
+                 self.progress_bar.set(1.0) 
             
-            # [SPECIALIZED PROGRESS] Change color for Cutting/Post-processing
-            if "Cut" in msg or "Process" in msg or "xử lý" in msg.lower():
-                self.progress_bar.configure(progress_color="#FF9800") # Orange for processing
-                if per == 0:
+            elif "Cut" in msg or "Process" in msg or "xử lý" in msg.lower():
+                 self.progress_bar.configure(progress_color="#FF9800") # Orange for processing
+                 if per == 0:
                      self.progress_bar.configure(mode="indeterminate")
                      try: self.progress_bar.start()
                      except: pass
-                else:
+                 else:
                      self.progress_bar.configure(mode="determinate")
                      try: self.progress_bar.stop() 
                      except: pass
-                     self.progress_bar.set(val)
+                     self.progress_bar.set(per/100.0)
             else:
-                # Normal Download
-                self.progress_bar.configure(progress_color=self.current_theme["accent"], mode="determinate")
-                try: self.progress_bar.stop()
-                except: pass
-                self.progress_bar.set(val)
+                 # Normal Download
+                 self.progress_bar.configure(progress_color=self.current_theme["accent"], mode="determinate")
+                 try: self.progress_bar.stop()
+                 except: pass
+                 self.progress_bar.set(per/100.0)
 
-            self.after(0, lambda: self.status_label.configure(text=msg, text_color=self.current_theme["accent"]))
+            # Only update text if NOT in cut mode (Cut mode handled above)
+            if not ctx['is_cut']:
+                self.after(0, lambda: self.status_label.configure(text=msg, text_color=self.current_theme["accent"]))
         
         def on_status_callback(msg):
-            self.after(0, lambda: self.status_label.configure(text=msg, text_color="#e65100"))
+            # [STRICT FIX] Ignore status updates in Cut Mode unless we want them
+            if ctx['is_cut']:
+                 # Force Wait Message
+                 final_msg = self.T("msg_cut_wait")
+                 self.after(0, lambda: self.status_label.configure(text=final_msg, text_color="#e65100"))
+                 return
+
+            if msg == "MSG_CUT_WAIT": msg = self.T("msg_cut_wait")
+            self.after(0, lambda: self.status_label.configure(text=msg, text_color=("#e65100" if msg == self.T("msg_cut_wait") else self.current_theme["accent"])))
 
         callbacks = {'on_progress': on_progress_callback, 'on_status': on_status_callback}
 
-        # 2. PROCESS TASKS
-        # Use a while loop to allow dynamic expansion of playlist tasks
         task_queue = list(tasks)
         processed_tasks = 0
         
@@ -1911,10 +2029,11 @@ class YoutubeDownloaderApp(ctk.CTk):
                 break
                 
             task = task_queue.pop(0) # Get first
+            ctx['is_cut'] = task.get("cut_mode", False) # Update context for callbacks
             
             # --- PLAYLIST EXPANSION LOGIC ---
             if task.get("is_plist", False):
-                on_status_callback("Analyzing Playlist...")
+                on_status_callback(self.T("status_analyzing_playlist"))
                 pl_info = self.engine.extract_playlist_flat(task["url"])
                 
                 if pl_info and 'entries' in pl_info:
@@ -1959,12 +2078,12 @@ class YoutubeDownloaderApp(ctk.CTk):
                     for t in reversed(new_subtasks):
                          task_queue.insert(0, t)
                          
-                    on_status_callback(f"Expanded: {len(new_subtasks)} items")
+                    on_status_callback(self.T("status_expanded_playlist").format(len(new_subtasks)))
                     continue # Skip downloading the playlist URL itself
             # --------------------------------
             
             # Normal Download
-            on_status_callback(f"Downloading: {task.get('title','...')}")
+            on_status_callback(self.T("status_downloading_file").format(task.get('title','...')))
             success, msg, history_item = self.engine.download_single(task, self.settings, callbacks)
             
             if self.is_cancelled: break
@@ -1978,7 +2097,7 @@ class YoutubeDownloaderApp(ctk.CTk):
                         self.after(0, lambda p=file_path: self._safe_open_file_on_main_thread(p))
             else:
                 fail_count += 1
-                failed_links.append(f"{task.get('title', 'Unknown')} -> {msg}")
+                failed_links.append(f"{task.get('title', self.T('val_unknown'))} -> {msg}")
                 
                 # Smart Cookie Helper: Detect if error might need cookies
                 if self._should_suggest_cookies(msg):
@@ -2665,19 +2784,19 @@ class YoutubeDownloaderApp(ctk.CTk):
     def open_update_link(self): webbrowser.open("https://github.com/tsufuwu/tsufutube_downloader")
 
     def on_window_map(self, event):
-        """Called when window is mapped (shown/restored). Stop tray icon if active."""
-        if self.state() == 'normal' and getattr(self, 'tray_icon', None):
-            try:
-                self.tray_icon.stop()
-                self.tray_icon = None
-            except Exception as e:
-                print(f"Error stopping tray: {e}")
+        """Called when window is mapped (shown/restored). Do NOT stop tray icon (Persistent Mode)."""
+        pass
+        # if self.state() == 'normal' and getattr(self, 'tray_icon', None):
+        #     try:
+        #         self.tray_icon.stop()
+        #         self.tray_icon = None
+        #     except Exception as e:
+        #         print(f"Error stopping tray: {e}")
 
     def on_close(self):
         if self.settings.get("minimize_to_tray", False):
             self.withdraw()
-            # Run tray in separate thread to keep main loop active
-            threading.Thread(target=self._run_tray_icon, daemon=True).start()
+            # Tray is already running in background if enabled
         else:
             self.destroy()
 
@@ -2697,9 +2816,10 @@ class YoutubeDownloaderApp(ctk.CTk):
 
             def after_click(icon, query):
                 if str(query) == "Open":
-                    icon.stop()
+                    # icon.stop() # persist
                     # Schedule UI update on main thread
                     self.after(0, self.deiconify)
+                    self.after(0, self.lift)
                 elif str(query) == "Exit":
                     icon.stop()
                     self.after(0, self.quit)

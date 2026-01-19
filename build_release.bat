@@ -24,7 +24,7 @@ if exist "ffmpeg\ffmpeg.exe" (
     echo [INFO] Found bundled FFmpeg in 'ffmpeg\'. It will be included in the build.
     set "FFMPEG_BUNDLED=1"
 ) else (
-    echo [WARNING] proper FFmpeg folder not found. Building "Lite" version (System FFmpeg required).
+    echo [WARNING] proper FFmpeg folder not found. Building "Lite" version ^(System FFmpeg required^).
 )
 
 :: Check PyInstaller
@@ -47,13 +47,18 @@ if not exist "assets\icon.ico" (
 )
 
 :: Prepare Arguments based on FFmpeg presence
-set "FFMPEG_ARGS="
+:: Prepare Arguments based on FFmpeg presence
+:: OPTIMIZATION: We do NOT use --add-binary to bundle into _internal.
+:: Instead, we will manually copy it to the ROOT folder after build.
+:: This avoids duplication and makes the Portable folder cleaner.
+set "COPY_FFMPEG=0"
+set "FFMPEG_ARGS=" 
+
 if "%FFMPEG_BUNDLED%"=="1" (
-    set FFMPEG_ARGS=--add-binary="ffmpeg\ffmpeg.exe;ffmpeg"
-    if exist "ffmpeg\ffprobe.exe" (
-        echo [INFO] Found ffprobe.exe, including it too.
-        set FFMPEG_ARGS=--add-binary="ffmpeg\ffmpeg.exe;ffmpeg" --add-binary="ffmpeg\ffprobe.exe;ffmpeg"
-    )
+    echo [INFO] Found local FFmpeg. It will be copied to root folder ^(Portable Mode^).
+    set "COPY_FFMPEG=1"
+) else (
+    echo [INFO] Building LITE version ^(FFmpeg will be excluded^).
 )
 
 :: --- 2. CLEANUP ---
@@ -76,11 +81,10 @@ python -m PyInstaller --onedir ^
   --add-data="fetcher.py;." ^
   %FFMPEG_ARGS% ^
   --hidden-import=PIL._tkinter_finder ^
-  --hidden-import=selenium ^
-  --hidden-import=yt_dlp ^
   --exclude-module=matplotlib ^
   --exclude-module=numpy ^
   --exclude-module=pandas ^
+  --exclude-module=selenium ^
   --noconsole ^
   --clean ^
   "Tsufutube downloader.py"
@@ -106,11 +110,12 @@ copy /Y "data.py" "dist\Tsufutube-Downloader\" >nul 2>&1
 xcopy /E /I /Y "dist\Tsufutube-Downloader\_internal\assets" "dist\Tsufutube-Downloader\assets" >nul 2>&1
 
 :: Copy ffmpeg folder manually if it was bundled (to root for consistency, though internal has it)
-if "%FFMPEG_BUNDLED%"=="1" (
-    xcopy /E /I /Y "dist\Tsufutube-Downloader\_internal\ffmpeg" "dist\Tsufutube-Downloader\ffmpeg" >nul 2>&1
-    echo      ffmpeg bundled - OK
+:: Copy ffmpeg folder manually FROM SOURCE if it was bundled
+if "%COPY_FFMPEG%"=="1" (
+    xcopy /E /I /Y "ffmpeg" "dist\Tsufutube-Downloader\ffmpeg" >nul 2>&1
+    echo      ffmpeg copied to root - OK
 ) else (
-    echo      ffmpeg NOT bundled (Lite mode)
+    echo      ffmpeg NOT bundled ^(Lite mode^)
 )
 
 echo      assets copied - OK

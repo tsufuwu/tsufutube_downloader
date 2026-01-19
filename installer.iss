@@ -53,6 +53,5 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 ; Run the app after install
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent
 
-; [Registry] is optional since the app handles registry itself (utils.py)
-; But we can add it here if we want Inno Setup to manage it purely. 
-; For now, let the app manage it via the UI checkbox to avoid conflicts.
+; Install FFmpeg via PowerShell (Winget)
+Filename: "powershell.exe"; Parameters: "-Command ""winget install -e --id Gyan.FFmpeg --accept-source-agreements --accept-package-agreements; $env:Path = [System.Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path','User')"""; Description: "Install FFmpeg (Video Processing Support)"; Flags: postinstall waituntilterminated checkablealone

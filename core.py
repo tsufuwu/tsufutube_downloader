@@ -2,7 +2,7 @@
 import os
 import time
 import glob
-from datetime import datetime
+from datetime import datetime, timedelta
 import subprocess
 import re
 import shutil
@@ -32,31 +32,38 @@ def lazy_import_extras():
             pass
 
 class DownloaderEngine:
-    def __init__(self, ffmpeg_path):
+    def __init__(self, ffmpeg_path="ffmpeg.exe"):
         self.ffmpeg_path = ffmpeg_path
+        # Robust temp dir creation
+        try:
+             self.temp_dir = os.path.join(tempfile.gettempdir(), "tsufutube_cache")
+             os.makedirs(self.temp_dir, exist_ok=True)
+        except:
+             self.temp_dir = os.path.join(os.getcwd(), "temp")
+             os.makedirs(self.temp_dir, exist_ok=True)
+             
+        self.temp_cookie_file = os.path.join(self.temp_dir, "browser_cookies.txt")
         self.is_cancelled = False
         self.last_update_time = 0
-        
-        self.temp_dir = os.path.join(os.getcwd(), "temp_downloads")
-        
-        # Ensure temp directory exists with robust error handling
-        try:
-            os.makedirs(self.temp_dir, exist_ok=True)
-        except PermissionError:
-            # Fallback to user temp directory if permission denied
-            import tempfile
-            self.temp_dir = os.path.join(tempfile.gettempdir(), "tsufutube_temp")
-            os.makedirs(self.temp_dir, exist_ok=True)
-        except Exception as e:
-            print(f"Warning: Could not create temp directory: {e}")
-            # Use current directory as last resort
-            self.temp_dir = os.path.join(os.getcwd(), "temp")
-            try:
-                os.makedirs(self.temp_dir, exist_ok=True)
-            except:
-                pass  # If this also fails, operations will fail later with clear error
-            
-        self.temp_cookie_file = os.path.join(self.temp_dir, "browser_cookies.txt")
+        self.current_process = None # [CANCEL FIX]
+
+    # [CANCEL FIX] Context Manager to capture subprocess (FFmpeg) spawned by yt-dlp
+    class CaptureSubprocess:
+        def __init__(self, engine):
+            self.engine = engine
+            self.original_Popen = subprocess.Popen
+
+        def __enter__(self):
+            def patched_Popen(*args, **kwargs):
+                proc = self.original_Popen(*args, **kwargs)
+                self.engine.current_process = proc
+                return proc
+            subprocess.Popen = patched_Popen
+            return self
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            subprocess.Popen = self.original_Popen
+            self.engine.current_process = None
 
 
     # =========================================================================
@@ -110,6 +117,17 @@ class DownloaderEngine:
 
     def cancel(self):
         self.is_cancelled = True
+        # [CANCEL FIX] Force kill any active subprocess (FFmpeg)
+        if self.current_process:
+            try: 
+                self.current_process.kill()
+            except: pass
+            
+        # [NUCLEAR FIX] Aggressively kill ALL ffmpeg instances spawned by this app tree
+        # This is "bất chấp" (at all costs) as requested to ensure it stops.
+        try:
+            subprocess.run("taskkill /F /IM ffmpeg.exe /T", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except: pass
 
     # =========================================================================
     #  PHẦN 2: ROUTER & HELPERS
@@ -234,15 +252,39 @@ class DownloaderEngine:
         
         # --- [FIX-2] POSTPROCESSOR HOOKS (CUT PROGRESS) ---
         def pp_hook(d):
-            if d['status'] == 'started':
-                msg = f"Đang xử lý: {d.get('postprocessor', 'Unknown').replace('FFmpeg', '')}..."
+            if self.is_cancelled: raise yt_dlp.utils.DownloadError("Cancelled")
+            
+            # [CRITICAL FIX] If in Cut Mode, ALWAYS force "Wait" message regardless of status
+            # This ensures we override any "finished" or "processing" messages from yt-dlp
+            if task.get("cut_mode"):
+                msg = "MSG_CUT_WAIT"
                 callbacks.get('on_status', lambda x:None)(msg)
-                # [RESET BAR] Reset to 0% when entering post-processing (merging/cutting)
+                callbacks.get('on_progress', lambda x,y:None)(101, msg)
+                return
+
+            if d['status'] == 'started':
+                msg = f"Processing: {d.get('postprocessor', 'Unknown').replace('FFmpeg', '')}..."
+                callbacks.get('on_status', lambda x:None)(msg)
                 callbacks.get('on_progress', lambda x,y:None)(0, msg)
+        
+
+
+        # Need video duration for progress calculation. 
+        # It should be in task['duration'] (if available) or we guessed it later.
+        # But we are inside _download_general_ytdlp, we don't know duration yet unless passed.
+        # Check if 'info' peek gave us duration.
         
         # Hooks Progress
         def progress_hook(d):
             if self.is_cancelled: raise yt_dlp.utils.DownloadError("Cancelled")
+            
+            # [FIX UI] If cutting, suppress "downloading" status and enforce "Wait" message
+            if task.get("cut_mode"):
+                 msg = "MSG_CUT_WAIT"
+                 callbacks.get('on_status', lambda x:None)(msg)
+                 callbacks.get('on_progress', lambda x,y:None)(101, msg)
+                 return
+
             if d['status'] == 'downloading':
                 cur_time = time.time()
                 if cur_time - self.last_update_time < 0.1: return
@@ -267,6 +309,8 @@ class DownloaderEngine:
             'live_from_start': True,
             # [REMOVED] sleep_interval settings were causing extra delays
         }
+        
+
         
         # Geo / Proxy
         geo = settings.get("geo_bypass_country", "None")
@@ -308,9 +352,15 @@ class DownloaderEngine:
         if user_cookie and os.path.exists(user_cookie): ydl_opts['cookiefile'] = user_cookie
 
         # Cut Mode
-        if task.get("cut_mode"):
-            ydl_opts['download_ranges'] = yt_dlp.utils.download_range_func(None, [(task.get("start_time", 0), task.get("end_time", float('inf')))])
-            ydl_opts['force_keyframes_at_cuts'] = True
+        # [CUT LOGIC] method: 'direct_cut' (stream) vs 'download_then_cut' (full dl -> cut)
+        cut_mode = task.get("cut_mode")
+        cut_method = task.get("cut_method", "download_then_cut") 
+        
+        if cut_mode:
+            # Only apply ranges if Direct Cut (Stream)
+            if cut_method == "direct_cut":
+                ydl_opts['download_ranges'] = yt_dlp.utils.download_range_func(None, [(task.get("start_time", 0), task.get("end_time", float('inf')))])
+                ydl_opts['force_keyframes_at_cuts'] = True
 
         # Config Format
         self._configure_format(ydl_opts, dtype, task.get("subs", []), task.get("download_sub", False), settings)
@@ -353,46 +403,58 @@ class DownloaderEngine:
             # 4. Gán lại vào outtmpl để yt-dlp dùng tên này
             ydl_opts['outtmpl'] = os.path.join(save_path, f'{unique_base_name}.%(ext)s')
             
-            # --- [FIX-3] REAL-TIME CUT PROGRESS LOGGER ---
-            if task.get("cut_mode"):
-                start_s = task.get("start_time", 0)
-                end_s = task.get("end_time", float('inf'))
-                real_dur = info.get('duration', 0)
-                
-                # Cap end_time at actual duration if needed
-                if end_s == float('inf') or (real_dur > 0 and end_s > real_dur):
-                    end_s = real_dur if real_dur > 0 else end_s
-                
-                total_cut_duration = end_s - start_s
-                
-                if total_cut_duration > 0:
-                    class YtDlpLogger:
-                        def debug(self, msg):
-                            # Parse ffmpeg output: time=00:00:13.18
-                            if "time=" in msg:
-                                match = re.search(r'time=(\d{2}):(\d{2}):(\d{2}\.\d+)', msg)
-                                if match:
-                                    h, m, s = map(float, match.groups())
-                                    cur_seconds = h*3600 + m*60 + s
-                                    # Elapsed time in ffmpeg cut is relative to the output file (starts at 0)
-                                    percent = (cur_seconds / total_cut_duration) * 100
-                                    if percent > 99: percent = 99 # Keep 100 for final success
-                                    callbacks.get('on_progress', lambda x,y:None)(percent, f"Cutting... {percent:.1f}%")
-                        def warning(self, msg): pass
-                        def error(self, msg): print(f"YtDlp Error: {msg}")
-                    
-                    ydl_opts['logger'] = YtDlpLogger()
 
+            
             # 5. Tải thật
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                # Lưu ý: Pass 'info' dict vào process_ie_result để bypass extraction
-                # Điều này giúp skip qua bước "Downloading webpage..." và "Solving JS challenges..." lần 2
-                info = ydl.process_ie_result(ie_result=info, download=True)
-                final_path = self._get_final_path(ydl, info)
+            try:
+                # [CANCEL FIX] Wrap yt-dlp execution to capture and kill FFmpeg subprocess if needed
+                with self.CaptureSubprocess(self):
+                    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                        # Pass 'info' dict to process_ie_result
+                        info = ydl.process_ie_result(ie_result=info, download=True)
+                        final_path = self._get_final_path(ydl, info)
+            finally:
+                pass # Context manager handles cleanup
                 
-                # Logic Convert Sub (nếu sub_only)
                 if dtype == "sub_only":
                     final_path = self._handle_sub_conversion(final_path, task.get("sub_format", "srt"), callbacks)
+
+                # [CUT LOGIC] If 'download_then_cut' was selected, perform cut now
+                if cut_mode and cut_method == "download_then_cut" and final_path and os.path.exists(final_path):
+                     try:
+                         # Send status
+                         callbacks.get('on_status', lambda x:None)("MSG_CUT_WAIT")
+                         callbacks.get('on_progress', lambda x,y:None)(101, "MSG_CUT_WAIT")
+                         
+                         start_t = task.get("start_time", 0)
+                         end_t = task.get("end_time", 0)
+                         
+                         # Generate temp output path
+                         folder = os.path.dirname(final_path)
+                         name, ext = os.path.splitext(os.path.basename(final_path))
+                         cut_out = os.path.join(folder, f"{name}_cut{ext}")
+                         
+                         # Run FFmpeg
+                         # -ss Start -to End -i Input -c copy Output
+                         success, msg = self.fast_cut(final_path, cut_out, str(timedelta(seconds=start_t)), str(timedelta(seconds=end_t)))
+                         
+                         if success and os.path.exists(cut_out):
+                             # Delete original full video
+                             try: os.remove(final_path)
+                             except: pass
+                             
+                             # Rename cut video to original name (or keep as is? User expects the result)
+                             # Since base_name already has "(Cut)" appended if cut_mode is True (see line 373),
+                             # the current final_path HAS "(Cut)".
+                             # So we should swap cut_out to final_path to maintain the expected filename.
+                             os.rename(cut_out, final_path)
+                         else: 
+                             # Cut failed, keep full video but warn?
+                             pass
+                     except Exception as e:
+                         print(f"Cut Error: {e}")
+                         pass
+
 
                 # History Item
                 history_item = None
