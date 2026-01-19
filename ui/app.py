@@ -98,8 +98,26 @@ class YoutubeDownloaderApp(ctk.CTk):
             self._close_splash_screen()
             self.show_first_run_language_dialog()
             
+import shutil
+
         # Initialize Engine
-        self.engine = DownloaderEngine(resource_path(os.path.join("ffmpeg", "ffmpeg.exe")))
+        # [FFMPEG HYBRID CHECKS]
+        # 1. Bundled (Priority)
+        bundled_ffmpeg = resource_path(os.path.join("ffmpeg", "ffmpeg.exe"))
+        if os.path.exists(bundled_ffmpeg):
+            ffmpeg_final_path = bundled_ffmpeg
+        else:
+            # 2. System PATH
+            system_ffmpeg = shutil.which("ffmpeg")
+            if system_ffmpeg:
+                ffmpeg_final_path = system_ffmpeg
+                print(f"Info: Using system FFmpeg at {system_ffmpeg}")
+            else:
+                # 3. None found
+                ffmpeg_final_path = "ffmpeg" # Fallback string, will likely fail in engine but allow app init
+                print("Warning: FFmpeg not found!")
+                
+        self.engine = DownloaderEngine(ffmpeg_final_path)
         
         # [OPTIMIZED] Initialize FastFetcher for video info
         self.fetcher = get_fetcher()
