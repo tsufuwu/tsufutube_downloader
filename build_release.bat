@@ -63,6 +63,10 @@ if "%FFMPEG_BUNDLED%"=="1" (
 
 :: --- 2. CLEANUP ---
 echo [2/5] Cleaning up old builds...
+:: Fix PermissionError: Kill running instances first
+taskkill /F /IM "Tsufutube-Downloader.exe" /T >nul 2>&1
+timeout /t 1 /nobreak >nul
+
 if exist "build" rmdir /s /q "build"
 if exist "dist" rmdir /s /q "dist"
 if exist "*.spec" del "*.spec"
@@ -79,8 +83,16 @@ python -m PyInstaller --onedir ^
   --add-data="data.py;." ^
   --add-data="splash_screen.py;." ^
   --add-data="fetcher.py;." ^
+  --add-data="bilibili_api.py;." ^
+  --add-data="time_spinbox.py;." ^
   %FFMPEG_ARGS% ^
   --hidden-import=PIL._tkinter_finder ^
+  --hidden-import=yt_dlp ^
+  --hidden-import=yt_dlp.extractor ^
+  --hidden-import=yt_dlp.downloader ^
+  --hidden-import=yt_dlp.postprocessor ^
+  --hidden-import=yt_dlp.utils ^
+  --collect-all=yt_dlp ^
   --exclude-module=matplotlib ^
   --exclude-module=numpy ^
   --exclude-module=pandas ^
@@ -105,6 +117,8 @@ echo [4/5] Copying additional files to dist folder...
 copy /Y "splash_screen.py" "dist\Tsufutube-Downloader\" >nul 2>&1
 copy /Y "fetcher.py" "dist\Tsufutube-Downloader\" >nul 2>&1
 copy /Y "data.py" "dist\Tsufutube-Downloader\" >nul 2>&1
+copy /Y "bilibili_api.py" "dist\Tsufutube-Downloader\" >nul 2>&1
+copy /Y "time_spinbox.py" "dist\Tsufutube-Downloader\" >nul 2>&1
 
 :: Copy assets
 xcopy /E /I /Y "dist\Tsufutube-Downloader\_internal\assets" "dist\Tsufutube-Downloader\assets" >nul 2>&1

@@ -18,6 +18,14 @@ if "--splash" in sys.argv:
         pass
     sys.exit(0)
 
+# --- FORCE YT-DLP IMPORT (Critical for PyInstaller bundling) ---
+try:
+    import yt_dlp
+    import yt_dlp.utils
+    import yt_dlp.extractor
+except ImportError:
+    pass  # Will be handled later if truly missing
+
 # [OPTIMIZATION] Single Instance Logic - Run BEFORE any heavy imports
 if __name__ == "__main__":
     # --- LAUNCH SPLASH SCREEN IMMEDIATELY ---

@@ -19,8 +19,9 @@ def lazy_import_ytdlp():
     global yt_dlp
     if yt_dlp is None:
         try:
-            import yt_dlp
+            import yt_dlp as _yt_dlp
             import yt_dlp.utils
+            yt_dlp = _yt_dlp  # CRITICAL: Assign to global
         except ImportError as e:
             raise ImportError(f"Missing 'yt_dlp'. Run: pip install -U yt-dlp\nError: {e}")
 
@@ -155,11 +156,39 @@ class DownloaderEngine:
             "brave": ["BraveSoftware", "Brave-Browser", "User Data"]
         }
         
+        # DEBUG LOGGING (FIXED PATH)
+        def log_debug(msg):
+             try:
+                 root = os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) else os.getcwd()
+                 log_path = os.path.join(root, "cookie_debug.log")
+                 with open(log_path, "a", encoding="utf-8") as f:
+                     f.write(f"{datetime.now()}: {msg}\n")
+             except: pass
+
+        log_debug(f"Starting cookie extraction for {browser_name}")
+        
         try:
-            cmd = [sys.executable, "-m", "yt_dlp", "--cookies-from-browser", browser_name, "--cookies", self.temp_cookie_file, "--skip-download", "https://www.youtube.com", "--quiet"]
-            subprocess.run(cmd, check=True, creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0)
-            if os.path.exists(self.temp_cookie_file): return self.temp_cookie_file
-        except:
+            lazy_import_ytdlp()
+            # DIRECT LIBRARY CALL (Fixes Frozen App Issue)
+            opts = {
+                'cookiesfrombrowser': (browser_name,),
+                'cookiefile': self.temp_cookie_file,
+                'skip_download': True,
+                'quiet': True,
+                'extract_flat': True,
+                'no_warnings': True
+            }
+            log_debug(f"Using opts: {opts}")
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                ydl.extract_info("https://www.youtube.com", download=False)
+            
+            if os.path.exists(self.temp_cookie_file): 
+                log_debug("Cookie file created successfully.")
+                return self.temp_cookie_file
+            else:
+                log_debug("Cookie file NOT created.")
+        except Exception as e:
+            log_debug(f"Method 1 Error: {e}")
             # Method 2: Shadow Copy Workaround (Bypass "Database Locked")
             print("Standard cookie extraction failed. Trying Shadow Copy workaround...")
             callbacks.get('on_status', lambda x: None)(f"Đang thử Shadow Copy (Fix lỗi Lock)...")
@@ -217,8 +246,16 @@ class DownloaderEngine:
                 # Note: path must point to the *User Data* root, not Default
                 shadow_arg = f"{b_key}:{bg_root}"
                 
-                cmd = [sys.executable, "-m", "yt_dlp", "--cookies-from-browser", shadow_arg, "--cookies", self.temp_cookie_file, "--skip-download", "https://www.youtube.com", "--quiet"]
-                subprocess.run(cmd, check=True, creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0)
+                opts = {
+                    'cookiesfrombrowser': (shadow_arg,),
+                    'cookiefile': self.temp_cookie_file,
+                    'skip_download': True,
+                    'quiet': True,
+                    'extract_flat': True,
+                    'no_warnings': True
+                }
+                with yt_dlp.YoutubeDL(opts) as ydl:
+                    ydl.extract_info("https://www.youtube.com", download=False)
                 
                 if os.path.exists(self.temp_cookie_file): return self.temp_cookie_file
                 
@@ -430,9 +467,16 @@ class DownloaderEngine:
         print(f"[DEBUG] Cookie - cookie_file: '{user_cookie_file}'")
         
         if user_cookie_file and os.path.exists(user_cookie_file):
-            ydl_opts['cookiefile'] = user_cookie_file
-            print(f"[DEBUG] Cookie - Using cookiefile: {ydl_opts['cookiefile']}")
-            # Skip browser extraction if file is provided
+            # [FIX] Copy cookie file to temp to avoid PermissionError 
+            # (yt-dlp tries to SAVE cookies back which fails on restricted paths like Desktop)
+            try:
+                temp_cookie_copy = os.path.join(self.temp_dir, "user_cookies_copy.txt")
+                shutil.copy2(user_cookie_file, temp_cookie_copy)
+                ydl_opts['cookiefile'] = temp_cookie_copy
+                print(f"[DEBUG] Cookie - Using temp cookiefile: {ydl_opts['cookiefile']}")
+            except Exception as e:
+                print(f"[DEBUG] Cookie - Copy failed: {e}, using original")
+                ydl_opts['cookiefile'] = user_cookie_file
         else:
             # Method 2: Direct browser extraction (fallback if no file)
             browser_source = settings.get("browser_source", "none")
@@ -593,6 +637,21 @@ class DownloaderEngine:
 
         except Exception as e:
             if self.is_cancelled: return False, "Đã hủy", None
+            
+            # DEBUG: Write full error to file for diagnosis
+            try:
+                import traceback
+                root = os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) else os.getcwd()
+                log_path = os.path.join(root, "download_error.log")
+                with open(log_path, "a", encoding="utf-8") as f:
+                    f.write(f"\n{'='*50}\n")
+                    f.write(f"TIME: {datetime.now()}\n")
+                    f.write(f"URL: {task.get('url', 'N/A')}\n")
+                    f.write(f"ERROR TYPE: {type(e).__name__}\n")
+                    f.write(f"ERROR MSG: {str(e)}\n")
+                    f.write(f"TRACEBACK:\n{traceback.format_exc()}\n")
+            except: pass
+            
             err_type, friendly_msg = self._classify_error(e)
             return False, friendly_msg, None
 
