@@ -695,6 +695,15 @@ class DownloaderEngine:
 
     # --- OTHER PLATFORM DOWNLOADERS ---
     def _download_instagram(self, task, settings, callbacks):
+        # ATTEMPT 1: Try yt-dlp first (More robust, supports cookies)
+        callbacks.get('on_status', lambda x:None)("Instagram: Trying robust method (yt-dlp)...")
+        success, msg, data = self._download_general_ytdlp(task, settings, callbacks)
+        if success: return True, msg, data
+        
+        # ATTEMPT 2: Fallback to Instaloader
+        print(f"yt-dlp failed for Instagram: {msg}. Falling back to Instaloader...")
+        callbacks.get('on_status', lambda x:None)("Instagram: Falling back to legacy method...")
+        
         lazy_import_extras()
         if not instaloader: return False, "Thiếu instaloader", None
         try:
@@ -705,7 +714,7 @@ class DownloaderEngine:
             url = task["url"]
             shortcode = url.split("/reel/")[-1].split("/")[0] if "/reel/" in url else url.split("/p/")[-1].split("/")[0]
             if not shortcode: return False, "Link lỗi", None
-            callbacks.get('on_status', lambda x:None)("Instagram Downloading...")
+            callbacks.get('on_status', lambda x:None)("Instagram Downloading (Legacy)...")
             post = instaloader.Post.from_shortcode(L.context, shortcode)
             L.download_post(post, target=shortcode)
             target_dir = os.path.join(self.temp_dir, shortcode)
