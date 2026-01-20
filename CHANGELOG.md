@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-01-21
+
+### ✨ Added
+- **Auto-Update System**: Automatically checks for updates on startup
+  - Full changelog display in update dialog
+  - "Skip this version" option
+  - "Auto-check for updates" toggle in Settings
+  - Supports both Portable (.zip) and Installer (.exe) versions
+  - Download progress indicator
+- **Check Update button** in header for manual update checking
+
+### 🎨 Improved
+- Reorganized header layout: Donate/GitHub buttons moved under slogan
+- Faster first-run language selection dialog (minimal UI)
+
+### 🔧 Technical
+- New `updater.py` module for update management
+- Added `APP_VERSION` constant for semantic versioning
+
+---
+
 ## [1.0.0] - 2026-01-16
 
 ### 🎉 Initial Release

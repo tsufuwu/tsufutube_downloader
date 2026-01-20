@@ -86,6 +86,16 @@ class FastFetcher:
                 info, error = self._fetch_bilibili_api(url, timeout)
                 if info:
                     print(f"[Fetcher] Tier 1 SUCCESS: {info.get('title', '?')[:40]}")
+            elif platform == "DOUYIN":
+                print(f"[Fetcher] Tier 1: Douyin API...")
+                info, error = self._fetch_douyin_api(url)
+                if info:
+                    print(f"[Fetcher] Tier 1 SUCCESS: {info.get('title', '?')[:40]}")
+            elif platform == "DAILYMOTION":
+                print(f"[Fetcher] Tier 1: Dailymotion API...")
+                info, error = self._fetch_dailymotion_api(url)
+                if info:
+                    print(f"[Fetcher] Tier 1 SUCCESS: {info.get('title', '?')[:40]}")
         else:
             print(f"[Fetcher] Playlist detected, skipping Tier 1")
         
@@ -127,6 +137,10 @@ class FastFetcher:
             return "TIKTOK"
         if "twitter.com" in url_lower or "x.com" in url_lower:
             return "TWITTER"
+        if "douyin.com" in url_lower:
+            return "DOUYIN"
+        if "dailymotion.com" in url_lower or "dai.ly" in url_lower:
+            return "DAILYMOTION"
         return "OTHER"
     
     def _add_to_cache(self, url, info):
@@ -232,6 +246,60 @@ class FastFetcher:
         except Exception as e:
             return None, str(e)
     
+    def _fetch_douyin_api(self, url):
+        """
+        Fetch Douyin info using custom DouyinDownloader (Playwright).
+        """
+        try:
+            # Lazy import to avoid Playwright overhead if not used
+            try:
+                from douyin_api import DouyinDownloader
+            except ImportError:
+                return None, "Module douyin_api missing"
+                
+            dd = DouyinDownloader(headless=True)
+            info, error = dd.get_video_info(url)
+            
+            if info:
+                # Normalize duration_string
+                d = info.get('duration', 0)
+                info['duration_string'] = f"{int(d) // 60}:{int(d) % 60:02d}" if d else "??:??"
+                info['extractor_key'] = "Douyin"
+                info['_fetcher_tier'] = 1
+                return info, None
+            
+            return None, error or "Douyin fetch failed"
+            
+        except Exception as e:
+            return None, f"Douyin Fetch Error: {str(e)}"
+
+        except Exception as e:
+            return None, f"Douyin Fetch Error: {str(e)}"
+
+    def _fetch_dailymotion_api(self, url):
+        """
+        Fetch Dailymotion info using Dailymotion Metadata API.
+        """
+        try:
+            try:
+                from dailymotion_api import DailymotionDownloader
+            except ImportError:
+                return None, "Module dailymotion_api missing"
+                
+            dm = DailymotionDownloader()
+            info, error = dm.get_video_info(url)
+            
+            if info:
+                 # Clean up data for Fetcher format
+                 d = info.get('duration', 0)
+                 info['duration_string'] = f"{int(d) // 60}:{int(d) % 60:02d}" if d else "??:??"
+                 info['_fetcher_tier'] = 1
+                 return info, None
+            
+            return None, error or "Dailymotion fetch failed"
+        except Exception as e:
+            return None, f"Dailymotion Fetch Error: {str(e)}"
+
     # =========================================================================
     # TIER 2: yt-dlp extract_flat
     # =========================================================================

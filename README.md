@@ -5,7 +5,7 @@
 ### Powerful Multi-Platform Video Downloader
 *Download videos from 1000+ websites with advanced features*
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/yourusername/tsufutube-downloader/releases)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/yourusername/tsufutube-downloader/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](https://github.com/yourusername/tsufutube-downloader)
 [![Downloads](https://img.shields.io/github/downloads/yourusername/tsufutube-downloader/total.svg)](https://github.com/yourusername/tsufutube-downloader/releases)

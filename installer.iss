@@ -1,9 +1,9 @@
 ; Tsufutube Downloader - Inno Setup Script
-; Version 1.0
+; Version 1.1.0
 ; Build the installer by right-clicking this file and selecting "Compile"
 
 #define MyAppName "Tsufutube Downloader"
-#define MyAppVersion "1.0"
+#define MyAppVersion "1.1.0"
 #define MyAppPublisher "Tsufutube"
 #define MyAppURL "https://github.com/tsufuwu/tsufutube_downloader"
 #define MyAppExeName "Tsufutube-Downloader.exe"

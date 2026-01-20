@@ -15,10 +15,11 @@ from ui.widget import Tooltip  # Keeping Tooltip, removing others
 from core import DownloaderEngine
 from fetcher import get_fetcher
 from data import THEMES, TIPS_CONTENT
-from constant import APP_TITLE, APP_SLOGAN, REPO_API_URL, VERSION
+from constant import APP_TITLE, APP_SLOGAN, REPO_API_URL, VERSION, APP_VERSION
 from utils import resource_path, time_to_seconds, set_autostart_registry
 from config import ConfigManager
 from time_spinbox import TimeSpinbox
+from updater import UpdateChecker, check_update_async
 
 # Lazy Import Wrapper for Tray
 HAS_PYSTRAY = False
@@ -223,6 +224,7 @@ class YoutubeDownloaderApp(ctk.CTk):
         self.codec_var = tk.StringVar(value=self.settings.get("video_codec_priority", "auto"))
         self.codec_display_var = tk.StringVar(value="Auto") # Init later
         self.thumb_embed_var = tk.BooleanVar(value=self.settings.get("embed_thumbnail", False))
+        self.auto_update_var = tk.BooleanVar(value=self.settings.get("auto_check_update", True))
 
         # --- 4. DRAW UI ---
         self.setup_tabs()
@@ -370,19 +372,25 @@ class YoutubeDownloaderApp(ctk.CTk):
                 ctk.CTkLabel(self.header_frame, image=img, text="").pack(side="left", padx=15)
         except Exception: pass
         
-        # Center Title
+        # Center Title with Donate/GitHub below
         title_box = ctk.CTkFrame(self.header_frame, fg_color="transparent")
         title_box.pack(side="left", fill="x", expand=True)
         ctk.CTkLabel(title_box, text=APP_TITLE, font=("Segoe UI", 32, "bold"), text_color="#ce2d35").pack()
         ctk.CTkLabel(title_box, text=APP_SLOGAN, font=("Segoe UI", 12, "italic"), text_color="gray").pack()
         
-        # Right Links
+        # Donate, GitHub, Bug Report buttons in a row below slogan
+        social_row = ctk.CTkFrame(title_box, fg_color="transparent")
+        social_row.pack(pady=(5, 0))
+        ctk.CTkButton(social_row, text="☕ Donate", command=self.open_donate_link, height=25, fg_color="#FFDD00", text_color="black", hover_color="#FFEA00", width=70).pack(side="left", padx=2)
+        ctk.CTkButton(social_row, text="⬇ GitHub", command=self.open_update_link, height=25, fg_color="black", hover_color="#333", width=70).pack(side="left", padx=2)
+        ctk.CTkButton(social_row, text="🐛 Bug", command=self.show_bug_report, height=25, fg_color="#E53935", hover_color="#C62828", width=60).pack(side="left", padx=2)
+        
+        # Right Links: HDSD, Update, Refresh
         link_box = ctk.CTkFrame(self.header_frame, fg_color="transparent")
         link_box.pack(side="right")
         
-        ctk.CTkButton(link_box, text="☕ Donate", command=self.open_donate_link, height=25, fg_color="#FFDD00", text_color="black", hover_color="#FFEA00", width=80).pack(pady=2)
-        ctk.CTkButton(link_box, text="⬇ GitHub", command=self.open_update_link, height=25, fg_color="black", hover_color="#333", width=80).pack(pady=2)
         ctk.CTkButton(link_box, text=self.T("btn_guide"), command=self.show_user_guide, height=25, fg_color="#FF5722", hover_color="#E64A19", width=80).pack(pady=2)
+        ctk.CTkButton(link_box, text=self.T("btn_check_update"), command=lambda: self.check_for_updates(manual=True), height=25, fg_color="#4CAF50", hover_color="#388E3C", width=80).pack(pady=2)
         ctk.CTkButton(link_box, text="🔄 Refresh", command=lambda: self.restart_app(save_first=True), height=25, fg_color="#009688", hover_color="#00796B", width=80).pack(pady=2)
 
     def create_widgets(self, parent):
@@ -846,6 +854,7 @@ class YoutubeDownloaderApp(ctk.CTk):
         ctk.CTkCheckBox(r_tog, text=self.T("adv_metadata"), variable=self.meta_var).pack(anchor="w", pady=2)
         ctk.CTkCheckBox(r_tog, text=self.T("chk_tray"), variable=self.tray_var).pack(anchor="w", pady=2)
         ctk.CTkCheckBox(r_tog, text=self.T("chk_startup"), variable=self.startup_var).pack(anchor="w", pady=2)
+        ctk.CTkCheckBox(r_tog, text=self.T("chk_auto_update"), variable=self.auto_update_var).pack(anchor="w", pady=2)
         
         # --- ACTION BAR ---
         act_bar = ctk.CTkFrame(scroll, fg_color="transparent")
@@ -970,11 +979,21 @@ class YoutubeDownloaderApp(ctk.CTk):
         if self.settings.get("run_on_on_startup", True):
             threading.Thread(target=set_autostart_registry, args=(True,), daemon=True).start()
 
+    def _extract_url(self, text):
+        """Smartly extract the first valid URL from text"""
+        if not text: return ""
+        # Regex for http/https URLs
+        match = re.search(r'(https?://[^\s]+)', text)
+        if match:
+            return match.group(1)
+        return text.strip()
+
     def paste_link(self):
         try:
             txt = self.clipboard_get()
-            self.url_var.set(txt)
-            self.start_check_link_info(txt)
+            clean_url = self._extract_url(txt)
+            self.url_var.set(clean_url)
+            self.start_check_link_info(clean_url)
         except: pass
 
     # ==========================
@@ -986,9 +1005,13 @@ class YoutubeDownloaderApp(ctk.CTk):
         if self.is_fetching_info:
             self._cancel_fetch()
         else:
-            url = self.url_var.get().strip()
-            if url:
-                self._start_fetch(url)
+            raw_url = self.url_var.get()
+            clean_url = self._extract_url(raw_url)
+            if clean_url != raw_url:
+                self.url_var.set(clean_url)
+            
+            if clean_url:
+                self._start_fetch(clean_url)
     
     def _cancel_fetch(self):
         """Cancel current fetch and reset UI"""
@@ -1199,7 +1222,7 @@ class YoutubeDownloaderApp(ctk.CTk):
         """Compatibility wrapper for _start_fetch"""
         url = url.strip()
         if url:
-            self._start_fetch(url)
+             self._start_fetch(url)
     
     # ==========================
     # CUT/TRIM CONTROLS
@@ -1239,9 +1262,14 @@ class YoutubeDownloaderApp(ctk.CTk):
         try:
             curr = self.clipboard_get()
             if curr != self.last_clipboard and self.auto_paste_var.get():
-                if re.match(r'^(https?://)', curr.strip()):
-                    self.url_var.set(curr)
-                    self._start_fetch(curr)
+                clean_curr = self._extract_url(curr)
+                # Only paste if regex actually found a URL
+                if clean_curr and clean_curr != curr.strip(): 
+                     self.url_var.set(clean_curr)
+                     self._start_fetch(clean_curr)
+                elif re.match(r'^(https?://)', curr.strip()):
+                     self.url_var.set(curr)
+                     self._start_fetch(curr)
             self.last_clipboard = curr
         except:
             pass
@@ -1512,7 +1540,9 @@ class YoutubeDownloaderApp(ctk.CTk):
         )
         if file_path and os.path.exists(file_path):
             self.settings["cookie_file"] = file_path
+            self.cookies_path_var.set(file_path) # [FIX] UI update
             self.config_mgr.save_settings(self.settings)
+            self.update_cookie_indicator() # [FIX] Visual update
             messagebox.showinfo(self.T("pop_success"), self.T("msg_cookie_loaded"))
     
     def _should_suggest_cookies(self, error_msg):
@@ -1530,7 +1560,8 @@ class YoutubeDownloaderApp(ctk.CTk):
             'premium', 'requires login', 'sign in', 'login required',
             'unavailable', 'not available',
             'cookies', 'authentication', 'dpapi', 'failed to decrypt',
-            'yêu cầu đăng nhập', 'cần cookie'  # Vietnamese messages
+            'yêu cầu đăng nhập', 'cần cookie',  # Vietnamese messages
+            'no video formats', 'no video found', 'fallback found nothing' # [FIX] Catch generic/Dailymotion errors
         ]
         
         result = any(keyword in error_lower for keyword in cookie_keywords)
@@ -1815,6 +1846,7 @@ class YoutubeDownloaderApp(ctk.CTk):
         self.settings["run_on_startup"] = self.startup_var.get()
         self.settings["auto_paste"] = self.auto_paste_var.get()
         self.settings["show_finished_popup"] = self.show_popup_var.get()
+        self.settings["auto_check_update"] = self.auto_update_var.get()
         
         # 4. Capture Advanced (Vars in setup_settings but also used globally)
         self.settings["split_chapters"] = self.chapter_var.get()
@@ -2064,7 +2096,15 @@ class YoutubeDownloaderApp(ctk.CTk):
                  # Fallback catch
                  msg = self.T("msg_cut_wait")
                  self.progress_bar.configure(progress_color="#FF9800", mode="determinate")
-                 self.progress_bar.set(1.0) 
+                 self.progress_bar.set(1.0)
+            
+            elif msg == "SPECIAL_MECHANISM":
+                 # [UI] Blue Full Load for Fallback
+                 self.progress_bar.configure(progress_color="#2196F3", mode="determinate")
+                 try: self.progress_bar.stop()
+                 except: pass
+                 self.progress_bar.set(1.0)
+                 # Message is updated via on_status below, so we just set the visual state here 
             
             elif "Cut" in msg or "Process" in msg or "xử lý" in msg.lower():
                  self.progress_bar.configure(progress_color="#FF9800") # Orange for processing
@@ -2661,23 +2701,222 @@ class YoutubeDownloaderApp(ctk.CTk):
         return None
 
     def safe_check_updates(self, manual=False):
-        try:
-            req = urllib.request.Request(REPO_API_URL, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req, timeout=5) as u: 
-                data = json.loads(u.read().decode())
-                latest = data.get("tag_name", "")
-                html_url = data.get("html_url", "")
-                self.after(0, lambda: self.show_update_popup(latest, html_url, manual))
-        except Exception as e:
-            if manual:
-                self.after(0, lambda: messagebox.showerror("Error", f"Update check failed: {e}"))
+        """Legacy method - redirects to new check_for_updates"""
+        self.check_for_updates(manual=manual)
+    
+    def check_for_updates(self, manual=False):
+        """Check for updates using the new UpdateChecker module."""
+        # Skip if auto-check is disabled and this is not manual
+        if not manual and not self.settings.get("auto_check_update", True):
+            return
+        
+        def on_update_result(release_info, checker):
+            if release_info:
+                # Check if this version was skipped
+                skipped_version = self.settings.get("skipped_version", "")
+                if not manual and skipped_version == release_info['version']:
+                    print(f"Skipping update notification for {skipped_version}")
+                    return
                 
+                # Show update dialog on main thread
+                self.after(0, lambda: self.show_update_dialog(release_info, checker))
+            elif manual:
+                self.after(0, lambda: messagebox.showinfo(
+                    self.T("pop_info"), 
+                    self.T("update_no_update").format(APP_VERSION)
+                ))
+        
+        # Run check in background
+        check_update_async(on_update_result, self.config_mgr)
+    
+    def show_update_dialog(self, release_info, checker):
+        """Show update available dialog with full changelog."""
+        dialog = ctk.CTkToplevel(self)
+        dialog.title(self.T("update_title"))
+        dialog.geometry("550x500")
+        dialog.transient(self)
+        dialog.grab_set()
+        
+        # Center on parent
+        dialog.update_idletasks()
+        x = self.winfo_x() + (self.winfo_width() - 550) // 2
+        y = self.winfo_y() + (self.winfo_height() - 500) // 2
+        dialog.geometry(f"+{x}+{y}")
+        
+        # Header
+        header = ctk.CTkFrame(dialog, fg_color="transparent")
+        header.pack(fill="x", padx=20, pady=(20, 10))
+        
+        ctk.CTkLabel(header, text="🎉 " + self.T("update_new_version").format(release_info['version']), 
+                    font=("Segoe UI", 18, "bold"), text_color="#4CAF50").pack(anchor="w")
+        ctk.CTkLabel(header, text=self.T("update_current_version").format(APP_VERSION), 
+                    font=("Segoe UI", 12), text_color="gray").pack(anchor="w")
+        
+        # Changelog section
+        ctk.CTkLabel(dialog, text=self.T("update_changelog"), 
+                    font=("Segoe UI", 12, "bold")).pack(anchor="w", padx=20, pady=(10, 5))
+        
+        changelog_frame = ctk.CTkFrame(dialog)
+        changelog_frame.pack(fill="both", expand=True, padx=20, pady=5)
+        
+        changelog_text = ctk.CTkTextbox(changelog_frame, wrap="word", font=("Consolas", 11))
+        changelog_text.pack(fill="both", expand=True, padx=5, pady=5)
+        changelog_text.insert("1.0", release_info.get('body', 'No changelog available.'))
+        changelog_text.configure(state="disabled")
+        
+        # Skip checkbox
+        skip_var = tk.BooleanVar(value=False)
+        ctk.CTkCheckBox(dialog, text=self.T("update_chk_no_remind"), 
+                       variable=skip_var).pack(anchor="w", padx=20, pady=10)
+        
+        # Progress bar (hidden initially)
+        self.update_progress_var = tk.DoubleVar(value=0)
+        self.update_progress_bar = ctk.CTkProgressBar(dialog, variable=self.update_progress_var)
+        self.update_progress_label = ctk.CTkLabel(dialog, text="", font=("Segoe UI", 10))
+        
+        # Buttons
+        btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+        btn_frame.pack(fill="x", padx=20, pady=(10, 20))
+        
+        def on_update_now():
+            # Show progress UI
+            self.update_progress_bar.pack(fill="x", padx=20, pady=5)
+            self.update_progress_label.pack(pady=5)
+            self.update_progress_label.configure(text=self.T("update_downloading").format(0))
+            
+            def progress_callback(progress, downloaded, total):
+                self.after(0, lambda: self._update_download_progress(progress))
+            
+            def do_download():
+                try:
+                    url = checker.get_download_url()
+                    if not url:
+                        self.after(0, lambda: messagebox.showerror(
+                            self.T("pop_error"), self.T("update_download_failed")))
+                        return
+                    
+                    filepath = checker.download_update(url, progress_callback)
+                    if filepath:
+                        self.after(0, lambda: self._apply_update(filepath, checker, dialog))
+                    else:
+                        self.after(0, lambda: messagebox.showerror(
+                            self.T("pop_error"), self.T("update_download_failed")))
+                except Exception as e:
+                    self.after(0, lambda: messagebox.showerror(
+                        self.T("pop_error"), f"{self.T('update_download_failed')}\n{e}"))
+            
+            threading.Thread(target=do_download, daemon=True).start()
+        
+        def on_skip():
+            if skip_var.get():
+                self.settings["skipped_version"] = release_info['version']
+                self.config_mgr.save_settings(self.settings)
+            dialog.destroy()
+        
+        def on_later():
+            dialog.destroy()
+        
+        def on_github():
+            webbrowser.open(release_info.get('html_url', 'https://github.com/tsufuwu/tsufutube_downloader/releases'))
+            dialog.destroy()
+        
+        ctk.CTkButton(btn_frame, text=self.T("update_btn_now"), command=on_update_now,
+                     fg_color="#4CAF50", hover_color="#388E3C", width=100).pack(side="left", padx=3)
+        ctk.CTkButton(btn_frame, text="⬇ GitHub", command=on_github,
+                     fg_color="black", hover_color="#333", width=80).pack(side="left", padx=3)
+        ctk.CTkButton(btn_frame, text=self.T("update_btn_skip"), command=on_skip,
+                     fg_color="#FF9800", hover_color="#F57C00", width=100).pack(side="left", padx=3)
+        ctk.CTkButton(btn_frame, text=self.T("update_btn_later"), command=on_later,
+                     fg_color="#757575", hover_color="#616161", width=100).pack(side="left", padx=3)
+    
+    def _update_download_progress(self, progress):
+        """Update the download progress bar."""
+        self.update_progress_var.set(progress / 100)
+        self.update_progress_label.configure(text=self.T("update_downloading").format(int(progress)))
+    
+    def _apply_update(self, filepath, checker, dialog):
+        """Apply the downloaded update."""
+        self.update_progress_label.configure(text=self.T("update_applying"))
+        
+        if checker.is_portable:
+            script = checker.apply_portable_update(filepath)
+        else:
+            script = checker.apply_installer_update(filepath)
+        
+        if script:
+            messagebox.showinfo(self.T("pop_info"), self.T("update_restart_required"))
+            dialog.destroy()
+            checker.run_update_script(script)
+            self.quit()
+        else:
+            messagebox.showerror(self.T("pop_error"), self.T("update_download_failed"))
+
+    # Legacy method for backward compatibility
     def show_update_popup(self, latest, url, manual):
+        """Legacy popup - kept for compatibility but redirects to new system."""
         if latest and latest != VERSION:
              if messagebox.askyesno("Update", self.T("msg_update_avail").format(latest, VERSION)):
                  webbrowser.open(url)
         elif manual:
              messagebox.showinfo("Update", self.T("msg_latest").format(VERSION))
+    
+    def show_bug_report(self):
+        """Show bug report dialog."""
+        import urllib.parse
+        import platform
+        
+        dialog = ctk.CTkToplevel(self)
+        dialog.title(self.T("bug_title"))
+        dialog.geometry("450x400")
+        dialog.transient(self)
+        dialog.grab_set()
+        
+        # Center
+        dialog.update_idletasks()
+        x = self.winfo_x() + (self.winfo_width() - 450) // 2
+        y = self.winfo_y() + (self.winfo_height() - 400) // 2
+        dialog.geometry(f"+{x}+{y}")
+        
+        # Header
+        ctk.CTkLabel(dialog, text="🐛 " + self.T("bug_title"), 
+                    font=("Segoe UI", 18, "bold")).pack(pady=(20, 10))
+        ctk.CTkLabel(dialog, text=self.T("bug_desc"), 
+                    font=("Segoe UI", 11), text_color="gray").pack(padx=20)
+        
+        # Subject
+        ctk.CTkLabel(dialog, text=self.T("bug_subject"), 
+                    font=("Segoe UI", 11, "bold")).pack(anchor="w", padx=20, pady=(15, 5))
+        subject_entry = ctk.CTkEntry(dialog, width=400, placeholder_text="e.g. App crashes when...")
+        subject_entry.pack(padx=20)
+        
+        # Description
+        ctk.CTkLabel(dialog, text=self.T("bug_details"), 
+                    font=("Segoe UI", 11, "bold")).pack(anchor="w", padx=20, pady=(15, 5))
+        desc_text = ctk.CTkTextbox(dialog, width=400, height=120)
+        desc_text.pack(padx=20)
+        desc_text.insert("1.0", self.T("bug_template"))
+        
+        def send_report():
+            subject = subject_entry.get().strip() or "Bug Report"
+            body = desc_text.get("1.0", "end").strip()
+            
+            # Add system info
+            sys_info = f"\n\n--- System Info ---\nApp Version: {VERSION}\nOS: {platform.system()} {platform.release()}\nPython: {platform.python_version()}"
+            full_body = body + sys_info
+            
+            # Create mailto URL
+            mailto = f"mailto:phultt.it@gmail.com?subject={urllib.parse.quote(f'[Tsufutube Bug] {subject}')}&body={urllib.parse.quote(full_body)}"
+            webbrowser.open(mailto)
+            dialog.destroy()
+        
+        # Buttons
+        btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+        btn_frame.pack(pady=20)
+        
+        ctk.CTkButton(btn_frame, text=self.T("bug_send"), command=send_report,
+                     fg_color="#4CAF50", hover_color="#388E3C", width=120).pack(side="left", padx=5)
+        ctk.CTkButton(btn_frame, text=self.T("btn_close"), command=dialog.destroy,
+                     fg_color="#757575", hover_color="#616161", width=100).pack(side="left", padx=5)
 
     def _safe_open_file_on_main_thread(self, path):
         if path and os.path.exists(path):

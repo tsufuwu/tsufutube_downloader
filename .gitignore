@@ -1,4 +1,3 @@
-# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -7,93 +6,42 @@ __pycache__/
 build/
 develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
+downloads/*.egg-info/
 .installed.cfg
 *.egg
 MANIFEST
 
-# Virtual Environment
-venv/
-ENV/
-env/
-.venv
-
-# PyInstaller
-*.manifest
-*.spec
-
-# Unit test / coverage
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
-.pytest_cache/
-
-# IDEs
-.vscode/
+# User-specific
 .idea/
+.vscode/
 *.swp
 *.swo
-*~
-.DS_Store
 
-# Project specific
-config/user_*.json
-cookies/
-downloads/
-*.log
-*.tmp
-temp/
-cache/
-
-# FFmpeg (if not bundled)
-ffmpeg.exe
-ffprobe.exe
-
-# Secrets & Credentials
-.env
-*.key
-*.pem
-secrets.json
-
-# OS
-Thumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-
-# Build artifacts
-*.exe
-*.msi
-*.dmg
-*.deb
-*.rpm
-
-# Backup files
-*.bak
-*.backup
-*~
-
-# Archives
-*.zip
-*.tar.gz
-*.rar
-*.7z
-
-# Temporary Download Files
+# Downloaded Media
+*.mp4
+*.mp3
+*.mkv
+*.webm
+*.m4a
+*.wav
+*.flac
 *.part
-*.vtt
-nuitka-crash-report.xml
+*.ytdl
+*.m3u8
+*.ts
+*.webp
+*.jpg
+*.png
+*.gif
+
+# Cookie files
+*.txt
+!requirements.txt
+
+# Temp & Binaries
+temp/
+logs/
+ffmpeg/
+installer_output/
+*.exe
+*.spec

@@ -8,4 +8,8 @@ instaloader>=4.10.0
 bilibili-api-python>=16.2.0
 
 # Optional but recommended
-pystray>=0.19.0 # For system tray icon
+
+# Douyin Support
+playwright>=1.41.0
+playwright-stealth>=1.0.6
+

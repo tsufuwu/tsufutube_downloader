@@ -1,0 +1,1304 @@
+
+==================================================
+TIME: 2026-01-21 03:06:44.925590
+URL: https://9gag.com/gag/aO8EYYy
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [9gag] aO8EYYy: Unable to download JSON metadata: HTTP Error 403: Forbidden (caused by <HTTPError 403: Forbidden>)
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 909, in _request_webpage
+    return self._downloader.urlopen(self._create_request(url_or_request, data, headers, query, extensions))
+           ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 4252, in urlopen
+    return self._request_director.send(req)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\common.py", line 117, in send
+    response = handler.send(request)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\_helper.py", line 194, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\common.py", line 359, in send
+    return self._send(request)
+           ~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\_requests.py", line 361, in _send
+    raise HTTPError(res, redirect_loop=max_redirects_exceeded)
+yt_dlp.networking.exceptions.HTTPError: HTTP Error 403: Forbidden
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1831, in __extract_info
+    ie_result = ie.extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 762, in extract
+    ie_result = self._real_extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\ninegag.py", line 60, in _real_extract
+    post = self._download_json(
+           ~~~~~~~~~~~~~~~~~~~^
+        'https://9gag.com/v1/post', post_id, query={
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            'id': post_id,
+            ^^^^^^^^^^^^^^
+        }, impersonate=True)['data']['post']
+        ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 1150, in download_content
+    res = getattr(self, download_handle.__name__)(url_or_request, video_id, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 1108, in download_handle
+    res = self._download_webpage_handle(
+        url_or_request, video_id, note=note, errnote=errnote, fatal=fatal, encoding=encoding,
+        data=data, headers=headers, query=query, expected_status=expected_status,
+        impersonate=impersonate, require_impersonation=require_impersonation)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 973, in _download_webpage_handle
+    urlh = self._request_webpage(url_or_request, video_id, note, errnote, fatal, data=data,
+                                 headers=headers, query=query, expected_status=expected_status,
+                                 impersonate=impersonate, require_impersonation=require_impersonation)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 922, in _request_webpage
+    raise ExtractorError(errmsg, cause=err)
+yt_dlp.utils.ExtractorError: [9gag] aO8EYYy: Unable to download JSON metadata: HTTP Error 403: Forbidden (caused by <HTTPError 403: Forbidden>)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 536, in _download_general_ytdlp
+    raise e # Other error (Network, etc)
+    ^^^^^^^
+  File "D:\Tsufutube\core.py", line 515, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [9gag] aO8EYYy: Unable to download JSON metadata: HTTP Error 403: Forbidden (caused by <HTTPError 403: Forbidden>)
+
+
+==================================================
+TIME: 2026-01-21 03:07:27.744883
+URL: https://9gag.com/gag/aO8EYYy
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [9gag] aO8EYYy: Unable to download JSON metadata: HTTP Error 403: Forbidden (caused by <HTTPError 403: Forbidden>)
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 909, in _request_webpage
+    return self._downloader.urlopen(self._create_request(url_or_request, data, headers, query, extensions))
+           ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 4252, in urlopen
+    return self._request_director.send(req)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\common.py", line 117, in send
+    response = handler.send(request)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\_helper.py", line 194, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\common.py", line 359, in send
+    return self._send(request)
+           ~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\_requests.py", line 361, in _send
+    raise HTTPError(res, redirect_loop=max_redirects_exceeded)
+yt_dlp.networking.exceptions.HTTPError: HTTP Error 403: Forbidden
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1831, in __extract_info
+    ie_result = ie.extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 762, in extract
+    ie_result = self._real_extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\ninegag.py", line 60, in _real_extract
+    post = self._download_json(
+           ~~~~~~~~~~~~~~~~~~~^
+        'https://9gag.com/v1/post', post_id, query={
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            'id': post_id,
+            ^^^^^^^^^^^^^^
+        }, impersonate=True)['data']['post']
+        ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 1150, in download_content
+    res = getattr(self, download_handle.__name__)(url_or_request, video_id, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 1108, in download_handle
+    res = self._download_webpage_handle(
+        url_or_request, video_id, note=note, errnote=errnote, fatal=fatal, encoding=encoding,
+        data=data, headers=headers, query=query, expected_status=expected_status,
+        impersonate=impersonate, require_impersonation=require_impersonation)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 973, in _download_webpage_handle
+    urlh = self._request_webpage(url_or_request, video_id, note, errnote, fatal, data=data,
+                                 headers=headers, query=query, expected_status=expected_status,
+                                 impersonate=impersonate, require_impersonation=require_impersonation)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 922, in _request_webpage
+    raise ExtractorError(errmsg, cause=err)
+yt_dlp.utils.ExtractorError: [9gag] aO8EYYy: Unable to download JSON metadata: HTTP Error 403: Forbidden (caused by <HTTPError 403: Forbidden>)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 536, in _download_general_ytdlp
+    raise e # Other error (Network, etc)
+    ^^^^^^^
+  File "D:\Tsufutube\core.py", line 515, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [9gag] aO8EYYy: Unable to download JSON metadata: HTTP Error 403: Forbidden (caused by <HTTPError 403: Forbidden>)
+
+
+==================================================
+TIME: 2026-01-21 03:10:37.810214
+URL: 7.43 K@w.Sl 09/29 teB:/ # 明月录阵容官宣 魏采薇，就借这月光，渡疾厄之苦。# 明月录 # 剧剧抖有戏  https://v.douyin.com/IKouy_Ej3X8/ 复制此链接，打开Dou音搜索，直接观看视频！
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [generic] '7.43 K@w.Sl 09/29 teB:/ # 明月录阵容官宣 魏采薇，就借这月光，渡疾厄之苦。# 明月录 # 剧剧抖有戏  https://v.douyin.com/IKouy_Ej3X8/ 复制此链接，打开Dou音搜索，直接观看视频！' is not a valid URL
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1831, in __extract_info
+    ie_result = ie.extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 762, in extract
+    ie_result = self._real_extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\generic.py", line 789, in _real_extract
+    raise ExtractorError(f'{url!r} is not a valid URL', expected=True)
+yt_dlp.utils.ExtractorError: [generic] '7.43 K@w.Sl 09/29 teB:/ # 明月录阵容官宣 魏采薇，就借这月光，渡疾厄之苦。# 明月录 # 剧剧抖有戏  https://v.douyin.com/IKouy_Ej3X8/ 复制此链接，打开Dou音搜索，直接观看视频！' is not a valid URL
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 536, in _download_general_ytdlp
+    raise e
+    ^^^
+  File "D:\Tsufutube\core.py", line 515, in _download_general_ytdlp
+    try:
+    
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [generic] '7.43 K@w.Sl 09/29 teB:/ # 明月录阵容官宣 魏采薇，就借这月光，渡疾厄之苦。# 明月录 # 剧剧抖有戏  https://v.douyin.com/IKouy_Ej3X8/ 复制此链接，打开Dou音搜索，直接观看视频！' is not a valid URL
+
+
+==================================================
+TIME: 2026-01-21 03:11:30.018146
+URL: https://9gag.com/gag/aO8EYYy?utm_source=copy_link&utm_medium=post_share
+ERROR TYPE: YoutubeDLError
+ERROR MSG: Impersonate target "chrome" is not available. Use --list-impersonate-targets to see available targets. You may be missing dependencies required to support this target.
+TRACEBACK:
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 516, in _download_general_ytdlp
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+         ~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 764, in __init__
+    raise YoutubeDLError(
+    ...<2 lines>...
+        f'You may be missing dependencies required to support this target.')
+yt_dlp.utils.YoutubeDLError: Impersonate target "chrome" is not available. Use --list-impersonate-targets to see available targets. You may be missing dependencies required to support this target.
+
+
+==================================================
+TIME: 2026-01-21 03:13:44.331217
+URL: https://img-9gag-fun.9cache.com/photo/aKGZdVj_460svav1.mp4
+ERROR TYPE: YoutubeDLError
+ERROR MSG: Impersonate target "chrome" is not available. Use --list-impersonate-targets to see available targets. You may be missing dependencies required to support this target.
+TRACEBACK:
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 522, in _download_general_ytdlp
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+         ~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 764, in __init__
+    raise YoutubeDLError(
+    ...<2 lines>...
+        f'You may be missing dependencies required to support this target.')
+yt_dlp.utils.YoutubeDLError: Impersonate target "chrome" is not available. Use --list-impersonate-targets to see available targets. You may be missing dependencies required to support this target.
+
+
+==================================================
+TIME: 2026-01-21 03:15:44.719644
+URL: https://img-9gag-fun.9cache.com/photo/aKGZdVj_460svav1.mp4
+ERROR TYPE: YoutubeDLError
+ERROR MSG: Impersonate target "chrome" is not available. Use --list-impersonate-targets to see available targets. You may be missing dependencies required to support this target.
+TRACEBACK:
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 524, in _download_general_ytdlp
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+         ~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 764, in __init__
+    raise YoutubeDLError(
+    ...<2 lines>...
+        f'You may be missing dependencies required to support this target.')
+yt_dlp.utils.YoutubeDLError: Impersonate target "chrome" is not available. Use --list-impersonate-targets to see available targets. You may be missing dependencies required to support this target.
+
+
+==================================================
+TIME: 2026-01-21 03:17:18.338253
+URL: 7.43 K@w.Sl 09/29 teB:/ # 明月录阵容官宣 魏采薇，就借这月光，渡疾厄之苦。# 明月录 # 剧剧抖有戏  https://v.douyin.com/IKouy_Ej3X8/ 复制此链接，打开Dou音搜索，直接观看视频！
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [generic] '7.43 K@w.Sl 09/29 teB:/ # 明月录阵容官宣 魏采薇，就借这月光，渡疾厄之苦。# 明月录 # 剧剧抖有戏  https://v.douyin.com/IKouy_Ej3X8/ 复制此链接，打开Dou音搜索，直接观看视频！' is not a valid URL
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1831, in __extract_info
+    ie_result = ie.extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 762, in extract
+    ie_result = self._real_extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\generic.py", line 789, in _real_extract
+    raise ExtractorError(f'{url!r} is not a valid URL', expected=True)
+yt_dlp.utils.ExtractorError: [generic] '7.43 K@w.Sl 09/29 teB:/ # 明月录阵容官宣 魏采薇，就借这月光，渡疾厄之苦。# 明月录 # 剧剧抖有戏  https://v.douyin.com/IKouy_Ej3X8/ 复制此链接，打开Dou音搜索，直接观看视频！' is not a valid URL
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 536, in _download_general_ytdlp
+    raise e # Other error (Network, etc)
+    ^^^^^^^
+  File "D:\Tsufutube\core.py", line 515, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [generic] '7.43 K@w.Sl 09/29 teB:/ # 明月录阵容官宣 魏采薇，就借这月光，渡疾厄之苦。# 明月录 # 剧剧抖有戏  https://v.douyin.com/IKouy_Ej3X8/ 复制此链接，打开Dou音搜索，直接观看视频！' is not a valid URL
+
+
+==================================================
+TIME: 2026-01-21 03:19:31.736962
+URL: 7.43 K@w.Sl 09/29 teB:/ # 明月录阵容官宣 魏采薇，就借这月光，渡疾厄之苦。# 明月录 # 剧剧抖有戏  https://v.douyin.com/IKouy_Ej3X8/ 复制此链接，打开Dou音搜索，直接观看视频！
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [generic] '7.43 K@w.Sl 09/29 teB:/ # 明月录阵容官宣 魏采薇，就借这月光，渡疾厄之苦。# 明月录 # 剧剧抖有戏  https://v.douyin.com/IKouy_Ej3X8/ 复制此链接，打开Dou音搜索，直接观看视频！' is not a valid URL
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1831, in __extract_info
+    ie_result = ie.extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 762, in extract
+    ie_result = self._real_extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\generic.py", line 789, in _real_extract
+    raise ExtractorError(f'{url!r} is not a valid URL', expected=True)
+yt_dlp.utils.ExtractorError: [generic] '7.43 K@w.Sl 09/29 teB:/ # 明月录阵容官宣 魏采薇，就借这月光，渡疾厄之苦。# 明月录 # 剧剧抖有戏  https://v.douyin.com/IKouy_Ej3X8/ 复制此链接，打开Dou音搜索，直接观看视频！' is not a valid URL
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 536, in _download_general_ytdlp
+    raise e # Other error (Network, etc)
+    ^^^^^^^
+  File "D:\Tsufutube\core.py", line 515, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [generic] '7.43 K@w.Sl 09/29 teB:/ # 明月录阵容官宣 魏采薇，就借这月光，渡疾厄之苦。# 明月录 # 剧剧抖有戏  https://v.douyin.com/IKouy_Ej3X8/ 复制此链接，打开Dou音搜索，直接观看视频！' is not a valid URL
+
+
+==================================================
+TIME: 2026-01-21 03:19:58.779312
+URL: https://v.douyin.com/IKouy_Ej3X8
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1831, in __extract_info
+    ie_result = ie.extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 762, in extract
+    ie_result = self._real_extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\tiktok.py", line 1395, in _real_extract
+    raise ExtractorError(
+        'Fresh cookies (not necessarily logged in) are needed',
+        expected=not self._get_cookies(self._WEBPAGE_HOST).get('s_v_web_id'))
+yt_dlp.utils.ExtractorError: [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 536, in _download_general_ytdlp
+    raise e # Other error (Network, etc)
+    ^^^^^^^
+  File "D:\Tsufutube\core.py", line 515, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1852, in __extract_info
+    return self.process_ie_result(ie_result, download, extra_info)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1931, in process_ie_result
+    return self.extract_info(
+           ~~~~~~~~~~~~~~~~~^
+        ie_result['url'], download,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        ie_key=ie_result.get('ie_key'),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        extra_info=extra_info)
+        ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed
+
+
+==================================================
+TIME: 2026-01-21 03:20:28.789381
+URL: https://v.douyin.com/IKouy_Ej3X8
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1831, in __extract_info
+    ie_result = ie.extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 762, in extract
+    ie_result = self._real_extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\tiktok.py", line 1395, in _real_extract
+    raise ExtractorError(
+        'Fresh cookies (not necessarily logged in) are needed',
+        expected=not self._get_cookies(self._WEBPAGE_HOST).get('s_v_web_id'))
+yt_dlp.utils.ExtractorError: [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 536, in _download_general_ytdlp
+    raise e # Other error (Network, etc)
+    ^^^^^^^
+  File "D:\Tsufutube\core.py", line 515, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1852, in __extract_info
+    return self.process_ie_result(ie_result, download, extra_info)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1931, in process_ie_result
+    return self.extract_info(
+           ~~~~~~~~~~~~~~~~~^
+        ie_result['url'], download,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        ie_key=ie_result.get('ie_key'),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        extra_info=extra_info)
+        ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+
+==================================================
+TIME: 2026-01-21 03:20:41.431265
+URL: https://www.youtube.com/watch?v=zjEMFuj23B4&list=RDGMEMCMFH2exzjBeE_zAHHJOdxgVMJtm6ikBIl0g&index=15
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [youtube] zjEMFuj23B4: Sign in to confirm you’re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1831, in __extract_info
+    ie_result = ie.extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 762, in extract
+    ie_result = self._real_extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\youtube\_video.py", line 3910, in _real_extract
+    self.raise_no_formats(reason, expected=True)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 1274, in raise_no_formats
+    raise ExtractorError(msg, expected=expected, video_id=video_id)
+yt_dlp.utils.ExtractorError: [youtube] zjEMFuj23B4: Sign in to confirm you’re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 536, in _download_general_ytdlp
+    raise e # Other error (Network, etc)
+    ^^^^^^^
+  File "D:\Tsufutube\core.py", line 515, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1852, in __extract_info
+    return self.process_ie_result(ie_result, download, extra_info)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1931, in process_ie_result
+    return self.extract_info(
+           ~~~~~~~~~~~~~~~~~^
+        ie_result['url'], download,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        ie_key=ie_result.get('ie_key'),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        extra_info=extra_info)
+        ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [youtube] zjEMFuj23B4: Sign in to confirm you’re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies
+
+
+==================================================
+TIME: 2026-01-21 03:21:59.927330
+URL: https://v.douyin.com/IKouy_Ej3X8
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1831, in __extract_info
+    ie_result = ie.extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 762, in extract
+    ie_result = self._real_extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\tiktok.py", line 1395, in _real_extract
+    raise ExtractorError(
+        'Fresh cookies (not necessarily logged in) are needed',
+        expected=not self._get_cookies(self._WEBPAGE_HOST).get('s_v_web_id'))
+yt_dlp.utils.ExtractorError: [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 536, in _download_general_ytdlp
+    raise e # Other error (Network, etc)
+    ^^^^^^^
+  File "D:\Tsufutube\core.py", line 515, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1852, in __extract_info
+    return self.process_ie_result(ie_result, download, extra_info)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1931, in process_ie_result
+    return self.extract_info(
+           ~~~~~~~~~~~~~~~~~^
+        ie_result['url'], download,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        ie_key=ie_result.get('ie_key'),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        extra_info=extra_info)
+        ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed
+
+
+==================================================
+TIME: 2026-01-21 03:22:52.390175
+URL: https://v.douyin.com/IKouy_Ej3X8
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1831, in __extract_info
+    ie_result = ie.extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 762, in extract
+    ie_result = self._real_extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\tiktok.py", line 1395, in _real_extract
+    raise ExtractorError(
+        'Fresh cookies (not necessarily logged in) are needed',
+        expected=not self._get_cookies(self._WEBPAGE_HOST).get('s_v_web_id'))
+yt_dlp.utils.ExtractorError: [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 536, in _download_general_ytdlp
+    raise e # Other error (Network, etc)
+    ^^^^^^^
+  File "D:\Tsufutube\core.py", line 515, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1852, in __extract_info
+    return self.process_ie_result(ie_result, download, extra_info)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1931, in process_ie_result
+    return self.extract_info(
+           ~~~~~~~~~~~~~~~~~^
+        ie_result['url'], download,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        ie_key=ie_result.get('ie_key'),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        extra_info=extra_info)
+        ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+
+==================================================
+TIME: 2026-01-21 03:24:48.755063
+URL: https://www.douyin.com/video/7597267023357612160?previous_page=web_code_link
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1831, in __extract_info
+    ie_result = ie.extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 762, in extract
+    ie_result = self._real_extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\tiktok.py", line 1395, in _real_extract
+    raise ExtractorError(
+        'Fresh cookies (not necessarily logged in) are needed',
+        expected=not self._get_cookies(self._WEBPAGE_HOST).get('s_v_web_id'))
+yt_dlp.utils.ExtractorError: [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 536, in _download_general_ytdlp
+    raise e # Other error (Network, etc)
+    ^^^^^^^
+  File "D:\Tsufutube\core.py", line 515, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+
+==================================================
+TIME: 2026-01-21 03:24:58.906222
+URL: https://www.douyin.com/video/7597267023357612160
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1831, in __extract_info
+    ie_result = ie.extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 762, in extract
+    ie_result = self._real_extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\tiktok.py", line 1395, in _real_extract
+    raise ExtractorError(
+        'Fresh cookies (not necessarily logged in) are needed',
+        expected=not self._get_cookies(self._WEBPAGE_HOST).get('s_v_web_id'))
+yt_dlp.utils.ExtractorError: [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 536, in _download_general_ytdlp
+    raise e # Other error (Network, etc)
+    ^^^^^^^
+  File "D:\Tsufutube\core.py", line 515, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+
+==================================================
+TIME: 2026-01-21 03:25:35.388493
+URL: https://www.douyin.com/video/7597267023357612160
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1831, in __extract_info
+    ie_result = ie.extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 762, in extract
+    ie_result = self._real_extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\tiktok.py", line 1395, in _real_extract
+    raise ExtractorError(
+        'Fresh cookies (not necessarily logged in) are needed',
+        expected=not self._get_cookies(self._WEBPAGE_HOST).get('s_v_web_id'))
+yt_dlp.utils.ExtractorError: [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 536, in _download_general_ytdlp
+    raise e # Other error (Network, etc)
+    ^^^^^^^
+  File "D:\Tsufutube\core.py", line 515, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+
+==================================================
+TIME: 2026-01-21 03:26:20.659707
+URL: https://www.douyin.com/video/7597267023357612160
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1831, in __extract_info
+    ie_result = ie.extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 762, in extract
+    ie_result = self._real_extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\tiktok.py", line 1395, in _real_extract
+    raise ExtractorError(
+        'Fresh cookies (not necessarily logged in) are needed',
+        expected=not self._get_cookies(self._WEBPAGE_HOST).get('s_v_web_id'))
+yt_dlp.utils.ExtractorError: [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 536, in _download_general_ytdlp
+    raise e # Other error (Network, etc)
+    ^^^^^^^
+  File "D:\Tsufutube\core.py", line 515, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+
+==================================================
+TIME: 2026-01-21 03:34:50.639224
+URL: https://www.douyin.com/video/7597267023357612160
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1831, in __extract_info
+    ie_result = ie.extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 762, in extract
+    ie_result = self._real_extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\tiktok.py", line 1395, in _real_extract
+    raise ExtractorError(
+        'Fresh cookies (not necessarily logged in) are needed',
+        expected=not self._get_cookies(self._WEBPAGE_HOST).get('s_v_web_id'))
+yt_dlp.utils.ExtractorError: [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 555, in _download_general_ytdlp
+    raise e # Other error (Network, etc)
+    ^^^^^^^
+  File "D:\Tsufutube\core.py", line 534, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+
+==================================================
+TIME: 2026-01-21 03:35:00.226812
+URL: https://www.douyin.com/video/7597267023357612160
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1831, in __extract_info
+    ie_result = ie.extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 762, in extract
+    ie_result = self._real_extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\tiktok.py", line 1395, in _real_extract
+    raise ExtractorError(
+        'Fresh cookies (not necessarily logged in) are needed',
+        expected=not self._get_cookies(self._WEBPAGE_HOST).get('s_v_web_id'))
+yt_dlp.utils.ExtractorError: [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 555, in _download_general_ytdlp
+    raise e # Other error (Network, etc)
+    ^^^^^^^
+  File "D:\Tsufutube\core.py", line 534, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [Douyin] 7597267023357612160: Fresh cookies (not necessarily logged in) are needed; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+
+==================================================
+TIME: 2026-01-21 03:37:05.373793
+URL: https://www.youtube.com/watch?v=ARqP5ohiubY&list=RDGMEMCMFH2exzjBeE_zAHHJOdxgVMJtm6ikBIl0g&index=18
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [youtube] ARqP5ohiubY: Sign in to confirm you’re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1831, in __extract_info
+    ie_result = ie.extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 762, in extract
+    ie_result = self._real_extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\youtube\_video.py", line 3910, in _real_extract
+    self.raise_no_formats(reason, expected=True)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 1274, in raise_no_formats
+    raise ExtractorError(msg, expected=expected, video_id=video_id)
+yt_dlp.utils.ExtractorError: [youtube] ARqP5ohiubY: Sign in to confirm you’re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 555, in _download_general_ytdlp
+    raise e # Other error (Network, etc)
+    ^^^^^^^
+  File "D:\Tsufutube\core.py", line 534, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1852, in __extract_info
+    return self.process_ie_result(ie_result, download, extra_info)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1931, in process_ie_result
+    return self.extract_info(
+           ~~~~~~~~~~~~~~~~~^
+        ie_result['url'], download,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        ie_key=ie_result.get('ie_key'),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        extra_info=extra_info)
+        ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [youtube] ARqP5ohiubY: Sign in to confirm you’re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies
+
+
+==================================================
+TIME: 2026-01-21 04:24:49.066717
+URL: https://www.dailymotion.com/video/x9y5x54
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [dailymotion] x9y5x54: No video formats found!; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1852, in __extract_info
+    return self.process_ie_result(ie_result, download, extra_info)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1911, in process_ie_result
+    ie_result = self.process_video_result(ie_result, download=download)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 2924, in process_video_result
+    self.raise_no_formats(info_dict)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1185, in raise_no_formats
+    raise ExtractorError(msg, video_id=info['id'], ie=info['extractor'],
+                         expected=has_drm or ignored or expected)
+yt_dlp.utils.ExtractorError: [dailymotion] x9y5x54: No video formats found!; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 610, in _download_general_ytdlp
+    raise e
+  File "D:\Tsufutube\core.py", line 535, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [dailymotion] x9y5x54: No video formats found!; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+
+==================================================
+TIME: 2026-01-21 04:28:27.321271
+URL: https://www.dailymotion.com/video/x9y5x54
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [dailymotion] x9y5x54: No video formats found!; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1852, in __extract_info
+    return self.process_ie_result(ie_result, download, extra_info)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1911, in process_ie_result
+    ie_result = self.process_video_result(ie_result, download=download)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 2924, in process_video_result
+    self.raise_no_formats(info_dict)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1185, in raise_no_formats
+    raise ExtractorError(msg, video_id=info['id'], ie=info['extractor'],
+                         expected=has_drm or ignored or expected)
+yt_dlp.utils.ExtractorError: [dailymotion] x9y5x54: No video formats found!; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 610, in _download_general_ytdlp
+    raise e
+  File "D:\Tsufutube\core.py", line 535, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [dailymotion] x9y5x54: No video formats found!; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+
+==================================================
+TIME: 2026-01-21 04:29:28.551833
+URL: https://www.dailymotion.com/video/x9y5x54
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [dailymotion] x9y5x54: No video formats found!; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1852, in __extract_info
+    return self.process_ie_result(ie_result, download, extra_info)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1911, in process_ie_result
+    ie_result = self.process_video_result(ie_result, download=download)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 2924, in process_video_result
+    self.raise_no_formats(info_dict)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1185, in raise_no_formats
+    raise ExtractorError(msg, video_id=info['id'], ie=info['extractor'],
+                         expected=has_drm or ignored or expected)
+yt_dlp.utils.ExtractorError: [dailymotion] x9y5x54: No video formats found!; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 610, in _download_general_ytdlp
+    raise e
+  File "D:\Tsufutube\core.py", line 535, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [dailymotion] x9y5x54: No video formats found!; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+
+==================================================
+TIME: 2026-01-21 04:34:54.164881
+URL: https://www.dailymotion.com/video/x9y5x54
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [dailymotion] x9y5x54: No video formats found!; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1852, in __extract_info
+    return self.process_ie_result(ie_result, download, extra_info)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1911, in process_ie_result
+    ie_result = self.process_video_result(ie_result, download=download)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 2924, in process_video_result
+    self.raise_no_formats(info_dict)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1185, in raise_no_formats
+    raise ExtractorError(msg, video_id=info['id'], ie=info['extractor'],
+                         expected=has_drm or ignored or expected)
+yt_dlp.utils.ExtractorError: [dailymotion] x9y5x54: No video formats found!; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 610, in _download_general_ytdlp
+    raise e
+  File "D:\Tsufutube\core.py", line 535, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [dailymotion] x9y5x54: No video formats found!; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+
+==================================================
+TIME: 2026-01-21 04:36:08.231964
+URL: https://www.dailymotion.com/video/x9y5x54
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [dailymotion] x9y5x54: No video formats found!; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1852, in __extract_info
+    return self.process_ie_result(ie_result, download, extra_info)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1911, in process_ie_result
+    ie_result = self.process_video_result(ie_result, download=download)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 2924, in process_video_result
+    self.raise_no_formats(info_dict)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1185, in raise_no_formats
+    raise ExtractorError(msg, video_id=info['id'], ie=info['extractor'],
+                         expected=has_drm or ignored or expected)
+yt_dlp.utils.ExtractorError: [dailymotion] x9y5x54: No video formats found!; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 610, in _download_general_ytdlp
+    raise e
+  File "D:\Tsufutube\core.py", line 535, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [dailymotion] x9y5x54: No video formats found!; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+
+==================================================
+TIME: 2026-01-21 04:39:36.128117
+URL: https://www.dailymotion.com/video/x9y5x54
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [dailymotion] x9y5x54: No video formats found!; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1852, in __extract_info
+    return self.process_ie_result(ie_result, download, extra_info)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1911, in process_ie_result
+    ie_result = self.process_video_result(ie_result, download=download)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 2924, in process_video_result
+    self.raise_no_formats(info_dict)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1185, in raise_no_formats
+    raise ExtractorError(msg, video_id=info['id'], ie=info['extractor'],
+                         expected=has_drm or ignored or expected)
+yt_dlp.utils.ExtractorError: [dailymotion] x9y5x54: No video formats found!; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 610, in _download_general_ytdlp
+    raise e
+  File "D:\Tsufutube\core.py", line 535, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [dailymotion] x9y5x54: No video formats found!; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U
+
+
+==================================================
+TIME: 2026-01-21 04:45:33.094283
+URL: https://cdndirector.dailymotion.com/cdn/manifest/video/x9quqec.m3u8?sec=2GY1DGALYjHMOre_44sORYvPjHAoEgLCiWeL32CPon4ZoBadrYecdeviThuxpjo6pDYY65lIRkkHU5qdYPeA3Q&dmTs=945308&dmV1st=861066db-6b28-4ee4-8d9c-85c8db83656a
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [generic] Unable to download webpage: HTTP Error 403: Forbidden (caused by <HTTPError 403: Forbidden>)
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 909, in _request_webpage
+    return self._downloader.urlopen(self._create_request(url_or_request, data, headers, query, extensions))
+           ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 4252, in urlopen
+    return self._request_director.send(req)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\common.py", line 117, in send
+    response = handler.send(request)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\_helper.py", line 194, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\common.py", line 359, in send
+    return self._send(request)
+           ~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\_requests.py", line 361, in _send
+    raise HTTPError(res, redirect_loop=max_redirects_exceeded)
+yt_dlp.networking.exceptions.HTTPError: HTTP Error 403: Forbidden
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1831, in __extract_info
+    ie_result = ie.extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 762, in extract
+    ie_result = self._real_extract(url)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\generic.py", line 819, in _real_extract
+    full_response = self._request_webpage(url, video_id, headers=filter_dict({
+        'Accept-Encoding': 'identity',
+        'Referer': smuggled_data.get('referer'),
+    }), impersonate=impersonate)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\extractor\common.py", line 922, in _request_webpage
+    raise ExtractorError(errmsg, cause=err)
+yt_dlp.utils.ExtractorError: [generic] Unable to download webpage: HTTP Error 403: Forbidden (caused by <HTTPError 403: Forbidden>)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 626, in _download_general_ytdlp
+    raise e
+  File "D:\Tsufutube\core.py", line 551, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [generic] Unable to download webpage: HTTP Error 403: Forbidden (caused by <HTTPError 403: Forbidden>)
+
+
+==================================================
+TIME: 2026-01-21 04:47:52.553967
+URL: https://cdndirector.dailymotion.com/cdn/manifest/video/x9quqec.m3u8?sec=c-evVCV5NS4pPGu7emrJg_7NDZGjgS9F0MJ1a4PPcE5idObdcNmINoHtqmKY71o1-q0V5-dbKK7fSu_gPTknWg&dmTs=807439&dmV1st=dd8847a4-1338-4a6c-a5fa-502682091c38
+ERROR TYPE: KeyError
+ERROR MSG: 'extractor'
+TRACEBACK:
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 680, in _download_general_ytdlp
+    info = ydl.process_ie_result(ie_result=info, download=True)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1911, in process_ie_result
+    ie_result = self.process_video_result(ie_result, download=download)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 2864, in process_video_result
+    self._fill_common_fields(info_dict)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 2737, in _fill_common_fields
+    info_dict['title'] = f'{info_dict["extractor"].replace(":", "-")} video #{info_dict["id"]}'
+                            ~~~~~~~~~^^^^^^^^^^^^^
+KeyError: 'extractor'
+
+
+==================================================
+TIME: 2026-01-21 04:50:51.771579
+URL: https://cdndirector.dailymotion.com/cdn/manifest/video/x9quqec.m3u8?sec=685rsnEEK7R9XINtWL61Zezr-FKZ29fQGFlCMlXZ1MLhH24TQul7cH6rjwxJyxtGNRjLY629eG_HEEy8XtCnvQ&dmTs=530021&dmV1st=1342f672-bfed-4ca8-b36e-f314bb2b6b4d
+ERROR TYPE: KeyError
+ERROR MSG: 'extractor'
+TRACEBACK:
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 685, in _download_general_ytdlp
+    info = ydl.process_ie_result(ie_result=info, download=True)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1911, in process_ie_result
+    ie_result = self.process_video_result(ie_result, download=download)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 2864, in process_video_result
+    self._fill_common_fields(info_dict)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 2737, in _fill_common_fields
+    info_dict['title'] = f'{info_dict["extractor"].replace(":", "-")} video #{info_dict["id"]}'
+                            ~~~~~~~~~^^^^^^^^^^^^^
+KeyError: 'extractor'
+
+
+==================================================
+TIME: 2026-01-21 04:53:49.678710
+URL: https://cdndirector.dailymotion.com/cdn/manifest/video/x9quqec.m3u8?sec=w6Mq1Uh7di8q06G7Vp8-EK1IWxUNsEOChONjMiy2__aOcAjc5_ODIZkvBqPrQiBa5BAtjeTWeo02PrEVuizAxg&dmTs=298399&dmV1st=6dd2d366-2bd6-4603-a67b-7c18c13fe56e
+ERROR TYPE: KeyError
+ERROR MSG: 'extractor'
+TRACEBACK:
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 685, in _download_general_ytdlp
+    info = ydl.process_ie_result(ie_result=info, download=True)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1911, in process_ie_result
+    ie_result = self.process_video_result(ie_result, download=download)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 2864, in process_video_result
+    self._fill_common_fields(info_dict)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 2737, in _fill_common_fields
+    info_dict['title'] = f'{info_dict["extractor"].replace(":", "-")} video #{info_dict["id"]}'
+                            ~~~~~~~~~^^^^^^^^^^^^^
+KeyError: 'extractor'
+

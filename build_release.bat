@@ -85,6 +85,7 @@ python -m PyInstaller --onedir ^
   --add-data="fetcher.py;." ^
   --add-data="bilibili_api.py;." ^
   --add-data="time_spinbox.py;." ^
+  --add-data="updater.py;." ^
   %FFMPEG_ARGS% ^
   --hidden-import=PIL._tkinter_finder ^
   --hidden-import=yt_dlp ^
@@ -119,6 +120,7 @@ copy /Y "fetcher.py" "dist\Tsufutube-Downloader\" >nul 2>&1
 copy /Y "data.py" "dist\Tsufutube-Downloader\" >nul 2>&1
 copy /Y "bilibili_api.py" "dist\Tsufutube-Downloader\" >nul 2>&1
 copy /Y "time_spinbox.py" "dist\Tsufutube-Downloader\" >nul 2>&1
+copy /Y "updater.py" "dist\Tsufutube-Downloader\" >nul 2>&1
 
 :: Copy assets
 xcopy /E /I /Y "dist\Tsufutube-Downloader\_internal\assets" "dist\Tsufutube-Downloader\assets" >nul 2>&1

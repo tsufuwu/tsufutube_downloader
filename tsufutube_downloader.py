@@ -166,77 +166,54 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"Error creating default settings: {e}")
         
-        # STEP 2: Show ULTRA-SIMPLE language selection (Speed optimized)
+        # STEP 2: Show ULTRA-MINIMAL language selection (Speed optimized)
         result = {"lang": "en"}
         
         try:
             import tkinter as tk
-            from tkinter import messagebox
             
-            # Simple Tk instance
+            # Minimal Tk instance - no extra imports
             root = tk.Tk()
-            root.title("Language / Ngôn Ngữ")
-            # Width 300, Height 400 - Small and fast
-            root.geometry("300x420") 
+            root.title("🌐 Language")
+            root.geometry("220x350")
             root.resizable(False, False)
+            root.configure(bg="#2b2b2b")
             
-            # Center on screen (Basic math)
+            # Center on screen
             root.update_idletasks()
-            x = (root.winfo_screenwidth() - 300) // 2
-            y = (root.winfo_screenheight() - 420) // 2
+            x = (root.winfo_screenwidth() - 220) // 2
+            y = (root.winfo_screenheight() - 320) // 2
             root.geometry(f"+{x}+{y}")
             root.attributes("-topmost", True)
-            root.focus_force()
             
-            # Header
-            tk.Label(root, text="Select Language / Chọn Ngôn Ngữ", font=("Arial", 11, "bold")).pack(pady=10)
+            # Language options (minimal)
+            langs = [("en", "English"), ("vi", "Tiếng Việt"), ("zh", "中文"), 
+                     ("ja", "日本語"), ("ko", "한국어"), ("es", "Español"),
+                     ("fr", "Français"), ("de", "Deutsch"), ("pt", "Português"), ("ru", "Русский")]
             
-            # Language Data
-            languages = [
-                ("en", "🇺🇸 English"), ("vi", "🇻🇳 Tiếng Việt"),
-                ("zh", "🇨🇳 中文 (简体)"), ("ja", "🇯🇵 日本語"),
-                ("ko", "🇰🇷 한국어"), ("es", "🇪🇸 Español"),
-                ("fr", "🇫🇷 Français"), ("de", "🇩🇪 Deutsch"),
-                ("pt", "🇧🇷 Português"), ("ru", "🇷🇺 Русский"),
-            ]
+            selected = tk.StringVar(value="en")
             
-            # Simple Listbox
-            listbox = tk.Listbox(root, font=("Arial", 11), selectmode=tk.SINGLE, height=12)
-            listbox.pack(fill="both", expand=True, padx=20, pady=5)
-            
-            # Populate
-            for code, name in languages:
-                listbox.insert(tk.END, name)
-            
-            # Default selection
-            listbox.selection_set(0)
+            # Radio buttons - fastest widget
+            for code, name in langs:
+                tk.Radiobutton(root, text=name, variable=selected, value=code,
+                              font=("Segoe UI", 10), bg="#2b2b2b", fg="white",
+                              selectcolor="#444", activebackground="#2b2b2b",
+                              activeforeground="white", anchor="w").pack(fill="x", padx=15, pady=1)
             
             def confirm():
-                selection = listbox.curselection()
-                if not selection:
-                    messagebox.showerror("Error", "Please select a language")
-                    return
-                
-                index = selection[0]
-                result["lang"] = languages[index][0]
-                
-                # Save immediately
+                result["lang"] = selected.get()
                 try:
                     DEFAULT_SETTINGS["language"] = result["lang"]
                     with open(settings_file, "w", encoding="utf-8") as f:
                         json.dump(DEFAULT_SETTINGS, f, ensure_ascii=False, indent=4)
                 except: pass
-                
                 root.destroy()
             
-            # Confirm Button
-            tk.Button(root, text="OK / XÁC NHẬN", command=confirm, 
-                     font=("Arial", 10, "bold"), bg="#DDDDDD", height=2).pack(fill="x", padx=20, pady=15)
+            # OK Button
+            tk.Button(root, text="OK", command=confirm, font=("Segoe UI", 10, "bold"),
+                     bg="#4CAF50", fg="white", height=1, width=10).pack(pady=10)
             
-            # Handle close button (X)
             root.protocol("WM_DELETE_WINDOW", confirm)
-            
-            # Blocking loop
             root.mainloop()
 
         except Exception as e:
@@ -247,7 +224,7 @@ if __name__ == "__main__":
         try: 
             if getattr(sys, 'frozen', False):
                 splash_process = subprocess.Popen([sys.executable, '--splash'], creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0)
-            else:
+            else:   
                  if os.path.exists(splash_script):
                     splash_process = subprocess.Popen([sys.executable, splash_script], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0)
         except: pass

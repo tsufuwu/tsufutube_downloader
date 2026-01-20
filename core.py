@@ -14,6 +14,9 @@ yt_dlp = None
 instaloader = None
 # from bilibili_api import BilibiliAPI (Moved to lazy load)
 BilibiliAPI = None
+DouyinDownloader = None
+PlaywrightEngine = None
+DailymotionDownloader = None
 
 def lazy_import_ytdlp():
     global yt_dlp
@@ -138,6 +141,8 @@ class DownloaderEngine:
     def _identify_platform(self, url):
         if not url: return "UNKNOWN"
         if "instagram.com" in url: return "INSTAGRAM"
+        if "douyin.com" in url: return "DOUYIN"
+        if "dailymotion.com" in url or "dai.ly" in url: return "DAILYMOTION"
         if "bilibili.com" in url: return "BILIBILI_CN"
         if "facebook.com" in url and ("stories" in url or "your_story" in url): return "FACEBOOK_STORY"
         return "GENERAL"
@@ -301,6 +306,35 @@ class DownloaderEngine:
             # Return None for result, and error string
             return None, str(e)
 
+        # [DOUYIN] Custom API
+        if platform == "DOUYIN":
+            global DouyinDownloader
+            if DouyinDownloader is None:
+                try: from douyin_api import DouyinDownloader
+                except ImportError: pass
+                
+            if DouyinDownloader:
+                try:
+                    dd = DouyinDownloader(headless=True)
+                    info, err = dd.get_video_info(url)
+                except Exception as e:
+                    pass
+            return None, "Douyin extraction failed"
+
+        # [DAILYMOTION] Custom API
+        if platform == "DAILYMOTION":
+            global DailymotionDownloader
+            if DailymotionDownloader is None:
+                try: from dailymotion_api import DailymotionDownloader
+                except ImportError: pass
+            
+            if DailymotionDownloader:
+                try:
+                    dm = DailymotionDownloader()
+                    info, err = dm.get_video_info(url)
+                    if info: return info, None
+                except: pass
+
     def _classify_error(self, e):
         msg = str(e).lower()
         if "412" in msg: return "ERR_WBI", "Bilibili chặn (Lỗi 412). Vui lòng cập nhật Cookie."
@@ -341,6 +375,8 @@ class DownloaderEngine:
         
         platform = self._identify_platform(task["url"])
         if platform == "INSTAGRAM": return self._download_instagram(task, settings, callbacks)
+        elif platform == "DOUYIN": return self._download_douyin(task, settings, callbacks)
+        elif platform == "DAILYMOTION": return self._download_dailymotion(task, settings, callbacks)
         elif platform == "BILIBILI_CN":
             # [BILIBILI CN] Custom API Downloader (Fixed 412)
             global BilibiliAPI
@@ -516,24 +552,97 @@ class DownloaderEngine:
                     break # Success
                 except yt_dlp.utils.DownloadError as e:
                     err_msg = str(e).lower()
-                    # Check for specific "Could not copy Chrome cookie database" error
-                    if "could not copy chrome cookie database" in err_msg or "permission denied" in err_msg:
-                        if not retry_without_cookies:
-                            # ATTEMPT 2: Retry without browser cookies
-                            print(f"[Core] Cookie extraction failed ({err_msg}). Retrying WITHOUT cookies...")
-                            callbacks.get('on_status', lambda x:None)("Lỗi Cookie trình duyệt! Thử tải không cần Cookie...")
-                            
-                            # Remove cookie options
-                            if 'cookiesfrombrowser' in ydl_opts: del ydl_opts['cookiesfrombrowser']
-                            if 'cookiefile' in ydl_opts: del ydl_opts['cookiefile'] # Remove file too? user might want fallback
-                            
-                            retry_without_cookies = True
-                            continue # Loop again
-                        else:
-                            # Already retried, fail for real
-                            raise e 
+                    
+                    # [FIX] Enhanced Fallback Logic
+                    # If we are using browser cookies (Method 2) and ANY error occurs (extraction failed, database locked, etc)
+                    # OR if we are using a cookie file and it acts up
+                    # We simply retry ONCE without any cookies to see if the video is public.
+                    has_cookies = 'cookiesfrombrowser' in ydl_opts or 'cookiefile' in ydl_opts
+                    
+                    # Special check: If error is just 404/Not Found, retrying won't help, but it's harmless.
+                    # Critical check: If we haven't retried yet and we were using cookies
+                    if has_cookies and not retry_without_cookies:
+                        # ATTEMPT 2: Retry without browser cookies
+                        print(f"[Core] Cookie/Download error ({err_msg}). Retrying WITHOUT cookies...")
+                        callbacks.get('on_status', lambda x:None)("Lỗi Cookie/Tải! Thử lại không cần Cookie...")
+                        
+                        # Remove cookie options
+                        if 'cookiesfrombrowser' in ydl_opts: del ydl_opts['cookiesfrombrowser']
+                        if 'cookiefile' in ydl_opts: del ydl_opts['cookiefile']
+                        
+                        retry_without_cookies = True
+                        continue # Loop again
                     else:
-                        raise e # Other error (Network, etc)
+                        # [FALLBACK] Universal Playwright Fallback
+                        # If standard yt-dlp fails (even after cookie retry), try Playwright Sniffing
+                        # ONLY if we haven't already tried it to avoid infinite loops
+                        # and ONLY if the error seems like a blockage (403, 412, etc, or extractor error)
+                        
+                        print(f"[Core] yt-dlp failed ({err_msg}). Attempting Playwright Fallback...")
+                        callbacks.get('on_status', lambda x:None)("Lỗi yt-dlp. Đang thử Playwright Fallback...")
+                        
+                        global PlaywrightEngine
+                        if PlaywrightEngine is None:
+                            try: from playwright_engine import PlaywrightEngine
+                            except ImportError: PlaywrightEngine = None
+                            
+                        fallback_success = False
+                        if PlaywrightEngine:
+                            try:
+                                pw = PlaywrightEngine(headless=True)
+                                sniff_data = pw.sniff_video(task["url"])
+                                
+                                if sniff_data and sniff_data.get("url"):
+                                    print(f"[Core] Playwright Fallback Success: {sniff_data['url']}")
+                                    callbacks.get('on_status', lambda x:None)("Fallback thành công! Đang tải...")
+                                    
+                                    # Create temp info dict for the direct link
+                                    info = {
+                                        'id': 'fallback_' + str(int(time.time())),
+                                        'title': sniff_data.get("title", task.get("name", "Unknown Video")),
+                                        'url': sniff_data["url"],
+                                        'ext': sniff_data.get("ext", "mp4"),
+                                        'protocol': 'm3u8' if sniff_data.get("ext") == "m3u8" else 'https',
+                                        'extractor': 'PlaywrightFallback', # [FIX] Prevent KeyError
+                                        # Force direct download
+                                    }
+                                    
+                                    # IMPORTANT: We need to break the main loop and proceed to step 2 (calculations)
+                                    # But step 2 relies on 'info' variable being set.
+                                    # So we set info here and BREAK.
+                                    fallback_success = True
+                                    # We might need to adjust ydl_opts for direct link?
+                                    # [UI] Update Progress & Status as requested
+                                    # "Blue progress bar" -> We can't directly control color here easily without app.py changes, 
+                                    # but we can send the specific message.
+                                    # We simulate a "full load" state to reassure user.
+                                    callbacks.get('on_progress', lambda x,y:None)(101, "SPECIAL_MECHANISM") 
+                                    callbacks.get('on_status', lambda x:None)("Đang tải bằng cơ chế chuyên biệt, vui lòng đợi...")
+                                    
+                                    # [FIX] Apply sniffed headers (Cookie, UA) to yt-dlp
+                                    # This is critical for Dailymotion m3u8 which checks UA/Sec-CH-UA
+                                    if sniff_data.get("headers"):
+                                        ydl_opts["http_headers"] = sniff_data["headers"]
+
+                                    # [FIX] Force conversion to MP4 for m3u8 streams
+                                    # yt-dlp usually does this if 'merge_output_format' is set, which it is in _configure_format.
+                                    # But let's double check/enforce it for robustness.
+                                    if 'merge_output_format' not in ydl_opts:
+                                         ydl_opts['merge_output_format'] = 'mp4'
+                                    
+                                    # The subsequent code uses 'info' to prepare filename and then runs 'process_ie_result'.
+                                    # process_ie_result can handle a dict with 'url'.
+                                    pass 
+                                else:
+                                    print("[Core] Playwright Fallback found nothing.")
+                            except Exception as pe:
+                                print(f"[Core] Playwright Fallback Error: {pe}")
+                        
+                        if fallback_success:
+                             break # Exit the while True loop, proceeding to filename calc with 'info'
+                        
+                        # If Fallback failed, re-raise original error to show Cookie Helper
+                        raise e
             
             if not info: return False, "Không lấy được info", None
 
@@ -551,6 +660,11 @@ class DownloaderEngine:
             elif dtype == "audio_lossless": final_ext = settings.get("default_audio_ext", "flac")
             
             # 3. Check trùng lặp và tạo tên mới (1), (2)...
+            
+            # [FIX] Sanitize base_name first to match what yt-dlp would output
+            from yt_dlp.utils import sanitize_filename
+            clean_base_name = sanitize_filename(base_name)
+            
             def get_unique_name(directory, filename, ext):
                 counter = 1
                 new_filename = filename
@@ -562,10 +676,17 @@ class DownloaderEngine:
                     new_filename = f"{filename} ({counter})"
                     counter += 1
             
-            unique_base_name = get_unique_name(save_path, base_name, final_ext)
+            unique_base_name = get_unique_name(save_path, clean_base_name, final_ext)
             
             # 4. Gán lại vào outtmpl để yt-dlp dùng tên này
             ydl_opts['outtmpl'] = os.path.join(save_path, f'{unique_base_name}.%(ext)s')
+            
+            # [CRITICAL] Nếu tên file đã bị đổi (tức là có trùng lặp), ta CẦN disable archive check
+            # để yt-dlp không skip download (vì ID vẫn giống cũ trong archive)
+            if unique_base_name != clean_base_name:
+                print(f"[Core] Duplicate detected! Renaming to '{unique_base_name}' and bypassing archive.")
+                if 'download_archive' in ydl_opts:
+                    del ydl_opts['download_archive']
             
 
             
@@ -792,8 +913,73 @@ class DownloaderEngine:
         return False, "Chưa hỗ trợ FB Story", None
 
     # =========================================================================
-    #  PHẦN 4: CUSTOM BILIBILI HANDLER
+    #  PHẦN 4: CUSTOM HANDLERS (BILIBILI, DOUYIN, DAILYMOTION)
     # =========================================================================
+    def _download_dailymotion(self, task, settings, callbacks):
+        url = task["url"]
+        callbacks.get('on_status', lambda x: None)("Đang tải Dailymotion (API)...")
+        
+        global DailymotionDownloader
+        if DailymotionDownloader is None:
+            try: from dailymotion_api import DailymotionDownloader
+            except ImportError: return False, "Thiếu Dailymotion API", None
+            
+        try:
+            dm = DailymotionDownloader()
+            info, err = dm.get_video_info(url)
+            if not info: return False, f"Lỗi Dailymotion: {err}", None
+            
+            # Pass to generic downloader with direct URL
+            direct_task = task.copy()
+            direct_task["url"] = info["url"]
+            direct_task["name"] = task.get("name", info["title"])
+            
+            # Dailymotion m3u8 works well with yt-dlp generic
+            return self._download_general_ytdlp(direct_task, settings, callbacks)
+        except Exception as e:
+            return False, str(e), None
+
+    def _download_douyin(self, task, settings, callbacks):
+        url = task["url"]
+        callbacks.get('on_status', lambda x: None)("Đang tải Douyin (API)...")
+        
+        global DouyinDownloader
+        if DouyinDownloader is None:
+            try: from douyin_api import DouyinDownloader
+            except ImportError: return False, "Thiếu module douyin_api", None
+
+        try:
+            dd = DouyinDownloader(headless=True)
+            info, err = dd.get_video_info(url)
+            
+            if not info:
+                return False, f"Lỗi lấy info Douyin: {err}", None
+            
+            # Download file from URL
+            video_url = info.get("url")
+            if not video_url: return False, "Không tìm thấy link video", None
+            
+            # Use requests or curl or ytdlp generic to download the file
+            # Since we have direct link, using yt-dlp generic is safest for consistent hook behavior
+            # BUT direct file URL might not work well if headers required.
+            # Douyin links usually expire or check UA.
+            # Let's use Requests to download manualy or use yt-dlp on the direct URL.
+            
+            # Use yt-dlp generic to download direct URL -> easiest integration with existing hooks
+            callbacks.get('on_status', lambda x: None)("Đang tải xuống video...")
+            
+            # Create a localized task for the direct URL
+            direct_task = task.copy()
+            direct_task["url"] = video_url
+            # Force filename 
+            direct_task["name"] = task.get("name", info.get("title"))
+            
+            # Call generic downloader on the direct URL
+            return self._download_general_ytdlp(direct_task, settings, callbacks)
+
+        except Exception as e:
+            return False, f"Douyin Error: {e}", None
+
     def _download_bilibili(self, task, settings, callbacks):
         url = task["url"]
         callbacks.get('on_status', lambda x: None)("Đang kết nối Bilibili API...")
