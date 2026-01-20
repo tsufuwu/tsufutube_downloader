@@ -19,7 +19,7 @@
 
 3. Run the application:
    ```bash
-   python "Tsufutube downloader.py"
+   python "tsufutube_downloader.py"
    ```
 
 ## Running with Docker
@@ -51,3 +51,12 @@ Requires an X Server like [VcXsrv](https://sourceforge.net/projects/vcxsrv/).
        -v $(pwd)/downloads:/app/downloads \
        tsufutube
    ```
+
+### Troubleshooting
+- **Display Error**: If you see `couldn't connect to display`, ensure your X Server (like VcXsrv) has **"Disable access control"** checked.
+- **Missing Files/Updates**: If you pulled a new version of the code, you must rebuild the image:
+  ```bash
+  docker rmi tsufutube -f
+  docker build -t tsufutube .
+  ```
+- **Permission Denied**: On Linux, you might need `sudo` for docker commands unless your user is in the `docker` group.

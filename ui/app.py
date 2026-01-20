@@ -102,12 +102,16 @@ class YoutubeDownloaderApp(ctk.CTk):
         # Priority 1: "Portable" folder (root/ffmpeg/)
         # This allows user to drop a portable ffmpeg folder next to the exe
         root_dir = os.path.dirname(os.path.abspath(sys.executable))
-        portable_ffmpeg = os.path.join(root_dir, "ffmpeg", "ffmpeg.exe")
+        
+        # Determine executable name based on OS
+        ffmpeg_exe = "ffmpeg.exe" if os.name == 'nt' else "ffmpeg"
+        
+        portable_ffmpeg = os.path.join(root_dir, "ffmpeg", ffmpeg_exe)
         
         # Priority 2: Bundled (PyInstaller _internal)
-        bundled_ffmpeg = resource_path(os.path.join("ffmpeg", "ffmpeg.exe"))
+        bundled_ffmpeg = resource_path(os.path.join("ffmpeg", ffmpeg_exe))
         
-        ffmpeg_final_path = "ffmpeg" # Default fallback
+        ffmpeg_final_path = ffmpeg_exe # Default fallback
         
         if os.path.exists(portable_ffmpeg):
             ffmpeg_final_path = portable_ffmpeg
@@ -2708,18 +2712,47 @@ class YoutubeDownloaderApp(ctk.CTk):
             finally:
                 self.history_menu.grab_release()
 
+    # --- CROSS PLATFORM HELPERS ---
+    def _native_open(self, path):
+        """Open a file or directory using the OS default application."""
+        if not path or not os.path.exists(path): return
+        
+        try:
+            if os.name == 'nt':
+                os.startfile(path)
+            elif sys.platform == 'darwin':
+                subprocess.run(['open', path], check=False)
+            else: # Linux
+                subprocess.run(['xdg-open', path], check=False)
+        except Exception as e:
+            print(f"Error opening path {path}: {e}")
+
+    def _native_highlight(self, path):
+        """Open parent folder and highlight the file."""
+        if not path or not os.path.exists(path): return
+        
+        try:
+            if os.name == 'nt':
+                subprocess.run(f'explorer /select,"{os.path.abspath(path)}"')
+            elif sys.platform == 'darwin':
+                subprocess.run(['open', '-R', path], check=False)
+            else: # Linux
+                # Linux file managers don't have a standard "highlight" command.
+                # Just open the parent folder.
+                parent = os.path.dirname(path)
+                subprocess.run(['xdg-open', parent], check=False)
+        except Exception as e:
+            print(f"Error highlighting path {path}: {e}")
+
     def history_open_file(self):
         """Open file from right-click menu (single file)"""
         item = self.get_selected_history_item()
-        if item: self._safe_open_file_on_main_thread(item.get("path"))
+        if item: self._native_open(item.get("path"))
 
     def history_open_folder(self):
         """Open folder from right-click menu (single file)"""
         item = self.get_selected_history_item()
-        if item:
-            p = item.get("path")
-            if p and os.path.exists(p):
-                subprocess.run(f'explorer /select,"{os.path.abspath(p)}"')
+        if item: self._native_highlight(item.get("path"))
     
     def history_open_file_selected(self):
         """Open all checked files OR current selected row if none checked"""
@@ -2735,7 +2768,7 @@ class YoutubeDownloaderApp(ctk.CTk):
             return
             
         for item in selected:
-            self._safe_open_file_on_main_thread(item.get("path"))
+            self._native_open(item.get("path"))
     
     def history_open_folder_selected(self):
         """Open folder of first checked file OR selected row"""
@@ -2752,8 +2785,7 @@ class YoutubeDownloaderApp(ctk.CTk):
         
         # Open folder of first item (opening multiple folders is chaotic)
         p = selected[0].get("path")
-        if p and os.path.exists(p):
-            subprocess.run(f'explorer /select,"{os.path.abspath(p)}"')
+        if p: self._native_highlight(p)
 
     def delete_selected_history(self):
         to_delete_indices = [i for i, x in enumerate(self.history_data) if x.get("_checked")]
@@ -2879,13 +2911,10 @@ class YoutubeDownloaderApp(ctk.CTk):
             try:
                 import pystray
                 from PIL import Image as PILImage
-                global HAS_PYSTRAY # Ensure global flag is updated if needed locally, though standard import works
+                global HAS_PYSTRAY 
                 HAS_PYSTRAY = True
             except ImportError:
-                print("Pystray not found!")
-                try: messagebox.showerror("Error", "Pystray library is missing in this build.")
-                except: pass
-                self.after(0, self.destroy)
+                print("Warning: pystray or PIL not found. Tray icon disabled.")
                 return
 
             image = None

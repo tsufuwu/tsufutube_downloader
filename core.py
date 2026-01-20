@@ -7,6 +7,7 @@ import subprocess
 import re
 import shutil
 import sys
+import tempfile
 
 # --- LAZY IMPORT WRAPPER ---
 yt_dlp = None

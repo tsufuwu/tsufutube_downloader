@@ -1,5 +1,12 @@
 import sys
 import ctypes
+import os
+
+# [FIX] Force CWD to App Directory (Fix System32 PermissionError)
+if getattr(sys, 'frozen', False):
+    os.chdir(os.path.dirname(sys.executable))
+else:
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 # --- HANDLING SPLASH PROCESS (BEFORE SINGLE INSTANCE) ---
 if "--splash" in sys.argv:
@@ -43,65 +50,69 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Splash subprocess error: {e}")
 
-    # Fix DPI scaling & App ID
-    try: 
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("tsufu.tsufutube.downloader")
-        ctypes.windll.user32.SetProcessDPIAware()
-    except: pass
-
-    # --- SINGLE INSTANCE MUTEX & RESTORE LOGIC ---
-    ERROR_ALREADY_EXISTS = 183
-    SW_RESTORE = 9
-    
-    mutex_name = "Global\\TsufutubeDownloaderMutex_v1"
-    kernel32 = ctypes.windll.kernel32
-    mutex = kernel32.CreateMutexW(None, False, mutex_name)
-    last_error = kernel32.GetLastError()
-    
-    if last_error == ERROR_ALREADY_EXISTS:
-        # App is already running - RESTORE IT
-        user32 = ctypes.windll.user32
-        WNDENUMPROC = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
-        target_hwnd = []
-        
-        def enum_window_callback(hwnd, _):
-            length = user32.GetWindowTextLengthW(hwnd)
-            if length > 0:
-                buff = ctypes.create_unicode_buffer(length + 1)
-                user32.GetWindowTextW(hwnd, buff, length + 1)
-                if buff.value.startswith("Tsufutube Downloader"):
-                    target_hwnd.append(hwnd)
-                    return False
-            return True
-            
-        try: user32.EnumWindows(WNDENUMPROC(enum_window_callback), 0)
+    # Fix DPI scaling & App ID (Windows Only)
+    if os.name == 'nt':
+        try: 
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("tsufu.tsufutube.downloader")
+            ctypes.windll.user32.SetProcessDPIAware()
         except: pass
+
+        # --- SINGLE INSTANCE MUTEX & RESTORE LOGIC (Windows Only) ---
+        ERROR_ALREADY_EXISTS = 183
+        SW_RESTORE = 9
+        
+        mutex_name = "Global\\TsufutubeDownloaderMutex_v1"
+        try:
+            kernel32 = ctypes.windll.kernel32
+            mutex = kernel32.CreateMutexW(None, False, mutex_name)
+            last_error = kernel32.GetLastError()
             
-        if target_hwnd:
-            user32.ShowWindow(target_hwnd[0], SW_RESTORE)
-            user32.SetForegroundWindow(target_hwnd[0])
-            
-            # Close Splash if we aren't starting
-            if splash_process:
-                try: splash_process.terminate() 
-                except: pass
-        else:
-            # Only import tkinter here if needed for error message
-            # Close splash first
-            if splash_process:
-                try: splash_process.terminate() 
-                except: pass
+            if last_error == ERROR_ALREADY_EXISTS:
+                # App is already running - RESTORE IT
+                user32 = ctypes.windll.user32
+                WNDENUMPROC = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
+                target_hwnd = []
                 
-            try:
-                import tkinter.messagebox
-                import tkinter as tk
-                root = tk.Tk()
-                root.withdraw() # Hide root window
-                tkinter.messagebox.showinfo("Tsufutube Downloader", "The application is already running in the System Tray.")
-                root.destroy()
-            except: pass
-            
-        sys.exit(0)
+                def enum_window_callback(hwnd, _):
+                    length = user32.GetWindowTextLengthW(hwnd)
+                    if length > 0:
+                        buff = ctypes.create_unicode_buffer(length + 1)
+                        user32.GetWindowTextW(hwnd, buff, length + 1)
+                        if buff.value.startswith("Tsufutube Downloader"):
+                            target_hwnd.append(hwnd)
+                            return False
+                    return True
+                    
+                try: user32.EnumWindows(WNDENUMPROC(enum_window_callback), 0)
+                except: pass
+                    
+                if target_hwnd:
+                    user32.ShowWindow(target_hwnd[0], SW_RESTORE)
+                    user32.SetForegroundWindow(target_hwnd[0])
+                    
+                    # Close Splash if we aren't starting
+                    if splash_process:
+                        try: splash_process.terminate() 
+                        except: pass
+                else:
+                    # Only import tkinter here if needed for error message
+                    # Close splash first
+                    if splash_process:
+                        try: splash_process.terminate() 
+                        except: pass
+                        
+                    try:
+                        import tkinter.messagebox
+                        import tkinter as tk
+                        root = tk.Tk()
+                        root.withdraw() # Hide root window
+                        tkinter.messagebox.showinfo("Tsufutube Downloader", "The application is already running in the System Tray.")
+                        root.destroy()
+                    except: pass
+                    
+                sys.exit(0)
+        except Exception as e:
+            print(f"Mutex error: {e}")
 
     # --- FIRST RUN LANGUAGE SELECTION ---
     # Check if settings file exists. If not, show language selection FIRST (quickly)

@@ -27,4 +27,4 @@ COPY . .
 ENV PYTHONUNBUFFERED=1
 
 # Run the application
-CMD ["python", "Tsufutube downloader.py"]
+CMD ["python", "tsufutube_downloader.py"]

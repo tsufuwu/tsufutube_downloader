@@ -8,4 +8,4 @@ instaloader>=4.10.0
 bilibili-api-python>=16.2.0
 
 # Optional but recommended
-pyinstaller>=6.0.0  # For building executable
+pystray>=0.19.0 # For system tray icon

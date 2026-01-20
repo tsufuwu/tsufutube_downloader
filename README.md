@@ -91,6 +91,7 @@ Download from **1000+ websites** including:
 - **Disk**: 500MB free space
 - **Internet**: Active connection
 - **Optional**: FFmpeg (included in executable)
+- **Linux / Docker Users**: See [README_LINUX.md](README_LINUX.md) for instructions.
 
 ### 💻 For Developers
 
@@ -109,7 +110,7 @@ venv\Scripts\activate
 pip install -r requirements.txt
 
 # Run
-python "Tsufutube downloader.py"
+python "tsufutube_downloader.py"
 ```
 
 #### Build Executable
@@ -118,7 +119,7 @@ python "Tsufutube downloader.py"
 pyinstaller --onefile --windowed --icon=icon.ico \
   --name="Tsufutube-Downloader" \
   --add-data="assets;assets" \
-  "Tsufutube downloader.py"
+  "tsufutube_downloader.py"
 ```
 
 ### 📖 Documentation

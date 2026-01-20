@@ -54,6 +54,13 @@ def set_autostart_registry(enable=True, app_name="TsufutubeDownloader"):
         if enable:
             # Thêm vào startup
             winreg.SetValueEx(key, app_name, 0, winreg.REG_SZ, cmd)
+            
+            # [CLEANUP] Remove old legacy keys if they exist
+            try: winreg.DeleteValue(key, "Tsufutube downloader") 
+            except: pass
+            try: winreg.DeleteValue(key, "Tsufutube-Downloader") # Try another variant just in case if different from current app_name
+            except: pass
+            
             winreg.CloseKey(key)
             
             # Verify that the entry was created

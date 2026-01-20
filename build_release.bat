@@ -11,9 +11,9 @@ echo.
 :: --- 1. KIEM TRA MOI TRUONG ---
 echo [1/5] Checking environment...
 
-if not exist "Tsufutube downloader.py" (
+if not exist "tsufutube_downloader.py" (
     color 0C
-    echo [ERROR] Cannot find 'Tsufutube downloader.py'. Make sure you are in the project root!
+    echo [ERROR] Cannot find 'tsufutube_downloader.py'. Make sure you are in the project root!
     pause
     exit /b
 )
@@ -87,7 +87,7 @@ python -m PyInstaller --onedir ^
   --exclude-module=selenium ^
   --noconsole ^
   --clean ^
-  "Tsufutube downloader.py"
+  "tsufutube_downloader.py"
 
 if %errorlevel% neq 0 (
     color 0C
