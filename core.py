@@ -127,7 +127,11 @@ class DownloaderEngine:
         # [NUCLEAR FIX] Aggressively kill ALL ffmpeg instances spawned by this app tree
         # This is "bất chấp" (at all costs) as requested to ensure it stops.
         try:
-            subprocess.run("taskkill /F /IM ffmpeg.exe /T", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            if os.name == 'nt':
+                subprocess.run("taskkill /F /IM ffmpeg.exe /T", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            else:
+                # LINUX/DOCKER: Use pkill or killall
+                subprocess.run(["pkill", "-9", "ffmpeg"], check=False)
         except: pass
 
     # =========================================================================
@@ -157,7 +161,8 @@ class DownloaderEngine:
         
         try:
             cmd = [sys.executable, "-m", "yt_dlp", "--cookies-from-browser", browser_name, "--cookies", self.temp_cookie_file, "--skip-download", "https://www.youtube.com", "--quiet"]
-            subprocess.run(cmd, check=True, creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0)
+            creation_flags = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
+            subprocess.run(cmd, check=True, creationflags=creation_flags)
             if os.path.exists(self.temp_cookie_file): return self.temp_cookie_file
         except:
             # Method 2: Shadow Copy Workaround (Bypass "Database Locked")
@@ -218,7 +223,8 @@ class DownloaderEngine:
                 shadow_arg = f"{b_key}:{bg_root}"
                 
                 cmd = [sys.executable, "-m", "yt_dlp", "--cookies-from-browser", shadow_arg, "--cookies", self.temp_cookie_file, "--skip-download", "https://www.youtube.com", "--quiet"]
-                subprocess.run(cmd, check=True, creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0)
+                creation_flags = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
+                subprocess.run(cmd, check=True, creationflags=creation_flags)
                 
                 if os.path.exists(self.temp_cookie_file): return self.temp_cookie_file
                 
@@ -345,7 +351,6 @@ class DownloaderEngine:
                 callbacks.get('on_progress', lambda x,y:None)(0, msg)
         
 
-
         # Need video duration for progress calculation. 
         # It should be in task['duration'] (if available) or we guessed it later.
         # But we are inside _download_general_ytdlp, we don't know duration yet unless passed.
@@ -371,10 +376,17 @@ class DownloaderEngine:
                     per = (d.get('downloaded_bytes', 0)/total)*100
                     callbacks.get('on_progress', lambda x,y:None)(per, f"{per:.1f}% | {d.get('eta', '?')}s")
 
+        # [CANCEL FIX] Match Filter - Called BEFORE download starts or for EACH playlist item
+        def check_cancel_filter(info_dict, incomplete=False):
+            if self.is_cancelled:
+                raise yt_dlp.utils.DownloadError("Cancelled")
+            return None # None means "Keep this video", string means "Skip"
+
         # --- CẤU HÌNH CƠ BẢN ---
         ydl_opts = {
             'progress_hooks': [progress_hook],
             'postprocessor_hooks': [pp_hook], # Báo status khi cắt/gộp
+            'match_filter': check_cancel_filter, # [CANCEL FIX] STOP EARLY
             'noplaylist': not task.get("is_plist"),
             'force_overwrites': True, # Ta sẽ quản lý tên file thủ công nên để True để yt-dlp ghi vào đích đã chọn
             'ignoreerrors': False,
@@ -387,7 +399,6 @@ class DownloaderEngine:
             # [REMOVED] sleep_interval settings were causing extra delays
         }
         
-
         
         # Geo / Proxy
         geo = settings.get("geo_bypass_country", "None")
@@ -399,7 +410,7 @@ class DownloaderEngine:
         # Archive
         if settings.get("use_archive", False):
             ydl_opts['download_archive'] = os.path.join(settings.get("config_path", "."), "archive.txt")
-
+        
         # SponsorBlock
         sb_cats = []
         if settings.get("sb_sponsor"): sb_cats.append('sponsor')
