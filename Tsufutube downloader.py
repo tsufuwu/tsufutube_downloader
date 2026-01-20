@@ -13,6 +13,36 @@ if "--splash" in sys.argv:
 
 # [OPTIMIZATION] Single Instance Logic - Run BEFORE any heavy imports
 if __name__ == "__main__":
+    # --- LAUNCH SPLASH SCREEN IMMEDIATELY ---
+    # We spawn a separate process for the splash screen so it animates smoothly
+    # while the main process (this one) loads heavy imports.
+    splash_process = None
+    try:
+        import subprocess
+        import os
+        
+        # Check if running bundled
+        if getattr(sys, 'frozen', False):
+            # In bundled exe, running the exe with --splash flag IS the splash screen
+            splash_process = subprocess.Popen(
+                [sys.executable, '--splash'],
+                creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0
+            )
+        else:
+            # In dev mode, run the script directly
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            splash_script = os.path.join(script_dir, "splash_screen.py")
+            
+            if os.path.exists(splash_script):
+                splash_process = subprocess.Popen(
+                    [sys.executable, splash_script],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0
+                )
+    except Exception as e:
+        print(f"Splash subprocess error: {e}")
+
     # Fix DPI scaling & App ID
     try: 
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("tsufu.tsufutube.downloader")
@@ -50,8 +80,18 @@ if __name__ == "__main__":
         if target_hwnd:
             user32.ShowWindow(target_hwnd[0], SW_RESTORE)
             user32.SetForegroundWindow(target_hwnd[0])
+            
+            # Close Splash if we aren't starting
+            if splash_process:
+                try: splash_process.terminate() 
+                except: pass
         else:
             # Only import tkinter here if needed for error message
+            # Close splash first
+            if splash_process:
+                try: splash_process.terminate() 
+                except: pass
+                
             try:
                 import tkinter.messagebox
                 import tkinter as tk
@@ -63,10 +103,8 @@ if __name__ == "__main__":
             
         sys.exit(0)
 
-    # --- FIRST RUN LANGUAGE SELECTION (BEFORE SPLASH) ---
+    # --- FIRST RUN LANGUAGE SELECTION ---
     # Check if settings file exists. If not, show language selection FIRST (quickly)
-    import subprocess
-    import os
     import json
     
     # Determine config path
@@ -92,6 +130,14 @@ if __name__ == "__main__":
     
     if is_first_run:
         # STEP 1: Create config dir and default settings file FIRST
+        # If we need input, we might want to kill splash temporarily or just let it run?
+        # Actually, showing dialog OVER splash is fine, or kill splash first.
+        # Let's kill splash effectively if we need interaction
+        if splash_process:
+             try: splash_process.terminate()
+             except: pass
+             splash_process = None
+
         try:
             if not os.path.exists(config_dir):
                 os.makedirs(config_dir)
@@ -177,42 +223,16 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"Dialog Error: {e}")
         
-        # STEP 3: Fallback (already handled inside confirm)
-        pass
-    
-    # --- SPLASH SCREEN ---
-    # We spawn a separate process for the splash screen so it animates smoothly
-    # during the heavy import/init phase of the main app.
-    
-    splash_process = None
-    is_bundled = getattr(sys, 'frozen', False)
-    
-    try:
-        if is_bundled:
-             # In bundled mode, launch OURSELVES with --splash flag
-             # This runs the splash logic in a new process using the same exe
-             splash_process = subprocess.Popen(
-                [sys.executable, "--splash"],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW')    else 0
-            )
-        else:
-            # In dev mode, run the script directly
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            splash_script = os.path.join(script_dir, "splash_screen.py")
-            
-            if os.path.exists(splash_script):
-                splash_process = subprocess.Popen(
-                    [sys.executable, splash_script],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0
-                )
-    except Exception as e:
-        print(f"Splash subprocess error: {e}")
+        # Finally re-launch splash if we want (or just proceed to app load)
+        # Usually user expects app to load now. Let's restart splash for loading
+        try: 
+            if getattr(sys, 'frozen', False):
+                splash_process = subprocess.Popen([sys.executable, '--splash'], creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0)
+            else:
+                 if os.path.exists(splash_script):
+                    splash_process = subprocess.Popen([sys.executable, splash_script], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0)
+        except: pass
 
-    
     # Now do the slow stuff while splash is showing
     app = None
     error_msg = None
@@ -240,8 +260,6 @@ if __name__ == "__main__":
                 splash_process.kill()
             except:
                 pass
-    
-
     
     # Handle errors
     if error_msg:

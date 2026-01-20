@@ -432,7 +432,7 @@ class YoutubeDownloaderApp(ctk.CTk):
         self.thumb_container = ctk.CTkFrame(self.info_frame, width=160, height=90, fg_color="black")
         self.thumb_container.pack_propagate(False)
         self.thumb_container.pack(side="left")
-        self.thumb_label = ctk.CTkLabel(self.thumb_container, text="...", text_color="gray")
+        self.thumb_label = tk.Label(self.thumb_container, text="...", fg="gray", bg="black")
         self.thumb_label.pack(fill="both", expand=True)
         
         self.title_label = ctk.CTkLabel(self.info_frame, text=self.T("lbl_loading"), font=("Segoe UI", 12, "bold"), wraplength=450, justify="left")
@@ -1155,19 +1155,29 @@ class YoutubeDownloaderApp(ctk.CTk):
     def _update_thumbnail(self, raw_data):
         """Update thumbnail image on UI"""
         try:
-            from PIL import Image
+            from PIL import Image, ImageTk
             from io import BytesIO
+            
             img = Image.open(BytesIO(raw_data))
-            ctk_img = ctk.CTkImage(light_image=img, dark_image=img, size=(160, 90))
-            self.thumb_image_ref = ctk_img
-            self.thumb_label.configure(image=ctk_img, text="")
+            
+            # Manually resize since we are replacing CTkImage (which did this auto)
+            # Use high-quality resampling
+            # We explicitly bind to 'self' (the main window) to avoid "pyimage doesn't exist" errors
+            # caused by the destroyed first-run dialog root.
+            target_w, target_h = 160, 90
+            img = img.resize((target_w, target_h), Image.Resampling.LANCZOS)
+            
+            photo_img = ImageTk.PhotoImage(img, master=self)
+            
+            self.thumb_image_ref = photo_img
+            self.thumb_label.configure(image=photo_img, text="")
+            
         except Exception as e:
             print(f"Thumbnail update error: {e}")
             try:
                 self.thumb_image_ref = None
                 self.thumb_label.configure(text="No PIL", image=None)
-            except:
-                pass
+            except: pass
     
     # Compatibility shim - keep old function name working
     def start_check_link_info(self, url):
