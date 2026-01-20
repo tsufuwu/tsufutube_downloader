@@ -548,19 +548,46 @@ class DownloaderEngine:
 
     def _handle_sub_conversion(self, path, fmt, callbacks):
         if not path: return None
+        
+        # path is the Video Path (expected). We search for subs with same base name.
         base = os.path.splitext(os.path.basename(path))[0]
         d = os.path.dirname(path) or "."
-        candidates = glob.glob(os.path.join(d, f"{base}*"))
-        subs = [f for f in candidates if not f.endswith(('.mp4','.mkv','.webm','.mp3'))]
+        
+        # Find all subtitles matching the video base name
+        candidates = glob.glob(os.path.join(d, f"{glob.escape(base)}*"))
+        # Exclude common media/temp extensions
+        subs = [f for f in candidates if not f.endswith(('.mp4','.mkv','.webm','.mp3', '.m4a', '.flac', '.wav', '.part', '.ytdl', '.exe'))]
+        
         if not subs: return path
-        best_sub = max(subs, key=os.path.getctime)
-        if best_sub.endswith(f".{fmt}"): return best_sub
-        callbacks.get('on_status', lambda x:None)(f"Đổi đuôi sub sang .{fmt}...")
-        new_path = os.path.splitext(best_sub)[0] + f".{fmt}"
-        self.convert_subtitle(best_sub, new_path)
-        try: os.remove(best_sub)
-        except: pass
-        return new_path
+        
+        converted_paths = []
+        
+        # Process ALL found subtitles (support multiple languages)
+        for sub_file in subs:
+            # Check if it already has the target extension
+            if sub_file.endswith(f".{fmt}"):
+                converted_paths.append(sub_file)
+                continue
+                
+            # Construct new name: simply replace old extension with new fmt
+            # This preserves '.vi', '.en' etc. -> "Video.vi.srt"
+            new_sub_path = os.path.splitext(sub_file)[0] + f".{fmt}"
+            
+            callbacks.get('on_status', lambda x:None)(f"Convert: {os.path.basename(sub_file)} -> {fmt}...")
+            
+            self.convert_subtitle(sub_file, new_sub_path)
+            
+            # Delete original if successful
+            if os.path.exists(new_sub_path) and os.path.getsize(new_sub_path) > 0:
+                try: os.remove(sub_file)
+                except: pass
+                converted_paths.append(new_sub_path)
+            else:
+                # Conversion failed, keep original
+                converted_paths.append(sub_file)
+
+        # Return the first converted path for history logging, or original path
+        return converted_paths[0] if converted_paths else path
 
     # --- OTHER PLATFORM DOWNLOADERS ---
     def _download_instagram(self, task, settings, callbacks):
