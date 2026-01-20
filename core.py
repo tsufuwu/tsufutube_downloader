@@ -633,10 +633,10 @@ class DownloaderEngine:
                 # Prioritize H.264 (avc1) and AAC (mp4a)
                 # Fallback to any best video if h264 not present (rare) but safest strictly is:
                 # bestvideo[height<=...][vcodec^=avc]+bestaudio[acodec^=mp4a]
-                fmt_str = f"bestvideo[height<={limit}][vcodec^=avc]+bestaudio[acodec^=mp4a] / bestvideo[height<={limit}][vcodec^=avc]+bestaudio / best[height<={limit}][vcodec^=avc] / bestvideo[height<={limit}]+bestaudio"
+                fmt_str = f"bestvideo[height<={limit}][vcodec^=avc]+bestaudio[acodec^=mp4a] / bestvideo[height<={limit}][vcodec^=avc]+bestaudio / best[height<={limit}][vcodec^=avc] / bestvideo[height<={limit}]+bestaudio / best"
             elif codec_pref == "av1":
                 # Prioritize AV1 (av01)
-                fmt_str = f"bestvideo[height<={limit}][vcodec^=av01]+bestaudio / bestvideo[height<={limit}]+bestaudio"
+                fmt_str = f"bestvideo[height<={limit}][vcodec^=av01]+bestaudio / bestvideo[height<={limit}]+bestaudio / best"
             else:
                 # Auto
                 fmt_str = f"bestvideo[height<={limit}]+bestaudio / best"
