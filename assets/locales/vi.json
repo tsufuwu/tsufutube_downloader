@@ -223,7 +223,7 @@
     "msg_cookie_guide_browser": "Vào Cài đặt và chọn trình duyệt (Chrome, Edge, Firefox, Brave, v.v.) để tự động trích xuất cookie đăng nhập.",
     "msg_cookie_guide_extension": "Thử dùng extension trình duyệt để xuất cookie thành file .txt. Nhấn nút dưới để cài extension.",
     "btn_install_extension": "Cài Extension",
-    "btn_load_cookie_file": "Tải File Cookie",
+    "btn_load_cookie_file": "Upload File Cookie",
     "msg_cookie_loaded": "Đã tải file cookie thành công! Hãy thử tải lại video.",
     "val_none": "Không",
     "grp_sys_title": "Hệ thống",
@@ -234,5 +234,8 @@
     "desc_method_extension": "Cài extension để xuất file cookies.txt. Hoạt động với mọi trình duyệt.",
     "lbl_current": "Hiện tại",
     "lbl_tips": "Mẹo",
-    "tips_cookie_usage": "• Cookie cần cho video giới hạn tuổi, premium, hoặc bị khóa vùng\n• Giữ trình duyệt đăng nhập trước khi lấy cookie\n• File cookie có thể hết hạn - làm mới nếu tải thất bại"
+    "tips_cookie_usage": "• Cần Cookies cho video giới hạn tuổi/premium/bilibili\n• Giữ trình duyệt đã đăng nhập\n• Lỗi trích xuất? Tắt trình duyệt HOẶC thêm vào shortcut:\n   --disable-features=LockProfileCookieDatabase",
+    "cookie_step_1": "Bước 1: Cài Extension",
+    "cookie_step_2": "Bước 2: Tải file cookies bằng extension trên trình duyệt",
+    "cookie_step_3": "Bước 3: Upload vào phần mềm bằng nút bên dưới"
 }

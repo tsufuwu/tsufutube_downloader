@@ -146,11 +146,85 @@ class DownloaderEngine:
             return self.temp_cookie_file
 
         callbacks.get('on_status', lambda x: None)(f"Trích xuất Cookies từ {browser_name}...")
+        
+        # Method 1: Standard Attempt
+        browsers = {
+            "chrome": ["Google", "Chrome", "User Data"],
+            "edge": ["Microsoft", "Edge", "User Data"],
+            "brave": ["BraveSoftware", "Brave-Browser", "User Data"]
+        }
+        
         try:
             cmd = [sys.executable, "-m", "yt_dlp", "--cookies-from-browser", browser_name, "--cookies", self.temp_cookie_file, "--skip-download", "https://www.youtube.com", "--quiet"]
             subprocess.run(cmd, check=True, creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0)
             if os.path.exists(self.temp_cookie_file): return self.temp_cookie_file
-        except: return None
+        except:
+            # Method 2: Shadow Copy Workaround (Bypass "Database Locked")
+            print("Standard cookie extraction failed. Trying Shadow Copy workaround...")
+            callbacks.get('on_status', lambda x: None)(f"Đang thử Shadow Copy (Fix lỗi Lock)...")
+            
+            try:
+                # Identify Profile Path
+                app_data = os.getenv('LOCALAPPDATA')
+                target_path = None
+                b_key = browser_name.lower()
+                
+                if "chrome" in b_key: parts = browsers["chrome"]
+                elif "edge" in b_key: parts = browsers["edge"]
+                elif "brave" in b_key: parts = browsers["brave"]
+                else: return None
+                
+                profile_root = os.path.join(app_data, *parts)
+                if not os.path.exists(profile_root): return None
+                
+                # Create Temp Profile Structure
+                # yt-dlp needs: User Data/Local State AND User Data/Default/Cookies
+                import shutil
+                bg_root = os.path.join(self.temp_dir, f"shadow_{b_key}")
+                bg_default = os.path.join(bg_root, "Default")
+                os.makedirs(bg_default, exist_ok=True)
+                
+                # Copy Local State (Encryption Key)
+                src_ls = os.path.join(profile_root, "Local State")
+                dst_ls = os.path.join(bg_root, "Local State")
+                if os.path.exists(src_ls): shutil.copy2(src_ls, dst_ls)
+                
+                # Copy Cookies (Database) - Use copy2 to try bypassing lock
+                # Default cookies usually in 'Default/Cookies' or 'Profile 1/Cookies'
+                # We assume 'Default' for simplicity or check
+                possible_cookies = [
+                    os.path.join(profile_root, "Default", "Cookies"),
+                    os.path.join(profile_root, "Default", "Network", "Cookies"), # Newer Chrome
+                    os.path.join(profile_root, "Profile 1", "Cookies"),
+                    os.path.join(profile_root, "Profile 1", "Network", "Cookies") 
+                ]
+                
+                cookies_found = False
+                for src_cj in possible_cookies:
+                    if os.path.exists(src_cj):
+                         dst_cj = os.path.join(bg_default, "Cookies")
+                         try:
+                             shutil.copy2(src_cj, dst_cj)
+                             cookies_found = True
+                             break
+                         except: pass # Try next
+                
+                if not cookies_found: return None
+                
+                # Retry yt-dlp with custom profile path
+                # Syntax: --cookies-from-browser "chrome:C:/Path/To/User Data"
+                # Note: path must point to the *User Data* root, not Default
+                shadow_arg = f"{b_key}:{bg_root}"
+                
+                cmd = [sys.executable, "-m", "yt_dlp", "--cookies-from-browser", shadow_arg, "--cookies", self.temp_cookie_file, "--skip-download", "https://www.youtube.com", "--quiet"]
+                subprocess.run(cmd, check=True, creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0)
+                
+                if os.path.exists(self.temp_cookie_file): return self.temp_cookie_file
+                
+            except Exception as e:
+                print(f"Shadow copy failed: {e}")
+                pass
+                
         return None
 
     def fetch_info(self, url):
@@ -383,9 +457,38 @@ class DownloaderEngine:
 
         try:
             # --- [FIX-1] UNIQUE FILENAME LOGIC ---
-            # 1. Peek Info (Không tải)
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(task["url"], download=False)
+            # 1. Peek Info (With Retry Logic for Cookie Lock)
+            
+            # This loop handles the case where extraction fails due to browser lock
+            # It will retry ONCE without cookies to see if download is possible
+            info = None
+            retry_without_cookies = False
+            
+            while True:
+                try:
+                    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                        info = ydl.extract_info(task["url"], download=False)
+                    break # Success
+                except yt_dlp.utils.DownloadError as e:
+                    err_msg = str(e).lower()
+                    # Check for specific "Could not copy Chrome cookie database" error
+                    if "could not copy chrome cookie database" in err_msg or "permission denied" in err_msg:
+                        if not retry_without_cookies:
+                            # ATTEMPT 2: Retry without browser cookies
+                            print(f"[Core] Cookie extraction failed ({err_msg}). Retrying WITHOUT cookies...")
+                            callbacks.get('on_status', lambda x:None)("Lỗi Cookie trình duyệt! Thử tải không cần Cookie...")
+                            
+                            # Remove cookie options
+                            if 'cookiesfrombrowser' in ydl_opts: del ydl_opts['cookiesfrombrowser']
+                            if 'cookiefile' in ydl_opts: del ydl_opts['cookiefile'] # Remove file too? user might want fallback
+                            
+                            retry_without_cookies = True
+                            continue # Loop again
+                        else:
+                            # Already retried, fail for real
+                            raise e 
+                    else:
+                        raise e # Other error (Network, etc)
             
             if not info: return False, "Không lấy được info", None
 

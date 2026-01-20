@@ -210,5 +210,9 @@
     "val_unknown": "Unknown",
     "msg_playlist_range": "Playlist has {} videos.\nEnter range (e.g. 1-10, 5, all):",
     "msg_restart_confirm": "Restart app to apply changes?",
-    "grp_sys_title": "Sistema"
+    "grp_sys_title": "Sistema",
+    "cookie_step_1": "Passo 1: Instalar extensão",
+    "cookie_step_2": "Passo 2: Baixar cookies.txt via extensão",
+    "cookie_step_3": "Passo 3: Enviar para o app usando o botão abaixo",
+    "btn_load_cookie_file": "Enviar Arquivo Cookie"
 }

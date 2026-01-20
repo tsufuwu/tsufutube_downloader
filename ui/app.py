@@ -1393,7 +1393,7 @@ class YoutubeDownloaderApp(ctk.CTk):
             "This works for age-restricted & premium videos.")
     
     def show_cookie_helper_dialog(self, error_msg=""):
-        """Show smart cookie helper dialog with contextual guidance"""
+        """Show smart cookie helper dialog (Redesigned - Extension Focus)"""
         dialog = ctk.CTkToplevel(self)
         
         # Title based on whether there's an error
@@ -1402,87 +1402,57 @@ class YoutubeDownloaderApp(ctk.CTk):
             header_text = "⚠️ " + self.T("msg_cookie_required")
             header_color = "#FF5722"
         else:
-            dialog.title("🍪 Cookies Helper")
-            header_text = "🍪 " + self.T("msg_cookie_setup")
+            dialog.title("Cookie Helper")
+            header_text = "🍪 " + "Cookie Guide"
             header_color = "#4FC3F7"
         
-        dialog.geometry("550x500")
+        dialog.geometry("500x420")
         dialog.resizable(False, False)
         dialog.transient(self)
         dialog.grab_set()
         
         # Center dialog
         dialog.update_idletasks()
-        x = self.winfo_x() + (self.winfo_width() // 2) - (550 // 2)
-        y = self.winfo_y() + (self.winfo_height() // 2) - (500 // 2)
+        x = self.winfo_x() + (self.winfo_width() // 2) - (500 // 2)
+        y = self.winfo_y() + (self.winfo_height() // 2) - (420 // 2)
         dialog.geometry(f"+{x}+{y}")
         
         # Main scroll frame
         scroll = ctk.CTkScrollableFrame(dialog, fg_color="transparent")
-        scroll.pack(fill="both", expand=True, padx=20, pady=10)
+        scroll.pack(fill="both", expand=True, padx=15, pady=10)
         
         # Header
         ctk.CTkLabel(scroll, text=header_text, 
-                    font=("Segoe UI", 18, "bold"), text_color=header_color).pack(pady=(10, 5))
+                    font=("Segoe UI", 18, "bold"), text_color=header_color).pack(pady=(5, 5))
         
         # Error message if present
         if error_msg:
-            error_frame = ctk.CTkFrame(scroll, fg_color="#37474F", corner_radius=8)
-            error_frame.pack(fill="x", pady=(5, 10))
-            ctk.CTkLabel(error_frame, text=f"❌ {error_msg[:120]}", 
-                        font=("Consolas", 10), text_color="#FFAB91", wraplength=480).pack(pady=8, padx=10)
+            # Clean up error message
+            short_err = error_msg.split('\n')[0][:100]
+            ctk.CTkLabel(scroll, text=f"{short_err}...", 
+                        font=("Segoe UI", 11), text_color="#FFAB91", wraplength=440).pack(pady=(0, 10))
         
-        # Check current browser setting
-        current_browser = self.browser_var.get() if hasattr(self, 'browser_var') else 'none'
-        browser_set = current_browser.lower() not in ['none', '']
+        # === Extension Method (The ONLY Method now) ===
+        # Use a nice card design
+        card = ctk.CTkFrame(scroll, fg_color="#1E4A3F", corner_radius=12) # Dark Green Theme
+        card.pack(fill="x", pady=5)
         
-        # === SECTION 1: Browser Cookies (Quick Method) ===
-        section1 = ctk.CTkFrame(scroll, fg_color="#1E3A5F", corner_radius=10)
-        section1.pack(fill="x", pady=8)
+        # Title
+        ctk.CTkLabel(card, text="✅ " + self.T("lbl_method_extension").replace("Method 2: ", "").replace("Cách 2: ", ""), 
+                    font=("Segoe UI", 14, "bold"), text_color="#A7FFEB").pack(anchor="w", padx=15, pady=(15, 5))
         
-        ctk.CTkLabel(section1, text="🌐 " + self.T("lbl_method_browser"), 
-                    font=("Segoe UI", 13, "bold"), text_color="#90CAF9").pack(anchor="w", padx=15, pady=(10, 5))
-        ctk.CTkLabel(section1, text=self.T("desc_method_browser"), 
-                    font=("Segoe UI", 10), text_color="gray", wraplength=480).pack(anchor="w", padx=15)
+        # Description - 3 Steps
+        desc_txt = f"{self.T('cookie_step_1')}\n{self.T('cookie_step_2')}\n{self.T('cookie_step_3')}"
+        ctk.CTkLabel(card, text=desc_txt, 
+                    font=("Segoe UI", 12), text_color="#E0F2F1", wraplength=420, justify="left").pack(anchor="w", padx=15, pady=(0, 15))
         
-        # Current browser status
-        if browser_set:
-            status_text = f"✓ {self.T('lbl_current')}: {current_browser.capitalize()}"
-            status_color = "#66BB6A"
-        else:
-            status_text = f"❌ {self.T('lbl_current')}: {self.T('val_none')}"
-            status_color = "#EF5350"
-        
-        ctk.CTkLabel(section1, text=status_text, font=("Segoe UI", 10, "bold"), 
-                    text_color=status_color).pack(anchor="w", padx=15, pady=(5, 0))
-        
-        def on_goto_settings():
-            dialog.destroy()
-            self.jump_to_cookie_settings()
-        
-        ctk.CTkButton(section1, text="⚙ " + self.T("cookie_goto_settings"), 
-                     command=on_goto_settings, fg_color="#2196F3", hover_color="#1976D2",
-                     width=200, height=32).pack(pady=10)
-        
-        # === SECTION 2: Extension Method ===
-        section2 = ctk.CTkFrame(scroll, fg_color="#1E4A3F", corner_radius=10)
-        section2.pack(fill="x", pady=8)
-        
-        ctk.CTkLabel(section2, text="📦 " + self.T("lbl_method_extension"), 
-                    font=("Segoe UI", 13, "bold"), text_color="#80CBC4").pack(anchor="w", padx=15, pady=(10, 5))
-        ctk.CTkLabel(section2, text=self.T("desc_method_extension"), 
-                    font=("Segoe UI", 10), text_color="gray", wraplength=480).pack(anchor="w", padx=15)
-        
-        # Extension name
-        ctk.CTkLabel(section2, text="\"Get cookies.txt LOCALLY\"", 
-                    font=("Consolas", 11, "bold"), text_color="#4FC3F7").pack(pady=5)
-        
-        btn_row = ctk.CTkFrame(section2, fg_color="transparent")
-        btn_row.pack(pady=10)
+        # Buttons Row
+        btn_row = ctk.CTkFrame(card, fg_color="transparent")
+        btn_row.pack(pady=(0, 15), padx=15, fill="x")
         
         ctk.CTkButton(btn_row, text="📥 " + self.T("btn_install_extension"), 
                      command=lambda: webbrowser.open("https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc"),
-                     fg_color="#00BCD4", hover_color="#0097A7", width=180, height=32).pack(side="left", padx=5)
+                     fg_color="#00BCD4", hover_color="#0097A7", height=35).pack(side="left", fill="x", expand=True, padx=(0, 5))
         
         def on_load_cookie_file():
             dialog.destroy()
@@ -1490,20 +1460,23 @@ class YoutubeDownloaderApp(ctk.CTk):
         
         ctk.CTkButton(btn_row, text="📂 " + self.T("btn_load_cookie_file"), 
                      command=on_load_cookie_file, fg_color="#FF9800", hover_color="#F57C00",
-                     width=180, height=32).pack(side="left", padx=5)
+                     height=35).pack(side="right", fill="x", expand=True, padx=(5, 0))
         
-        # === SECTION 3: Tips ===
-        tips_frame = ctk.CTkFrame(scroll, fg_color="#37474F", corner_radius=8)
-        tips_frame.pack(fill="x", pady=8)
+        
+        # === Tips Section ===
+        tips_frame = ctk.CTkFrame(scroll, fg_color="transparent", border_width=1, border_color="#546E7A", corner_radius=8)
+        tips_frame.pack(fill="x", pady=15)
         
         ctk.CTkLabel(tips_frame, text="💡 " + self.T("lbl_tips"), 
-                    font=("Segoe UI", 11, "bold")).pack(anchor="w", padx=15, pady=(8, 5))
+                    font=("Segoe UI", 12, "bold"), text_color="#B0BEC5").pack(anchor="w", padx=15, pady=(8, 2))
+                    
         ctk.CTkLabel(tips_frame, text=self.T("tips_cookie_usage"), 
-                    font=("Segoe UI", 10), text_color="gray", wraplength=480, justify="left").pack(anchor="w", padx=15, pady=(0, 8))
+                    font=("Segoe UI", 11), text_color="#90A4AE", wraplength=420, justify="left").pack(anchor="w", padx=15, pady=(0, 8))
         
         # Close button
         ctk.CTkButton(scroll, text=self.T("btn_close"), command=dialog.destroy,
-                     fg_color="gray", hover_color="#616161", width=100).pack(pady=10)
+                     fg_color="transparent", border_width=1, border_color="gray", 
+                     text_color="gray", hover_color="#424242", width=100, height=30).pack(pady=5)
     
     def _apply_browser_cookies_and_retry(self, browser="chrome"):
         """Apply browser cookies and retry last download"""

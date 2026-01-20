@@ -210,5 +210,9 @@
     "val_unknown": "Unknown",
     "msg_playlist_range": "Playlist has {} videos.\nEnter range (e.g. 1-10, 5, all):",
     "msg_restart_confirm": "Restart app to apply changes?",
-    "grp_sys_title": "系统"
+    "grp_sys_title": "系统",
+    "cookie_step_1": "步骤 1: 安装扩展",
+    "cookie_step_2": "步骤 2: 通过浏览器扩展下载 cookies.txt",
+    "cookie_step_3": "步骤 3: 使用下方按钮上传到软件",
+    "btn_load_cookie_file": "上传 Cookie 文件"
 }

@@ -222,7 +222,7 @@
     "msg_cookie_guide_browser": "Go to Settings and select your browser (Chrome, Edge, Firefox, Brave, etc.) to automatically extract login cookies.",
     "msg_cookie_guide_extension": "Try using a browser extension to export cookies as a .txt file. Click the button below to install the extension.",
     "btn_install_extension": "Install Extension",
-    "btn_load_cookie_file": "Load Cookie File",
+    "btn_load_cookie_file": "Upload Cookie File",
     "msg_cookie_loaded": "Cookie file loaded successfully! Try downloading again.",
     "val_none": "None",
     "grp_sys_title": "System",
@@ -233,5 +233,8 @@
     "desc_method_extension": "Install extension to export cookies.txt file. Works with all browsers.",
     "lbl_current": "Current",
     "lbl_tips": "Tips",
-    "tips_cookie_usage": "• Cookies required for age-restricted, premium, or region-locked videos\n• Keep your browser logged in before extracting\n• Cookie files may expire - refresh if downloads fail"
+    "tips_cookie_usage": "• Cookies required for age-restricted/premium videos\n• Keep browser logged in\n• Extraction Error? Close browser OR add to shortcut:\n   --disable-features=LockProfileCookieDatabase",
+    "cookie_step_1": "Step 1: Install Extension",
+    "cookie_step_2": "Step 2: Download cookies.txt via browser extension",
+    "cookie_step_3": "Step 3: Upload to app using button below"
 }

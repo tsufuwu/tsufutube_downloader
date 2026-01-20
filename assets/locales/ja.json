@@ -210,5 +210,9 @@
     "val_unknown": "Unknown",
     "msg_playlist_range": "Playlist has {} videos.\nEnter range (e.g. 1-10, 5, all):",
     "msg_restart_confirm": "Restart app to apply changes?",
-    "grp_sys_title": "システム"
+    "grp_sys_title": "システム",
+    "cookie_step_1": "ステップ 1: 拡張機能をインストール",
+    "cookie_step_2": "ステップ 2: ブラウザ拡張機能で cookies.txt をダウンロード",
+    "cookie_step_3": "ステップ 3: 下のボタンでアプリにアップロード",
+    "btn_load_cookie_file": "Cookieファイルをアップロード"
 }
