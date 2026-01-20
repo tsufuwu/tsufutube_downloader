@@ -14,7 +14,7 @@ import webbrowser
 from ui.widget import Tooltip  # Keeping Tooltip, removing others
 from core import DownloaderEngine
 from fetcher import get_fetcher
-from data import THEMES
+from data import THEMES, TIPS_CONTENT
 from constant import APP_TITLE, APP_SLOGAN, REPO_API_URL, VERSION
 from utils import resource_path, time_to_seconds, set_autostart_registry
 from config import ConfigManager
@@ -912,36 +912,13 @@ class YoutubeDownloaderApp(ctk.CTk):
         text3.configure(state="disabled")
 
         # Tab 4: Tips (Mẹo) - [NEW]
-        tab4 = tabview.add("Tips (Mẹo)")
+        tab4 = tabview.add(self.T("tab_tips") if self.T("tab_tips") != "[tab_tips]" else "Tips")
         text4 = ctk.CTkTextbox(tab4, font=txt_font, wrap="word")
         text4.pack(fill="both", expand=True, padx=5, pady=5)
         
-        tips_content = """MẸO SỬ DỤNG & THỦ THUẬT (TIPS & TRICKS)
-
-1. SỬ DỤNG MEDIA PLAYER CLASSIC (MPC)
-   - Khuyên dùng MPC-HC hoặc MPC-BE để xem video tải về.
-   - Đây là trình phát video nhẹ, mượt và hỗ trợ tự động nhận diện Subtitle tốt nhất (hơn hẳn trình mặc định của Win 10/11).
-   - Mẹo: Chuột phải vào Video đang phát -> Chọn Subtitles -> Enable để bật/tắt phụ đề nhanh.
-   - Tên file subtitle sẽ có dạng "Tên Video.vi.srt" hoặc "Tên Video.en.srt" -> MPC sẽ tự nhận diện và cho phép bạn chọn ngôn ngữ.
-
-2. CÁCH TẠO BẢN DỊCH SUBTITLE AI HOÀN CHỈNH
-   (Dành cho video không có sẵn sub tiếng Việt, bạn có thể tự làm bản dịch xịn)
-
-   ► Bước 1: Tải video kèm theo bản subtitle gốc (thường là Tiếng Anh, chọn định dạng .vtt hoặc .srt).
-   
-   ► Bước 2: Bấm chuột phải vào file .vtt/.srt đã tải -> Open with -> Chọn Notepad (hoặc Text Document, Edit Plus...).
-   
-   ► Bước 3: Copy toàn bộ nội dung bên trong file đó.
-   
-   ► Bước 4: Paste vào các mô hình AI (ChatGPT, Gemini, Claude...) hoặc Google Dịch.
-      Gõ lệnh: "Dịch nội dung file sub VTT này sang Tiếng Việt, giữ nguyên timecode".
-   
-   ► Bước 5: Copy kết quả AI trả về.
-      - Quay lại file .vtt cũ, xóa hết nội dung cũ, paste cái mới vào và Save lại.
-      - Hoặc tạo file mới với tên GIỐNG HỆT tên video (Ví dụ: Video.mp4 -> Video.vtt).
-   
-   ► Bước 6: Mở video bằng MPC và thưởng thức thành quả bản dịch của chính bạn!
-        """
+        # Load from data.py based on language, fallback to English
+        tips_content = TIPS_CONTENT.get(self.lang, TIPS_CONTENT.get("en", "Tips content not found."))
+        
         text4.insert("1.0", tips_content)
         text4.configure(state="disabled")
         
