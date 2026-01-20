@@ -1997,25 +1997,6 @@ class YoutubeDownloaderApp(ctk.CTk):
         ev.wait()
         return result["val"]
 
-    def _update_progress_ui(self, percent, text):
-        """Thread-safe UI update helper"""
-        if percent == 101: # Special code for infinite/wait
-            self.progress_bar.set(0)
-            self.progress_bar.start()
-        else:
-            self.progress_bar.stop()
-            self.progress_bar.set(percent / 100)
-        
-        if text:
-            # Check for special message keys
-            if text == "MSG_CUT_WAIT": text = self.T("msg_cut_wait")
-            self.progress_label.configure(text=text)
-
-    def _update_status_ui(self, msg):
-        """Thread-safe status update helper"""
-        if msg == "MSG_CUT_WAIT": msg = self.T("msg_cut_wait")
-        self.status_label.configure(text=msg)
-
     def run_download_process(self):
         # [FIX PLAYLIST] Detect if this is a playlist task
         initial_url = self.url_var.get().strip()
@@ -2178,12 +2159,12 @@ class YoutubeDownloaderApp(ctk.CTk):
                     for t in reversed(new_subtasks):
                          task_queue.insert(0, t)
                          
-                    safe_on_status(self.T("status_expanded_playlist").format(len(new_subtasks)))
+                    on_status_callback(self.T("status_expanded_playlist").format(len(new_subtasks)))
                     continue # Skip downloading the playlist URL itself
             # --------------------------------
             
             # Normal Download
-            safe_on_status(self.T("status_downloading_file").format(task.get('title','...')))
+            on_status_callback(self.T("status_downloading_file").format(task.get('title','...')))
             success, msg, history_item = self.engine.download_single(task, self.settings, callbacks)
             
             if self.is_cancelled: break
