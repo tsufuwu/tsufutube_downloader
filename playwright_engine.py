@@ -168,8 +168,32 @@ class PlaywrightEngine:
                             "source": "dom"
                         }
                 
-                # Harvest Title
-                title = page.title()
+                # Harvest Title - try multiple sources for better title
+                title = None
+                try:
+                    # Priority 1: og:title meta tag (most reliable for video title)
+                    title = page.evaluate("""() => {
+                        const ogTitle = document.querySelector('meta[property="og:title"]');
+                        if (ogTitle) return ogTitle.getAttribute('content');
+                        const twitterTitle = document.querySelector('meta[name="twitter:title"]');
+                        if (twitterTitle) return twitterTitle.getAttribute('content');
+                        return null;
+                    }""")
+                except: pass
+                
+                # Priority 2: page title, but clean it
+                if not title or len(title.strip()) < 3:
+                    title = page.title()
+                    
+                # Clean title - remove common website suffixes
+                if title:
+                    # Remove common patterns like "- Dailymotion", "| YouTube", etc.
+                    import re as _re
+                    title = _re.sub(r'\s*[-|–—]\s*(Dailymotion|YouTube|Vimeo|Facebook|Watch|Video|Watch Video).*$', '', title, flags=_re.IGNORECASE)
+                    title = title.strip()
+                
+                if not title or len(title.strip()) < 3:
+                    title = f"Video_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
                 
                 browser.close()
                 

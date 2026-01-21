@@ -120,6 +120,98 @@ class DownloaderEngine:
             else: return False, "FFmpeg Error"
         except Exception as e: return False, str(e)
 
+    def _convert_m3u8_to_mp4(self, m3u8_path, output_path):
+        """
+        Convert m3u8 file to mp4 using FFmpeg.
+        m3u8 from Playwright sniffing often needs re-muxing to play correctly.
+        
+        NOTE: yt-dlp sometimes downloads the video correctly but saves with .m3u8 extension.
+        We check if the file is actually a text playlist or already a binary video.
+        """
+        if not os.path.exists(m3u8_path):
+            print("[Core] M3U8 file not found")
+            return False
+            
+        # Check if file is actually a text playlist or binary video
+        # M3U8 playlists start with #EXTM3U or #EXT
+        try:
+            with open(m3u8_path, 'rb') as f:
+                header = f.read(20)
+            
+            # If it starts with #EXT, it's a text playlist
+            is_text_playlist = header.startswith(b'#EXT') or header.startswith(b'#EXTM3U')
+            
+            if not is_text_playlist:
+                # File is already a binary video, just rename extension
+                print("[Core] M3U8 file is actually a video, renaming to .mp4")
+                try:
+                    os.rename(m3u8_path, output_path)
+                    return True
+                except Exception as e:
+                    print(f"[Core] Rename failed: {e}")
+                    # Fallback: copy and delete
+                    import shutil
+                    shutil.copy2(m3u8_path, output_path)
+                    os.remove(m3u8_path)
+                    return True
+                    
+        except Exception as e:
+            print(f"[Core] Error checking m3u8 file type: {e}")
+            # Continue with FFmpeg conversion as fallback
+        
+        # It's a real m3u8 playlist, use FFmpeg to download and convert
+        if not os.path.exists(self.ffmpeg_path): 
+            print("[Core] FFmpeg not found, cannot convert m3u8")
+            return False
+        
+        try:
+            # FFmpeg command: read m3u8 playlist and convert to mp4
+            # -allowed_extensions ALL: allow m3u8 to work with non-standard extensions
+            # -protocol_whitelist: allow local file and network protocols
+            # -c copy: fast copy without re-encoding (if compatible)
+            # -bsf:a aac_adtstoasc: fix audio bitstream for mp4 container
+            cmd_args = [
+                '-y',  # Overwrite output
+                '-protocol_whitelist', 'file,http,https,tcp,tls,crypto',
+                '-allowed_extensions', 'ALL',
+                '-i', m3u8_path,
+                '-c', 'copy',
+                '-bsf:a', 'aac_adtstoasc',
+                output_path
+            ]
+            
+            startupinfo = None
+            creation_flags = 0
+            if sys.platform == 'win32':
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                creation_flags = subprocess.CREATE_NO_WINDOW
+            
+            full_cmd = [self.ffmpeg_path] + cmd_args
+            print(f"[Core] Converting m3u8 playlist: {' '.join(full_cmd[:5])}...")
+            
+            result = subprocess.run(
+                full_cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                startupinfo=startupinfo,
+                creationflags=creation_flags,
+                timeout=600  # 10 minute timeout
+            )
+            
+            if result.returncode == 0 and os.path.exists(output_path):
+                return True
+            else:
+                print(f"[Core] FFmpeg conversion failed: {result.stderr.decode('utf-8', errors='ignore')[:500]}")
+                return False
+                
+        except subprocess.TimeoutExpired:
+            print("[Core] M3U8 conversion timed out")
+            return False
+        except Exception as e:
+            print(f"[Core] M3U8 conversion error: {e}")
+            return False
+
     def cancel(self):
         self.is_cancelled = True
         # [CANCEL FIX] Force kill any active subprocess (FFmpeg)
@@ -700,6 +792,24 @@ class DownloaderEngine:
                         final_path = self._get_final_path(ydl, info)
             finally:
                 pass # Context manager handles cleanup
+            
+            # [M3U8 FIX] Convert m3u8 to mp4 if needed (Playwright Fallback)
+            # yt-dlp sometimes downloads m3u8 as-is when using direct URL from sniffing
+            if final_path and os.path.exists(final_path) and final_path.lower().endswith('.m3u8'):
+                callbacks.get('on_status', lambda x:None)("Đang chuyển đổi m3u8 sang MP4...")
+                callbacks.get('on_progress', lambda x,y:None)(101, "Đang chuyển đổi...")
+                
+                mp4_path = final_path.rsplit('.', 1)[0] + '.mp4'
+                convert_success = self._convert_m3u8_to_mp4(final_path, mp4_path)
+                
+                if convert_success and os.path.exists(mp4_path):
+                    # Delete original m3u8 file
+                    try: os.remove(final_path)
+                    except: pass
+                    final_path = mp4_path
+                    print(f"[Core] M3U8 converted to MP4: {final_path}")
+                else:
+                    print(f"[Core] M3U8 conversion failed, keeping original")
             
             # Post-processing (outside finally block)
             if dtype == "sub_only":
