@@ -3241,7 +3241,8 @@ class YoutubeDownloaderApp(ctk.CTk):
         #         print(f"Error stopping tray: {e}")
 
     def on_close(self):
-        if self.settings.get("minimize_to_tray", False):
+        # [FIX] Only minimize if enabled AND tray icon is actually running
+        if self.settings.get("minimize_to_tray", False) and getattr(self, 'tray_icon', None):
             self.withdraw()
             # Tray is already running in background if enabled
         else:
