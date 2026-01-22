@@ -32,7 +32,7 @@ MANIFEST
 *.webp
 *.jpg
 *.png
-*.gif
+!assets/*.png
 
 # Cookie files
 *.txt
@@ -44,4 +44,6 @@ logs/
 ffmpeg/
 installer_output/
 *.exe
-*.spec
+
+# Build specs - allow them to be tracked
+!*.spec
