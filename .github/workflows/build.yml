@@ -167,7 +167,7 @@ jobs:
 
       - name: Build with PyInstaller
         run: |
-          pyinstaller Tsufutube_Mac.spec
+          pyinstaller installer/Tsufutube_Mac.spec
 
       - name: Create DMG
         run: |
@@ -212,7 +212,7 @@ jobs:
 
       - name: Build with PyInstaller
         run: |
-          pyinstaller Tsufutube_Linux.spec
+          pyinstaller installer/Tsufutube_Linux.spec
 
       - name: Create Archive
         run: |
