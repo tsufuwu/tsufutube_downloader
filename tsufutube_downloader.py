@@ -160,7 +160,13 @@ if __name__ == "__main__":
     import json
     
     # Determine config path (cross-platform)
-    if platform_utils:
+    # Check for portable 'data' folder first
+    exe_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+    portable_data = os.path.join(exe_dir, "data")
+    
+    if os.path.exists(portable_data):
+        config_dir = portable_data
+    elif platform_utils:
         config_dir = platform_utils.get_app_data_dir("Tsufutube")
     elif os.name == 'nt': 
         app_data = os.getenv('LOCALAPPDATA') or os.getenv('APPDATA')

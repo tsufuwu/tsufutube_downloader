@@ -3042,7 +3042,7 @@ class YoutubeDownloaderApp(ctk.CTk):
         self.history_menu.add_separator()
         self.history_menu.add_command(label=self.T("btn_tool_switch"), command=self.history_send_to_tools)
         self.history_menu.add_separator()
-        self.history_menu.add_command(label=self.T("ctx_delete"), command=self.history_delete_single)
+        self.history_menu.add_command(label=self.T("ctx_delete"), command=self.delete_selected_history)
 
     def on_history_right_click(self, event):
         item_id = self.history_tree.identify_row(event.y)

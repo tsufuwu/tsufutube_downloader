@@ -83,7 +83,13 @@ def resource_path(relative_path):
 def get_language():
     """Detect language from settings file"""
     try:
-        if os.name == 'nt': 
+        # Check for portable 'data' folder first
+        exe_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+        portable_data = os.path.join(exe_dir, "data")
+        
+        if os.path.exists(portable_data):
+             config_dir = portable_data
+        elif os.name == 'nt': 
             app_data = os.getenv('LOCALAPPDATA') or os.getenv('APPDATA')
             config_dir = os.path.join(app_data, "Tsufutube")
         else: 

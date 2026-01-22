@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sửa lỗi Windows Protected Your PC - Tsufutube</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4fc3f7;
+            --secondary: #1a1a2e;
+            --bg: #0f0f1a;
+            --card-bg: #161625;
+            --accent: #ff4081;
+            --text: #e0e0e0;
+            --text-dim: #a0a0a0;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .header {
+            width: 100%;
+            padding: 60px 0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 100%);
+            text-align: center;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.5rem;
+            margin: 0;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-dim);
+            margin-top: 10px;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            padding-bottom: 60px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease;
+            animation: fadeIn 1.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+
+        .card-content {
+            padding: 30px;
+        }
+
+        .step-num {
+            display: inline-block;
+            background: var(--primary);
+            color: var(--secondary);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.4rem;
+            margin: 0 0 20px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .instruction {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: var(--text);
+        }
+
+        .img-container {
+            width: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            padding: 20px 0;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.6);
+        }
+
+        .footer {
+            margin-top: auto;
+            padding: 30px;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            width: 100%;
+            background: var(--card-bg);
+        }
+
+        .btn-run {
+            display: inline-block;
+            background: var(--primary);
+            color: var(--secondary);
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-run:hover {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 0 20px rgba(255, 64, 129, 0.4);
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+            .card-content { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Windows Protected Your PC?</h1>
+        <p class="subtitle">Quick fix to run Tsufutube Downloader safely</p>
+    </div>
+
+    <div class="container">
+        <!-- Step 1 -->
+        <div class="card">
+            <div class="card-content">
+                <h2><span class="step-num">1</span> Click "More info" / "Thêm thông tin"</h2>
+                <div class="instruction">
+                    Khi hộp thoại SmartScreen xuất hiện, đừng lo lắng. Windows chỉ đang cảnh báo vì phần mềm này chưa được đăng ký chứng chỉ đắt đỏ với Microsoft. Bạn hãy nhấn vào dòng chữ <strong>"More info"</strong> (hoặc <strong>"Thêm thông tin"</strong>).
+                </div>
+            </div>
+            <div class="img-container">
+                <img src="assets/install_manual/step 1.png" alt="Step 1: Click More Info">
+            </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="card">
+            <div class="card-content">
+                <h2><span class="step-num">2</span> Click "Run anyway" / "Vẫn chạy"</h2>
+                <div class="instruction">
+                    Sau khi nhấn More info, nút <strong>"Run anyway"</strong> (hoặc <strong>"Vẫn chạy"</strong>) sẽ xuất hiện. Hãy nhấn vào đó để khởi chạy ứng dụng ngay lập tức.
+                </div>
+            </div>
+            <div class="img-container">
+                <img src="assets/install_manual/step 2.png" alt="Step 2: Click Run Anyway">
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <p style="color: var(--text-dim); font-style: italic;">Enjoy downloading with Tsufutube! 🚀</p>
+        </div>
+    </div>
+
+    <div class="footer">
+        &copy; 2026 Tsufutube Downloader. All rights reserved.
+    </div>
+
+</body>
+</html>
