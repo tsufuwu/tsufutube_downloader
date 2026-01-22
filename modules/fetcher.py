@@ -253,7 +253,7 @@ class FastFetcher:
         try:
             # Lazy import to avoid Playwright overhead if not used
             try:
-                from douyin_api import DouyinDownloader
+                from .douyin_api import DouyinDownloader
             except ImportError:
                 return None, "Module douyin_api missing"
                 
@@ -282,7 +282,7 @@ class FastFetcher:
         """
         try:
             try:
-                from dailymotion_api import DailymotionDownloader
+                from .dailymotion_api import DailymotionDownloader
             except ImportError:
                 return None, "Module dailymotion_api missing"
                 

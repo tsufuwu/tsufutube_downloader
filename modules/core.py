@@ -20,7 +20,7 @@ DailymotionDownloader = None
 
 # Import platform utilities for cross-platform support
 try:
-    import platform_utils
+    from . import platform_utils
 except ImportError:
     platform_utils = None
 
@@ -416,7 +416,7 @@ class DownloaderEngine:
         if platform == "DOUYIN":
             global DouyinDownloader
             if DouyinDownloader is None:
-                try: from douyin_api import DouyinDownloader
+                try: from .douyin_api import DouyinDownloader
                 except ImportError: pass
                 
             if DouyinDownloader:
@@ -431,7 +431,7 @@ class DownloaderEngine:
         if platform == "DAILYMOTION":
             global DailymotionDownloader
             if DailymotionDownloader is None:
-                try: from dailymotion_api import DailymotionDownloader
+                try: from .dailymotion_api import DailymotionDownloader
                 except ImportError: pass
             
             if DailymotionDownloader:
@@ -487,7 +487,7 @@ class DownloaderEngine:
             # [BILIBILI CN] Custom API Downloader (Fixed 412)
             global BilibiliAPI
             if BilibiliAPI is None:
-                try: from bilibili_api import BilibiliAPI
+                try: from .bilibili_api import BilibiliAPI
                 except ImportError: pass
 
             if BilibiliAPI:
@@ -707,7 +707,7 @@ class DownloaderEngine:
                         
                         global PlaywrightEngine
                         if PlaywrightEngine is None:
-                            try: from playwright_engine import PlaywrightEngine
+                            try: from .playwright_engine import PlaywrightEngine
                             except ImportError: PlaywrightEngine = None
                             
                         fallback_success = False

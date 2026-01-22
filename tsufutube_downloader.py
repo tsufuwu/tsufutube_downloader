@@ -10,7 +10,7 @@ else:
 # --- HANDLING SPLASH PROCESS (BEFORE SINGLE INSTANCE) ---
 if "--splash" in sys.argv:
     try:
-        import splash_screen
+        from modules import splash_screen
         splash_screen.main()
     except Exception as e:
         # If splash fails, just exit silently
@@ -27,7 +27,7 @@ except ImportError:
 
 # Import platform utilities for cross-platform support
 try:
-    import platform_utils
+    from modules import platform_utils
 except ImportError:
     platform_utils = None
 

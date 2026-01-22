@@ -39,7 +39,7 @@ jobs:
 
       - name: Build with PyInstaller
         run: |
-          pyinstaller Tsufutube-Downloader.spec
+          pyinstaller installer/Tsufutube-Downloader.spec
 
       - name: Decode Signing Certificate
         id: decode_cert
@@ -54,9 +54,10 @@ jobs:
             Write-Host "No signing certificate found in secrets."
           }
 
-      - name: Copy HTML Guide to Portable
+      - name: Copy HTML Guide & Assets to Portable
         run: |
           Copy-Item "Window_protect_your_Pc_Fix.html" -Destination "dist\Tsufutube-Downloader\"
+          Copy-Item -Path "assets" -Destination "dist\Tsufutube-Downloader\assets" -Recurse
 
       - name: Sign Portable EXE
         if: steps.decode_cert.outputs.pfx_exists == 'true'
@@ -89,7 +90,7 @@ jobs:
       - name: Build Installer (Inno Setup)
         shell: cmd
         run: |
-          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" Tsufutube_Installer.iss
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer/Tsufutube_Installer.iss
 
       - name: Sign Installer EXE
         if: steps.decode_cert.outputs.pfx_exists == 'true'

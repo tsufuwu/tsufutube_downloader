@@ -15,7 +15,7 @@ from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
 from packaging import version
 
-from constant import APP_VERSION, REPO_API_URL
+from .constant import APP_VERSION, REPO_API_URL
 
 
 class UpdateChecker:
@@ -28,7 +28,7 @@ class UpdateChecker:
         
         # Import platform utils for cross-platform support
         try:
-            import platform_utils
+            from . import platform_utils
             self.platform_utils = platform_utils
         except ImportError:
             self.platform_utils = None

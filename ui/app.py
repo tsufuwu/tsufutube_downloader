@@ -12,14 +12,14 @@ import subprocess
 from io import BytesIO
 import webbrowser
 from ui.widget import Tooltip  # Keeping Tooltip, removing others
-from core import DownloaderEngine
-from fetcher import get_fetcher
-from data import THEMES, TIPS_CONTENT
-from constant import APP_TITLE, APP_SLOGAN, REPO_API_URL, VERSION, APP_VERSION
-from utils import resource_path, time_to_seconds, set_autostart_registry
-from config import ConfigManager
-from time_spinbox import TimeSpinbox
-from updater import UpdateChecker, check_update_async
+from modules.core import DownloaderEngine
+from modules.fetcher import get_fetcher
+from modules.data import THEMES, TIPS_CONTENT
+from modules.constant import APP_TITLE, APP_SLOGAN, REPO_API_URL, VERSION, APP_VERSION
+from modules.utils import resource_path, time_to_seconds, set_autostart_registry
+from modules.config import ConfigManager
+from modules.time_spinbox import TimeSpinbox
+from modules.updater import UpdateChecker, check_update_async
 
 # Lazy Import Wrapper for Tray
 HAS_PYSTRAY = False

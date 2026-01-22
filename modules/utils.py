@@ -9,11 +9,12 @@ except ImportError:
 
 def resource_path(relative_path):
     try:
-        # PyInstaller OneFile
+        # PyInstaller OneFile/OneDir
         base = sys._MEIPASS
     except:
-        # Nuitka / PyInstaller OneDir / Raw Script
-        base = os.path.dirname(os.path.abspath(__file__))
+        # Dev Mode: 'modules' folder is where this file resides
+        # We need to go up one level to root
+        base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base, relative_path)
 
 def time_to_seconds(t):

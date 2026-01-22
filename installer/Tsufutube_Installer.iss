@@ -15,7 +15,8 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={autopf}\{#MyAppName}
+DefaultDirName={autolocalappdata}\{#MyAppName}
+PrivilegesRequired=lowest
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 ; Improve installer look
@@ -23,23 +24,23 @@ WizardStyle=modern
 Compression=lzma
 SolidCompression=yes
 OutputBaseFilename=Tsufutube_Setup_v{#MyAppVersion}
-OutputDir=dist
+OutputDir=..\dist
 ; Language Selection Dialog
 ShowLanguageDialog=yes
 ; Icon
-SetupIconFile=assets\icon.ico
+SetupIconFile=..\assets\icon.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
-Name: "vietnamese"; MessagesFile: "installer\Vietnamese.isl"
+Name: "vietnamese"; MessagesFile: "Vietnamese.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
 ; Main Application Files (from onedir build)
-Source: "dist\Tsufutube-Downloader\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\dist\Tsufutube-Downloader\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 
 [Icons]

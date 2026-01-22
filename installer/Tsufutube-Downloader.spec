@@ -1,7 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_all
 
-datas = [('assets', 'assets'), ('data.py', '.'), ('splash_screen.py', '.'), ('fetcher.py', '.'), ('bilibili_api.py', '.'), ('time_spinbox.py', '.'), ('updater.py', '.'), ('platform_utils.py', '.')]
+# Paths are relative to the SPEC file location (installer/)
+datas = [('../assets', 'assets'), ('../modules', 'modules')]
 binaries = []
 hiddenimports = ['PIL._tkinter_finder', 'yt_dlp', 'yt_dlp.extractor', 'yt_dlp.downloader', 'yt_dlp.postprocessor', 'yt_dlp.utils']
 tmp_ret = collect_all('yt_dlp')
@@ -9,7 +10,7 @@ datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 
 a = Analysis(
-    ['tsufutube_downloader.py'],
+    ['../tsufutube_downloader.py'],
     pathex=[],
     binaries=binaries,
     datas=datas,
@@ -39,7 +40,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['assets\\icon.ico'],
+    icon=['../assets/icon.ico'],
 )
 coll = COLLECT(
     exe,
