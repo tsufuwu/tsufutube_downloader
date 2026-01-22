@@ -48,4 +48,6 @@ CreateQuickLaunchIcon=Tạo lối tắt trong &Quick Launch
 
 FINISHEDLABEL=Cài đặt đã hoàn tất việc cài đặt [name] trên máy tính của bạn. Ứng dụng có thể được khởi chạy bằng cách chọn các biểu tượng đã cài đặt.%n%nNhấn Hoàn tất để thoát Cài đặt.
 RunEntryExec=Khởi chạy %1
+LaunchProgram=Khởi chạy %1
+AdditionalIcons=Các biểu tượng bổ sung
 ClickFinish=Nhấn Hoàn tất để thoát Cài đặt.

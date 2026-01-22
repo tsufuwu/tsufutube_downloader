@@ -40,12 +40,36 @@ jobs:
       - name: Build with PyInstaller
         run: |
           pyinstaller Tsufutube-Downloader.spec
-          pyinstaller Tsufu-Downloader_Launcher.spec
 
-      - name: Prepare Portable Folder
+      - name: Decode Signing Certificate
+        id: decode_cert
+        shell: pwsh
         run: |
-          # Copy Launcher to the main portable folder
-          Copy-Item "dist\Tsufu-Downloader_Launcher.exe" -Destination "dist\Tsufutube-Downloader\"
+          if ("${{ secrets.SIGNING_CERT }}" -ne "") {
+            $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.SIGNING_CERT }}")
+            [IO.File]::WriteAllBytes("certificate.pfx", $pfx_cert_byte)
+            echo "pfx_exists=true" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "pfx_exists=false" >> $env:GITHUB_OUTPUT
+            Write-Host "No signing certificate found in secrets."
+          }
+
+      - name: Copy HTML Guide to Portable
+        run: |
+          Copy-Item "Window_protect_your_Pc_Fix.html" -Destination "dist\Tsufutube-Downloader\"
+
+      - name: Sign Portable EXE
+        if: steps.decode_cert.outputs.pfx_exists == 'true'
+        shell: pwsh
+        run: |
+          $signtool = Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits" -Recurse -Filter "signtool.exe" | Select-Object -First 1
+          if ($signtool) {
+             # Portable EXE
+             $target = "dist\Tsufutube-Downloader\Tsufutube-Downloader.exe"
+             if (Test-Path $target) {
+                & $signtool.FullName sign /f certificate.pfx /p "${{ secrets.SIGNING_PASSWORD }}" /tr http://timestamp.digicert.com /td sha256 /fd sha256 $target
+             }
+          }
 
       - name: Create Portable ZIP
         run: |
@@ -65,8 +89,20 @@ jobs:
       - name: Build Installer (Inno Setup)
         shell: cmd
         run: |
-          python prepare_installer.py
           "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" Tsufutube_Installer.iss
+
+      - name: Sign Installer EXE
+        if: steps.decode_cert.outputs.pfx_exists == 'true'
+        shell: pwsh
+        run: |
+          $signtool = Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits" -Recurse -Filter "signtool.exe" | Select-Object -First 1
+          if ($signtool) {
+             # Installer EXE (wildcard match)
+             $installer = Get-ChildItem -Path "dist" -Filter "Tsufutube_Setup_*.exe" | Select-Object -First 1
+             if ($installer) {
+                & $signtool.FullName sign /f certificate.pfx /p "${{ secrets.SIGNING_PASSWORD }}" /tr http://timestamp.digicert.com /td sha256 /fd sha256 $installer.FullName
+             }
+          }
 
       - name: Upload Installer Artifact
         uses: actions/upload-artifact@v4
