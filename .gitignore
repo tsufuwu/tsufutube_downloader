@@ -33,6 +33,7 @@ MANIFEST
 *.jpg
 *.png
 !assets/*.png
+!assets/install_manual/*.png
 
 # Cookie files
 *.txt
@@ -45,6 +46,11 @@ logs/
 ffmpeg/
 installer_output/
 *.exe
+download_error.log
+temp_downloads/
+debug_*.py
+installer/assets/
+*.log
 
 # Build specs - allow them to be tracked
 !*.spec
