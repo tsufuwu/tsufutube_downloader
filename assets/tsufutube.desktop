@@ -1,0 +1,14 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Tsufutube Downloader
+GenericName=Video Downloader
+Comment=Download videos from YouTube, Dailymotion, Bilibili, and many more
+Exec=/opt/tsufutube/tsufutube-downloader %U
+Icon=/opt/tsufutube/assets/icon.png
+Terminal=false
+Categories=Network;AudioVideo;Video;
+Keywords=video;download;youtube;
+MimeType=x-scheme-handler/tsufutube;
+StartupNotify=true
+StartupWMClass=Tsufutube Downloader

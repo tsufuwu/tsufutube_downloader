@@ -18,6 +18,12 @@ DouyinDownloader = None
 PlaywrightEngine = None
 DailymotionDownloader = None
 
+# Import platform utilities for cross-platform support
+try:
+    import platform_utils
+except ImportError:
+    platform_utils = None
+
 def lazy_import_ytdlp():
     global yt_dlp
     if yt_dlp is None:
@@ -37,8 +43,16 @@ def lazy_import_extras():
             pass
 
 class DownloaderEngine:
-    def __init__(self, ffmpeg_path="ffmpeg.exe"):
-        self.ffmpeg_path = ffmpeg_path
+    def __init__(self, ffmpeg_path=None):
+        # Use platform_utils for cross-platform FFmpeg path, or fallback to provided path
+        if ffmpeg_path:
+            self.ffmpeg_path = ffmpeg_path
+        elif platform_utils:
+            self.ffmpeg_path = platform_utils.get_ffmpeg_path()
+        else:
+            # Default fallback
+            self.ffmpeg_path = "ffmpeg.exe" if sys.platform == 'win32' else "ffmpeg"
+        
         # Robust temp dir creation
         try:
              self.temp_dir = os.path.join(tempfile.gettempdir(), "tsufutube_cache")

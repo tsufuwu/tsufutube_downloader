@@ -2,17 +2,25 @@ import os
 import json
 from tkinter import messagebox  # Để dùng cho các thông báo lỗi nếu cần
 
+# Import platform utilities for cross-platform support
+try:
+    import platform_utils
+except ImportError:
+    platform_utils = None
+
 class ConfigManager:
     def __init__(self):
-        # --- ĐOẠN NÀY LẤY TỪ PHẦN ĐẦU __INIT__ CỦA CODE GỐC ---
-        # Xác định đường dẫn lưu file config
-        if os.name == 'nt': 
+        # --- CROSS-PLATFORM CONFIG DIRECTORY ---
+        # Use platform_utils for proper directory on macOS (~/Library/Application Support)
+        if platform_utils:
+            self.config_dir = platform_utils.get_app_data_dir("Tsufutube")
+        elif os.name == 'nt': 
             app_data = os.getenv('LOCALAPPDATA')
             if not app_data: app_data = os.getenv('APPDATA')
+            self.config_dir = os.path.join(app_data, "Tsufutube")
         else: 
-            app_data = os.path.expanduser("~/.config")
+            self.config_dir = os.path.join(os.path.expanduser("~/.config"), "Tsufutube")
 
-        self.config_dir = os.path.join(app_data, "Tsufutube")
         if not os.path.exists(self.config_dir):
             try: os.makedirs(self.config_dir)
             except: self.config_dir = os.getcwd() 

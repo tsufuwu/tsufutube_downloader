@@ -25,6 +25,13 @@ class UpdateChecker:
         self.config_mgr = config_mgr
         self.latest_release = None
         self.is_portable = self._detect_install_type()
+        
+        # Import platform utils for cross-platform support
+        try:
+            import platform_utils
+            self.platform_utils = platform_utils
+        except ImportError:
+            self.platform_utils = None
     
     def _detect_install_type(self) -> bool:
         """
@@ -34,14 +41,19 @@ class UpdateChecker:
         Detection logic:
         - Portable: Has 'ffmpeg' folder next to exe OR no uninstall registry
         - Installer: Located in Program Files or has uninstall entry
+        - MacOS/Linux: Always treated as Portable (no installer mechanism)
         """
         if not getattr(sys, 'frozen', False):
             # Running from source - treat as Portable for dev
             return True
         
+        # MacOS and Linux: Always portable (no installer mechanism yet)
+        if sys.platform != 'win32':
+            return True
+        
         exe_dir = os.path.dirname(sys.executable)
         
-        # Check 1: If in Program Files, it's likely installed
+        # Check 1: If in Program Files, it's likely installed (Windows only)
         program_files = os.environ.get('PROGRAMFILES', 'C:\\Program Files')
         program_files_x86 = os.environ.get('PROGRAMFILES(X86)', 'C:\\Program Files (x86)')
         
@@ -199,17 +211,31 @@ class UpdateChecker:
             if len(items) == 1 and os.path.isdir(os.path.join(temp_extract, items[0])):
                 extracted_content = os.path.join(temp_extract, items[0])
             
-            # Create update script that runs after app closes
-            update_script = os.path.join(tempfile.gettempdir(), 'tsufutube_update.bat')
-            
-            with open(update_script, 'w', encoding='utf-8') as f:
-                f.write('@echo off\n')
-                f.write('echo Updating Tsufutube Downloader...\n')
-                f.write('timeout /t 2 /nobreak > nul\n')  # Wait for app to close
-                f.write(f'xcopy /E /Y /I "{extracted_content}\\*" "{exe_dir}\\"\n')
-                f.write(f'rmdir /S /Q "{temp_extract}"\n')
-                f.write(f'start "" "{os.path.join(exe_dir, "Tsufutube-Downloader.exe")}"\n')
-                f.write('del "%~f0"\n')  # Self-delete
+            # Create update script that runs after app closes (cross-platform)
+            if self.platform_utils:
+                # Determine executable name based on platform
+                if sys.platform == 'win32':
+                    exe_name = "Tsufutube-Downloader.exe"
+                elif sys.platform == 'darwin':
+                    exe_name = "Tsufutube Downloader.app/Contents/MacOS/Tsufutube Downloader"
+                else:
+                    exe_name = "tsufutube-downloader"
+                
+                update_script = self.platform_utils.create_update_script(
+                    extracted_content, exe_dir, exe_name
+                )
+            else:
+                # Fallback: Windows batch script
+                update_script = os.path.join(tempfile.gettempdir(), 'tsufutube_update.bat')
+                
+                with open(update_script, 'w', encoding='utf-8') as f:
+                    f.write('@echo off\n')
+                    f.write('echo Updating Tsufutube Downloader...\n')
+                    f.write('timeout /t 2 /nobreak > nul\n')  # Wait for app to close
+                    f.write(f'xcopy /E /Y /I "{extracted_content}\\*" "{exe_dir}\\"\n')
+                    f.write(f'rmdir /S /Q "{temp_extract}"\n')
+                    f.write(f'start "" "{os.path.join(exe_dir, "Tsufutube-Downloader.exe")}"\n')
+                    f.write('del "%~f0"\n')  # Self-delete
             
             return update_script
             
@@ -240,14 +266,17 @@ class UpdateChecker:
             return None
     
     def run_update_script(self, script_path: str):
-        """Run the update batch script and exit the application."""
+        """Run the update script and exit the application (cross-platform)."""
         try:
-            # Use CREATE_NO_WINDOW to hide console
-            subprocess.Popen(
-                ['cmd', '/c', script_path],
-                creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0,
-                close_fds=True
-            )
+            if self.platform_utils:
+                self.platform_utils.run_update_script(script_path)
+            else:
+                # Fallback: Windows
+                subprocess.Popen(
+                    ['cmd', '/c', script_path],
+                    creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0,
+                    close_fds=True
+                )
         except Exception as e:
             print(f"Failed to run update script: {e}")
 

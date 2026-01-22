@@ -1,5 +1,4 @@
 import sys
-import ctypes
 import os
 
 # [FIX] Force CWD to App Directory (Fix System32 PermissionError)
@@ -26,6 +25,12 @@ try:
 except ImportError:
     pass  # Will be handled later if truly missing
 
+# Import platform utilities for cross-platform support
+try:
+    import platform_utils
+except ImportError:
+    platform_utils = None
+
 # [OPTIMIZATION] Single Instance Logic - Run BEFORE any heavy imports
 if __name__ == "__main__":
     # --- LAUNCH SPLASH SCREEN IMMEDIATELY ---
@@ -34,14 +39,16 @@ if __name__ == "__main__":
     splash_process = None
     try:
         import subprocess
-        import os
+        
+        # Get creation flags for hiding console window (cross-platform)
+        creation_flags = platform_utils.get_subprocess_creation_flags() if platform_utils else 0
         
         # Check if running bundled
         if getattr(sys, 'frozen', False):
             # In bundled exe, running the exe with --splash flag IS the splash screen
             splash_process = subprocess.Popen(
                 [sys.executable, '--splash'],
-                creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0
+                creationflags=creation_flags
             )
         else:
             # In dev mode, run the script directly
@@ -53,19 +60,27 @@ if __name__ == "__main__":
                     [sys.executable, splash_script],
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
-                    creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0
+                    creationflags=creation_flags
                 )
     except Exception as e:
         print(f"Splash subprocess error: {e}")
 
-    # Fix DPI scaling & App ID (Windows Only)
-    if os.name == 'nt':
-        try: 
+    # --- PLATFORM-SPECIFIC INITIALIZATION ---
+    if platform_utils:
+        platform_utils.set_dpi_awareness()
+        platform_utils.set_app_user_model_id()
+    elif os.name == 'nt':
+        # Fallback for Windows if platform_utils not available
+        try:
+            import ctypes
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("tsufu.tsufutube.downloader")
             ctypes.windll.user32.SetProcessDPIAware()
         except: pass
 
-        # --- SINGLE INSTANCE MUTEX & RESTORE LOGIC (Windows Only) ---
+    # --- SINGLE INSTANCE CHECK ---
+    if os.name == 'nt':
+        # Windows: Use Mutex for single instance
+        import ctypes
         ERROR_ALREADY_EXISTS = 183
         SW_RESTORE = 9
         
@@ -121,18 +136,38 @@ if __name__ == "__main__":
                 sys.exit(0)
         except Exception as e:
             print(f"Mutex error: {e}")
+    else:
+        # Unix (MacOS/Linux): Use file locking for single instance
+        if platform_utils and not platform_utils.acquire_single_instance_lock():
+            # Another instance is running
+            if splash_process:
+                try: splash_process.terminate()
+                except: pass
+            
+            try:
+                import tkinter.messagebox
+                import tkinter as tk
+                root = tk.Tk()
+                root.withdraw()
+                tkinter.messagebox.showinfo("Tsufutube Downloader", "The application is already running.")
+                root.destroy()
+            except: pass
+            
+            sys.exit(0)
 
     # --- FIRST RUN LANGUAGE SELECTION ---
     # Check if settings file exists. If not, show language selection FIRST (quickly)
     import json
     
-    # Determine config path
-    if os.name == 'nt': 
+    # Determine config path (cross-platform)
+    if platform_utils:
+        config_dir = platform_utils.get_app_data_dir("Tsufutube")
+    elif os.name == 'nt': 
         app_data = os.getenv('LOCALAPPDATA') or os.getenv('APPDATA')
+        config_dir = os.path.join(app_data, "Tsufutube")
     else: 
-        app_data = os.path.expanduser("~/.config")
+        config_dir = os.path.join(os.path.expanduser("~/.config"), "Tsufutube")
     
-    config_dir = os.path.join(app_data, "Tsufutube")
     settings_file = os.path.join(config_dir, "tsufu_settings.json")
     
     # Default settings template
@@ -222,11 +257,12 @@ if __name__ == "__main__":
         # Finally re-launch splash if we want (or just proceed to app load)
         # Usually user expects app to load now. Let's restart splash for loading
         try: 
+            creation_flags = platform_utils.get_subprocess_creation_flags() if platform_utils else 0
             if getattr(sys, 'frozen', False):
-                splash_process = subprocess.Popen([sys.executable, '--splash'], creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0)
+                splash_process = subprocess.Popen([sys.executable, '--splash'], creationflags=creation_flags)
             else:   
                  if os.path.exists(splash_script):
-                    splash_process = subprocess.Popen([sys.executable, splash_script], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0)
+                    splash_process = subprocess.Popen([sys.executable, splash_script], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=creation_flags)
         except: pass
 
     # Now do the slow stuff while splash is showing
