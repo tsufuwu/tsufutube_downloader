@@ -191,7 +191,6 @@ class YoutubeDownloaderApp(ctk.CTk):
         self.name_var = tk.StringVar()
         self.path_var = tk.StringVar(value=self.settings.get("save_path", os.getcwd()))
         self.cut_var = tk.BooleanVar(value=False)
-        self.fast_cut_mode_var = tk.BooleanVar(value=True)  # True = Fast, False = Precise
         self.start_chk_var = tk.BooleanVar(value=True)
         self.end_chk_var = tk.BooleanVar(value=True)
         self.type_var = tk.StringVar(value="video_1080")
@@ -201,6 +200,9 @@ class YoutubeDownloaderApp(ctk.CTk):
         self.playlist_var = tk.BooleanVar(value=False)
         self.open_finished_var = tk.BooleanVar(value=False)
         
+        # Cut Mode Var (Home Tab)
+        self.cut_mode_var = tk.StringVar(value="fast") # fast / acc
+        
         self.type_var.trace_add("write", self.on_type_changed)
         
         # Tool Tab Vars
@@ -209,6 +211,11 @@ class YoutubeDownloaderApp(ctk.CTk):
         self.tool_action_var = tk.StringVar(value="remux")
         self.tool_param_var = tk.StringVar(value="90")
         self.tool_out_path_var = tk.StringVar()
+        
+        # Tool Cut Mode Var
+        self.tool_cut_mode_var = tk.StringVar(value="fast")
+        self.tool_start_chk_var = tk.BooleanVar(value=True)
+        self.tool_end_chk_var = tk.BooleanVar(value=True)
         
         # Settings Vars
         self.lang_var = tk.StringVar(value=self.lang)
@@ -483,30 +490,27 @@ class YoutubeDownloaderApp(ctk.CTk):
 
         ctk.CTkLabel(right_frame, text=self.T("lbl_time_fmt"), text_color="gray", font=("Segoe UI", 10, "italic")).pack(anchor="e")
         
-        # [NEW] Fast/Precise Cut Mode Toggle
-        cut_mode_frame = ctk.CTkFrame(right_frame, fg_color="transparent")
-        cut_mode_frame.pack(anchor="e", pady=2)
+        # [NEW] Cut Mode Checkboxes (as Radio)
+        mode_frame = ctk.CTkFrame(right_frame, fg_color="transparent")
+        mode_frame.pack(anchor="e")
         
-        self.fast_cut_radio = ctk.CTkRadioButton(
-            cut_mode_frame, text=self.T("chk_fast_cut"), 
-            variable=self.fast_cut_mode_var, value=True,
-            font=("Segoe UI", 10), text_color="#4CAF50",
-            command=self.on_cut_mode_changed
-        )
-        self.fast_cut_radio.pack(side="left", padx=(0, 10))
+        self.chk_cfast = ctk.CTkCheckBox(mode_frame, text=self.T("chk_fast_cut"), variable=self.cut_mode_var, onvalue="fast", offvalue="acc", 
+                                        command=lambda: self.cut_mode_var.set("fast"), font=("Segoe UI", 10))
+        self.chk_cfast.pack(side="left", padx=5)
+        Tooltip(self.chk_cfast, self.T("tip_fast_cut"))
         
-        self.precise_cut_radio = ctk.CTkRadioButton(
-            cut_mode_frame, text=self.T("chk_precise_cut"), 
-            variable=self.fast_cut_mode_var, value=False,
-            font=("Segoe UI", 10), text_color="#FF9800",
-            command=self.on_cut_mode_changed
-        )
-        self.precise_cut_radio.pack(side="left")
+        self.chk_cacc = ctk.CTkCheckBox(mode_frame, text=self.T("chk_adv_cut"), variable=self.cut_mode_var, onvalue="acc", offvalue="fast",
+                                       command=lambda: self.cut_mode_var.set("acc"), font=("Segoe UI", 10))
+        self.chk_cacc.pack(side="left", padx=5)
+        Tooltip(self.chk_cacc, self.T("tip_adv_cut"))
         
-        # Tooltip label (shows description of current mode)
-        self.cut_mode_tooltip = ctk.CTkLabel(right_frame, text=self.T("tooltip_fast_cut"), 
-                                              text_color="gray", font=("Segoe UI", 9, "italic"))
-        self.cut_mode_tooltip.pack(anchor="e")
+        # Ensure correct initial state (visual only, since they share var with on/off values, explicit set helps)
+        # But wait, CTkCheckBox with variable sharing: if var="fast", cfast matches onvalue="fast" -> Checked.
+        # cacc matches offvalue="fast" -> Unchecked? No, offvalue is what it SETS when unchecked.
+        # To make them act like radio buttons:
+        # Checkbox 1: variable=var, onvalue="fast", offvalue="acc" (if unchecked -> acc)
+        # Checkbox 2: variable=var, onvalue="acc", offvalue="fast" (if unchecked -> fast)
+        # Perfect.
         
         time_row = ctk.CTkFrame(self.cut_card, fg_color="transparent")
         time_row.pack(fill="x", padx=10, pady=(0, 10))
@@ -697,7 +701,7 @@ class YoutubeDownloaderApp(ctk.CTk):
             ("remux", self.T("act_remux")), ("fix_rot", self.T("act_fix_rot")),
             ("norm_au", self.T("act_norm_au")), ("compress", self.T("act_compress")),
             ("extract_au", self.T("act_extract_au")), ("to_gif", self.T("act_to_gif")),   
-            ("mute", self.T("act_mute")), ("fast_cut", self.T("act_fast_cut")),    
+            ("mute", self.T("act_mute")), ("fast_cut", "✂ " + self.T("act_fast_cut")), # Used "Fast Cut" key but label is "Cut Video" (modified in json?) or I'll assume I update logic
             ("soft_sub", self.T("act_soft_sub")), ("hard_sub", self.T("act_hard_sub")),
             ("cover", self.T("act_cover")), ("conv_sub", self.T("act_conv_sub"))
         ]
@@ -711,6 +715,53 @@ class YoutubeDownloaderApp(ctk.CTk):
         # Extra Options
         self.pnl_extra = ctk.CTkFrame(scroll)
         self.pnl_extra.pack(fill="x", pady=5)
+        
+        # [NEW] Tool Cut Mode Checkboxes
+        self.pnl_tool_cut = ctk.CTkFrame(self.pnl_extra, fg_color="transparent")
+        self.pnl_tool_cut.pack(fill="x", padx=10, pady=2)
+        
+        ctk.CTkLabel(self.pnl_tool_cut, text="Mode:", text_color="gray", font=("Segoe UI", 12, "bold")).pack(side="left", padx=(0,10))
+        self.t_cfast = ctk.CTkCheckBox(self.pnl_tool_cut, text=self.T("chk_fast_cut"), variable=self.tool_cut_mode_var, onvalue="fast", offvalue="acc",
+                                      command=lambda: self.tool_cut_mode_var.set("fast"))
+        self.t_cfast.pack(side="left", padx=5)
+        Tooltip(self.t_cfast, self.T("tip_fast_cut"))
+        
+        self.t_cacc = ctk.CTkCheckBox(self.pnl_tool_cut, text=self.T("chk_adv_cut"), variable=self.tool_cut_mode_var, onvalue="acc", offvalue="fast",
+                                     command=lambda: self.tool_cut_mode_var.set("acc"))
+        self.t_cacc.pack(side="left", padx=5)
+        self.t_cacc.pack(side="left", padx=5)
+        Tooltip(self.t_cacc, self.T("tip_adv_cut"))
+        
+        # [NEW] Tool Time Inputs (Hidden by default)
+        self.pnl_tool_time = ctk.CTkFrame(scroll, fg_color="transparent")
+        self.pnl_tool_time.pack(fill="x", padx=10, pady=5)
+        self.pnl_tool_time.pack_forget() # Hide initially
+        
+        # Time Row (Start -> End)
+        t_row = ctk.CTkFrame(self.pnl_tool_time, fg_color="transparent")
+        t_row.pack(fill="x")
+        
+        # Start
+        b1 = ctk.CTkFrame(t_row, fg_color="transparent")
+        b1.pack(side="left", expand=True)
+        ctk.CTkLabel(b1, text=self.T("lbl_start").upper(), font=("Segoe UI", 10, "bold"), text_color="gray").pack(anchor="w")
+        self.tool_start_entry = TimeSpinbox(b1)
+        self.tool_start_entry.pack(pady=2)
+        self.tool_start_chk = ctk.CTkCheckBox(b1, text=self.T("chk_from_start"), variable=self.tool_start_chk_var, 
+                                             command=self.tool_toggle_cut_inputs, font=("Segoe UI", 10))
+        self.tool_start_chk.pack(anchor="w")
+        
+        ctk.CTkLabel(t_row, text="➜", font=("Segoe UI", 16)).pack(side="left", padx=10)
+        
+        # End
+        b2 = ctk.CTkFrame(t_row, fg_color="transparent")
+        b2.pack(side="left", expand=True)
+        ctk.CTkLabel(b2, text=self.T("lbl_end").upper(), font=("Segoe UI", 10, "bold"), text_color="gray").pack(anchor="w")
+        self.tool_end_entry = TimeSpinbox(b2)
+        self.tool_end_entry.pack(pady=2)
+        self.tool_end_chk = ctk.CTkCheckBox(b2, text=self.T("chk_to_end"), variable=self.tool_end_chk_var, 
+                                           command=self.tool_toggle_cut_inputs, font=("Segoe UI", 10))
+        self.tool_end_chk.pack(anchor="w")
         
         self.lbl_extra = ctk.CTkLabel(self.pnl_extra, text=self.T("tool_lbl_extra"), text_color="gray")
         self.lbl_extra.pack(anchor="w", padx=10)
@@ -1280,13 +1331,6 @@ class YoutubeDownloaderApp(ctk.CTk):
         end_state = state if self.cut_var.get() and not self.end_chk_var.get() else "disabled"
         self.end_entry.configure(state=end_state)
     
-    def on_cut_mode_changed(self):
-        """Update tooltip when Fast/Precise mode is toggled"""
-        if self.fast_cut_mode_var.get():
-            self.cut_mode_tooltip.configure(text=self.T("tooltip_fast_cut"))
-        else:
-            self.cut_mode_tooltip.configure(text=self.T("tooltip_precise_cut"))
-    
     def monitor_clipboard(self):
         """Monitor clipboard for auto-paste"""
         try:
@@ -1352,7 +1396,7 @@ class YoutubeDownloaderApp(ctk.CTk):
             
             # Cut info
             "cut_mode": self.cut_var.get(),
-            "fast_cut_mode": self.fast_cut_mode_var.get(),  # True = Fast (stream copy), False = Precise (re-encode)
+            "cut_method": self.settings.get("cut_method", "download_then_cut"), # Pass method
             "start_time": self._parse_time(self.start_entry.get()) if self.cut_var.get() else 0,
             "end_time": self._parse_time(self.end_entry.get()) if self.cut_var.get() else 0,
             
@@ -1631,6 +1675,8 @@ class YoutubeDownloaderApp(ctk.CTk):
         # Reset visibility
         self.cbo_rot.pack_forget()
         self.extra_row.pack_forget()
+        self.pnl_tool_cut.pack_forget() # [FIX] Hide cut panel
+        self.pnl_tool_time.pack_forget() # [FIX] Hide time panel
         self.lbl_extra.configure(text="")
         self.btn_extra_browse.pack_forget()
         
@@ -1656,9 +1702,12 @@ class YoutubeDownloaderApp(ctk.CTk):
         
         # Actions that need time range
         elif act == "fast_cut":
-            show_extra = True
-            self.lbl_extra.configure(text=self.T("tool_lbl_time_range"), text_color=t["accent"])
-            self.tool_extra_var.set("00:00:00 - 00:00:10")
+            # show_extra = True # No longer showing the old text input
+            # Show Cut Mode Options
+            self.pnl_tool_cut.pack(fill="x", padx=10, pady=2)
+            self.pnl_tool_time.pack(fill="x", padx=10, pady=5) # Show new time inputs
+            self.tool_toggle_cut_inputs() # Ensure state update
+            # self.tool_extra_var.set("00:00:00 - 00:00:10") # Legacy
         elif act == "to_gif":
             show_extra = True
             self.lbl_extra.configure(text=self.T("tool_lbl_time_range"), text_color=t["accent"])
@@ -1726,6 +1775,20 @@ class YoutubeDownloaderApp(ctk.CTk):
         
         threading.Thread(target=self.run_tool_process, daemon=True).start()
 
+    def tool_toggle_cut_inputs(self):
+        # Enable/Disable logic for tool tab time inputs
+        # Start
+        if self.tool_start_chk_var.get():
+             self.tool_start_entry.configure(state="disabled")
+        else:
+             self.tool_start_entry.configure(state="normal")
+             
+        # End
+        if self.tool_end_chk_var.get():
+             self.tool_end_entry.configure(state="disabled")
+        else:
+             self.tool_end_entry.configure(state="normal")
+
     def run_tool_process(self):
         act = self.tool_action_var.get()
         inp = self.tool_input_var.get()
@@ -1781,12 +1844,19 @@ class YoutubeDownloaderApp(ctk.CTk):
                 success, msg = self.engine.compress_video(inp, out, crf=crf_val, duration=total_duration, callback=update_tool_progress)
 
             elif act == "fast_cut":
-                parts = extra.split('-')
-                if len(parts) == 2:
-                    start_str, end_str = parts[0].strip(), parts[1].strip()
-                    success, msg = self.engine.fast_cut(inp, out, start_str, end_str, duration=total_duration, callback=update_tool_progress)
+                # Get Times from Spinbox
+                if self.tool_start_chk_var.get(): s_str = "00:00:00"
+                else: s_str = self.tool_start_entry.get()
+                
+                if self.tool_end_chk_var.get(): e_str = None
+                else: e_str = self.tool_end_entry.get()
+                
+                if self.tool_cut_mode_var.get() == "acc":
+                     # Advanced
+                     success, msg = self.engine.accurate_cut(inp, out, s_str, e_str, duration=total_duration, callback=update_tool_progress)
                 else:
-                    success, msg = (False, "Invalid Time Format")
+                     # Fast
+                     success, msg = self.engine.fast_cut(inp, out, s_str, e_str, duration=total_duration, callback=update_tool_progress)
 
             elif act == "extract_au":
                 fmt = "mp3"; bitrate = "192k"
@@ -2074,7 +2144,9 @@ class YoutubeDownloaderApp(ctk.CTk):
                 "name": self.name_var.get().strip(),
                 "subs": list(self.selected_sub_langs),
                 "sub_format": self.selected_sub_format, 
+                "sub_format": self.selected_sub_format, 
                 "cut_mode": self.cut_var.get(),
+                "cut_correct_mode": (self.cut_mode_var.get() == "acc"),
                 "start_time": time_to_seconds(self.start_entry.get()),
                 "end_time": time_to_seconds(self.end_entry.get()),
                 "dtype": self.type_var.get(),

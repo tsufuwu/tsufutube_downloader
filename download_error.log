@@ -1302,3 +1302,16 @@ Traceback (most recent call last):
                             ~~~~~~~~~^^^^^^^^^^^^^
 KeyError: 'extractor'
 
+
+==================================================
+TIME: 2026-01-23 02:34:33.877816
+URL: https://www.youtube.com/watch?v=OLRbIc8KZ_8&list=RDGMEMCMFH2exzjBeE_zAHHJOdxg&start_radio=1&rv=fcajPrHVwSs
+ERROR TYPE: NameError
+ERROR MSG: name 'cut_method' is not defined
+TRACEBACK:
+Traceback (most recent call last):
+  File "D:\Tsufutube\core.py", line 838, in _download_general_ytdlp
+    if cut_mode and cut_method == "download_then_cut" and final_path and os.path.exists(final_path):
+                    ^^^^^^^^^^
+NameError: name 'cut_method' is not defined. Did you mean: 'classmethod'?
+

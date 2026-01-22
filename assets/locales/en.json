@@ -260,8 +260,8 @@
     "bug_details": "Details:",
     "bug_template": "Steps to reproduce:\n1. \n2. \n3. \n\nExpected behavior:\n\nActual behavior:\n",
     "bug_send": "📧 Send Email",
-    "chk_fast_cut": "⚡ Fast Mode",
-    "chk_precise_cut": "🎯 Precise Mode",
-    "tooltip_fast_cut": "Instant cut (~1-2s). May be off by 1-2 seconds at cut points.",
-    "tooltip_precise_cut": "Frame-accurate cut. Slower (needs re-encoding) but precise."
+    "chk_fast_cut": "Fast Cut (Stream)",
+    "chk_adv_cut": "Advanced Cut (Re-encode)",
+    "tip_fast_cut": "Stream copy (Fast, less accurate)",
+    "tip_adv_cut": "Re-encode (Slow, frame-perfect)"
 }

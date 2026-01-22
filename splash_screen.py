@@ -5,6 +5,71 @@ from PIL import Image, ImageTk
 import sys
 import os
 import time
+import json
+
+# Translation Dictionary
+SPLASH_TEXT = {
+    "en": {
+        "slogan": "An all-in-one media downloader solution",
+        "loading": "Loading...",
+        "tip": "Tip: Use Media-Player-Classic for the best experience",
+        "msgs": ["Loading modules...", "Initializing UI...", "Preparing engine...", "Almost ready..."]
+    },
+    "vi": {
+        "slogan": "Giải pháp tải xuống đa phương tiện tất cả trong một",
+        "loading": "Đang tải...",
+        "tip": "Mẹo: Dùng Media-Player-Classic để có trải nghiệm tốt nhất",
+        "msgs": ["Đang tải module...", "Khởi tạo giao diện...", "Chuẩn bị engine...", "Sắp xong..."]
+    },
+    "de": {
+        "slogan": "All-in-One Medien-Downloader",
+        "loading": "Lädt...",
+        "tip": "Tipp: Verwenden Sie Media-Player-Classic",
+        "msgs": ["Lade Module...", "GUI initialisieren...", "Engine start...", "Fast fertig..."]
+    },
+    "es": {
+        "slogan": "Solución de descarga multimedia todo en uno",
+        "loading": "Cargando...",
+        "tip": "Consejo: Usa Media-Player-Classic",
+        "msgs": ["Cargando módulos...", "Iniciando UI...", "Preparando motor...", "Casi listo..."]
+    },
+    "fr": {
+        "slogan": "Solution de téléchargement média tout-en-un",
+        "loading": "Chargement...",
+        "tip": "Astuce : Utilisez Media-Player-Classic",
+        "msgs": ["Chargement modules...", "Initialisation UI...", "Préparation moteur...", "Presque prêt..."]
+    },
+    "ja": {
+        "slogan": "オールインワンのメディアダウンローダー",
+        "loading": "読み込み中...",
+        "tip": "ヒント: Media-Player-Classicの使用を推奨",
+        "msgs": ["モジュール読み込み...", "UI初期化中...", "エンジン準備中...", "まもなく完了..."]
+    },
+    "ko": {
+        "slogan": "올인원 미디어 다운로더 솔루션",
+        "loading": "로딩 중...",
+        "tip": "팁: 최상의 경험을 위해 Media-Player-Classic 사용",
+        "msgs": ["모듈 로딩 중...", "UI 초기화 중...", "엔진 준비 중...", "거의 완료..."]
+    },
+    "pt": {
+        "slogan": "Solução de download de mídia tudo-em-um",
+        "loading": "Carregando...",
+        "tip": "Dica: Use Media-Player-Classic",
+        "msgs": ["Carregando módulos...", "Iniciando UI...", "Preparando motor...", "Quase pronto..."]
+    },
+    "ru": {
+        "slogan": "Универсальный загрузчик медиа",
+        "loading": "Загрузка...",
+        "tip": "Совет: Используйте Media-Player-Classic",
+        "msgs": ["Загрузка модулей...", "Инициализация...", "Подготовка...", "Почти готово..."]
+    },
+    "zh": {
+        "slogan": "多合一媒体下载解决方案",
+        "loading": "加载中...",
+        "tip": "提示：使用 Media-Player-Classic 以获得最佳体验",
+        "msgs": ["加载模块...", "初始化界面...", "准备引擎...", "即将完成..."]
+    }
+}
 
 def resource_path(relative_path):
     """Get absolute path to resource for PyInstaller"""
@@ -15,12 +80,34 @@ def resource_path(relative_path):
         base_path = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(base_path, relative_path)
 
+def get_language():
+    """Detect language from settings file"""
+    try:
+        if os.name == 'nt': 
+            app_data = os.getenv('LOCALAPPDATA') or os.getenv('APPDATA')
+            config_dir = os.path.join(app_data, "Tsufutube")
+        else: 
+            config_dir = os.path.join(os.path.expanduser("~/.config"), "Tsufutube")
+        
+        settings_file = os.path.join(config_dir, "tsufu_settings.json")
+        if os.path.exists(settings_file):
+            with open(settings_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return data.get("language", "en")
+    except:
+        pass
+    return "en"
+
 def main():
     """Run the splash screen."""
     root = tk.Tk()
     root.overrideredirect(True)
     root.attributes("-topmost", True)
     root.configure(bg="#1a1a2e")
+    
+    # Language Setup
+    lang = get_language()
+    texts = SPLASH_TEXT.get(lang, SPLASH_TEXT["en"])
     
     # Center splash
     w, h = 450, 450
@@ -51,9 +138,8 @@ def main():
         tk.Label(frame, text="🎬", font=("Segoe UI Emoji", 36), fg="#4fc3f7", bg="#1a1a2e").pack(pady=(40, 5))
     
     # App title
-    # App title
     tk.Label(frame, text="TSUFUTUBE", font=("Segoe UI", 28, "bold"), fg="#4fc3f7", bg="#1a1a2e").pack(pady=(5, 0))
-    tk.Label(frame, text="An all-in-one media downloader solution", font=("Segoe UI", 12), fg="#888888", bg="#1a1a2e").pack(pady=(0, 15))
+    tk.Label(frame, text=texts["slogan"], font=("Segoe UI", 12), fg="#888888", bg="#1a1a2e").pack(pady=(0, 15))
     
     # Progress Bar
     style = ttk.Style()
@@ -72,14 +158,14 @@ def main():
     progress.start(10)  # Faster animation
     
     # Status label
-    status_label = tk.Label(frame, text="Loading...", font=("Segoe UI", 10), fg="#4fc3f7", bg="#1a1a2e")
+    status_label = tk.Label(frame, text=texts["loading"], font=("Segoe UI", 10), fg="#4fc3f7", bg="#1a1a2e")
     status_label.pack(pady=(0, 5))
 
     # Tip label
-    tk.Label(frame, text="💡 Tip: Use Media-Player-Classic for the best experience", font=("Segoe UI", 9, "italic"), fg="#aaaaaa", bg="#1a1a2e").pack(pady=(0, 15))
+    tk.Label(frame, text=texts["tip"], font=("Segoe UI", 9, "italic"), fg="#aaaaaa", bg="#1a1a2e").pack(pady=(0, 15))
     
     # Status messages
-    messages = ["Loading modules...", "Initializing UI...", "Preparing engine...", "Almost ready..."]
+    messages = texts["msgs"]
     msg_idx = [0]
     start_time = time.time()
     

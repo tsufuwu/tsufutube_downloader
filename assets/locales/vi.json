@@ -185,6 +185,10 @@
     "lbl_cut_settings": "Cài đặt Cắt (Cut Tool)",
     "opt_cut_direct": "Cắt trực tiếp (Stream)",
     "opt_cut_download": "Tải hết và Cắt (Khuyên dùng)",
+    "chk_fast_cut": "Cắt nhanh (Fast)",
+    "chk_adv_cut": "Cắt chuẩn (Re-encode)",
+    "tip_fast_cut": "Tốc độ cực nhanh, nhưng có thể lệch vài giây do keyframe.",
+    "tip_adv_cut": "Chính xác từng giây, nhưng chậm hơn do phải mã hóa lại.",
     "desc_cut_direct": "Stream hình ảnh chậm, tiết kiệm dung lượng, lâu hơn.",
     "desc_cut_download": "Tải cực nhanh rồi cắt offline. Tốc độ cao, tương thích tốt.",
     "hint_cut_slow": "Nếu bạn thấy công cụ cắt bị chậm, hãy thử đổi phương thức ở cài đặt",
@@ -260,9 +264,5 @@
     "bug_subject": "Tiêu đề:",
     "bug_details": "Chi tiết:",
     "bug_template": "Các bước tái hiện lỗi:\n1. \n2. \n3. \n\nKết quả mong đợi:\n\nKết quả thực tế:\n",
-    "bug_send": "📧 Gửi Email",
-    "chk_fast_cut": "⚡ Chế độ Nhanh",
-    "chk_precise_cut": "🎯 Chế độ Chính xác",
-    "tooltip_fast_cut": "Cắt tức thì (~1-2 giây). Có thể sai lệch 1-2 giây tại điểm cắt.",
-    "tooltip_precise_cut": "Cắt chính xác từng frame. Chậm hơn (cần mã hóa lại) nhưng chính xác."
+    "bug_send": "📧 Gửi Email"
 }

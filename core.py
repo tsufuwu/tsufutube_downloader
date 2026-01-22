@@ -506,10 +506,24 @@ class DownloaderEngine:
         save_path = task.get("save_path") or settings.get("save_path", ".")
         dtype = task.get("dtype", "video_1080")
         
+        # Capture output files to handle renaming/merging scenarios
+        captured_files = []
+
         # --- [FIX-2] POSTPROCESSOR HOOKS (CUT PROGRESS) ---
         def pp_hook(d):
             if self.is_cancelled: raise yt_dlp.utils.DownloadError("Cancelled")
             
+            # [CAPTURE]
+            if d['status'] == 'finished' and d.get('postprocessor') == 'Merger':
+                # Try to capture merged filename
+                # Note: keys depend on yt-dlp version, safely get
+                info_dict = d.get('info_dict', {})
+                # 'filepath' or '_filename' or check d['postprocessor_args']?
+                # Usually info_dict['filepath'] is updated
+                fpaths = [info_dict.get('filepath'), info_dict.get('_filename')]
+                for fp in fpaths:
+                    if fp: captured_files.append(fp)
+
             # [CRITICAL FIX] If in Cut Mode, ALWAYS force "Wait" message regardless of status
             # This ensures we override any "finished" or "processing" messages from yt-dlp
             if task.get("cut_mode"):
@@ -534,6 +548,10 @@ class DownloaderEngine:
         def progress_hook(d):
             if self.is_cancelled: raise yt_dlp.utils.DownloadError("Cancelled")
             
+            # [CAPTURE]
+            if d['status'] == 'finished':
+                captured_files.append(d['filename'])
+
             # [FIX UI] If cutting, suppress "downloading" status and enforce "Wait" message
             if task.get("cut_mode"):
                  msg = "MSG_CUT_WAIT"
@@ -629,19 +647,14 @@ class DownloaderEngine:
                 print(f"[DEBUG] Cookie - Set cookiesfrombrowser: {ydl_opts['cookiesfrombrowser']}")
 
         # Cut Mode
-        # [CUT LOGIC] fast_cut_mode: True = Fast (stream copy), False = Precise (re-encode at keyframes)
+        # [CUT LOGIC] method: 'direct_cut' (stream) vs 'download_then_cut' (full dl -> cut)
         cut_mode = task.get("cut_mode")
-        fast_cut_mode = task.get("fast_cut_mode", True)  # Default to fast mode
+        cut_method = task.get("cut_method", "download_then_cut") 
         
         if cut_mode:
-            # Always apply download_ranges for cutting
-            ydl_opts['download_ranges'] = yt_dlp.utils.download_range_func(None, [(task.get("start_time", 0), task.get("end_time", float('inf')))])
-            
-            if fast_cut_mode:
-                # Fast Mode: Stream copy - instant but may be off by 1-2 seconds
-                ydl_opts['force_keyframes_at_cuts'] = False
-            else:
-                # Precise Mode: Force keyframes at cuts - frame-accurate but slower (re-encodes)
+            # Only apply ranges if Direct Cut (Stream)
+            if cut_method == "direct_cut":
+                ydl_opts['download_ranges'] = yt_dlp.utils.download_range_func(None, [(task.get("start_time", 0), task.get("end_time", float('inf')))])
                 ydl_opts['force_keyframes_at_cuts'] = True
 
         # Config Format
@@ -808,7 +821,23 @@ class DownloaderEngine:
                     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                         # Pass 'info' dict to process_ie_result
                         info = ydl.process_ie_result(ie_result=info, download=True)
-                        final_path = self._get_final_path(ydl, info)
+                        
+                        # [FIX] Resolve final path using captured files (handles Merger/Renaming)
+                        calc_path = self._get_final_path(ydl, info)
+                        candidates = captured_files + [calc_path]
+                        
+                        # Find the last candidate that actually exists
+                        final_path = None
+                        for p in reversed(candidates):
+                            if p and os.path.exists(p):
+                                final_path = p
+                                break
+                        
+                        if not final_path: final_path = calc_path # Fallback
+                        
+                        # Debug logic
+                        if task.get("cut_mode"):
+                            print(f"[Core] Resolved Final Path: {final_path} (Candidates: {len(captured_files)})")
             finally:
                 pass # Context manager handles cleanup
             
@@ -835,6 +864,9 @@ class DownloaderEngine:
                 final_path = self._handle_sub_conversion(final_path, task.get("sub_format", "srt"), callbacks)
 
             # [CUT LOGIC] If 'download_then_cut' was selected, perform cut now
+            if cut_mode:
+                print(f"[DEBUG-CUT] Mode={cut_mode}, Method={cut_method}, Path={final_path}, Exists={os.path.exists(final_path) if final_path else 'None'}")
+            
             if cut_mode and cut_method == "download_then_cut" and final_path and os.path.exists(final_path):
                  try:
                      # Send status
@@ -849,9 +881,20 @@ class DownloaderEngine:
                      name, ext = os.path.splitext(os.path.basename(final_path))
                      cut_out = os.path.join(folder, f"{name}_cut{ext}")
                      
+                     cut_out = os.path.join(folder, f"{name}_cut{ext}")
+                     
                      # Run FFmpeg
-                     # -ss Start -to End -i Input -c copy Output
-                     success, msg = self.fast_cut(final_path, cut_out, str(timedelta(seconds=start_t)), str(timedelta(seconds=end_t)))
+                     # Prepare timestamps
+                     t_start = str(timedelta(seconds=start_t))
+                     t_end = str(timedelta(seconds=end_t)) if end_t > 0 else None
+                     
+                     if task.get("cut_correct_mode"):
+                         # Mode: Advanced (Re-encode)
+                         callbacks.get('on_status', lambda x:None)("MSG_CUT_ACCURATE") 
+                         success, msg = self.accurate_cut(final_path, cut_out, t_start, t_end)
+                     else:
+                         # Mode: Fast (Stream Copy)
+                         success, msg = self.fast_cut(final_path, cut_out, t_start, t_end)
                      
                      if success and os.path.exists(cut_out):
                          # Delete original full video
@@ -1250,14 +1293,29 @@ class DownloaderEngine:
         elif format=="copy": cmd.extend(['-acodec', 'copy'])
         else: cmd.extend(['-acodec', 'aac'])
         return self.execute_ffmpeg_cmd(cmd + [o, '-y'], duration, callback)
-    def fast_cut(self, i, o, s, e, duration=0, callback=None, precise=False):
-        # -ss before -i for fast seek, -to after -i for accurate end
-        if precise:
-            # Precise Mode: Re-encode at cut points for frame-accurate cutting
-            return self.execute_ffmpeg_cmd(['-ss', s, '-i', i, '-to', e, '-c:v', 'libx264', '-preset', 'fast', '-crf', '18', '-c:a', 'aac', '-avoid_negative_ts', 'make_zero', o, '-y'], duration, callback)
-        else:
-            # Fast Mode: Stream copy - instant but may be off by 1-2 seconds
-            return self.execute_ffmpeg_cmd(['-ss', s, '-i', i, '-to', e, '-c', 'copy', '-avoid_negative_ts', 'make_zero', o, '-y'], duration, callback)
+    def fast_cut(self, i, o, s, e, duration=0, callback=None):
+        # [FIX] Put -to BEFORE -i for input reading limit (Correct for both Start-to-End and Middle cuts)
+        cmd = ['-ss', s]
+        if e: cmd.extend(['-to', e])
+        cmd.extend(['-i', i, '-c', 'copy', '-avoid_negative_ts', 'make_zero', o, '-y'])
+        return self.execute_ffmpeg_cmd(cmd, duration, callback)
+    
+    def accurate_cut(self, i, o, s, e, duration=0, callback=None):
+        # [ADVANCED CUT] Re-encode for frame-perfect accuracy
+        # -ss and -to before -i (input seeking) is fast but might be less frame-perfect than output seeking for re-encode?
+        # Actually for re-encode, input seeking is fine AND accurate because we are decoding.
+        # But to be 100% sure of frames, we decode from s. 
+        # But to be 100% sure of frames, we decode from s. 
+        cmd = ['-ss', s]
+        if e: cmd.extend(['-to', e])
+        cmd.extend([
+            '-i', i,
+            '-c:v', 'libx264', '-preset', 'fast', '-crf', '23', 
+            '-c:a', 'aac', '-b:a', '192k',
+            '-avoid_negative_ts', 'make_zero', 
+            o, '-y'
+        ])
+        return self.execute_ffmpeg_cmd(cmd, duration, callback)
     def convert_subtitle(self, i, o): return self.execute_ffmpeg_cmd(['-i', i, o, '-y'])
     def fix_rotation(self, i, o, rot="90"):
         vf = "transpose=1" # 90 Clockwise
