@@ -629,14 +629,19 @@ class DownloaderEngine:
                 print(f"[DEBUG] Cookie - Set cookiesfrombrowser: {ydl_opts['cookiesfrombrowser']}")
 
         # Cut Mode
-        # [CUT LOGIC] method: 'direct_cut' (stream) vs 'download_then_cut' (full dl -> cut)
+        # [CUT LOGIC] fast_cut_mode: True = Fast (stream copy), False = Precise (re-encode at keyframes)
         cut_mode = task.get("cut_mode")
-        cut_method = task.get("cut_method", "download_then_cut") 
+        fast_cut_mode = task.get("fast_cut_mode", True)  # Default to fast mode
         
         if cut_mode:
-            # Only apply ranges if Direct Cut (Stream)
-            if cut_method == "direct_cut":
-                ydl_opts['download_ranges'] = yt_dlp.utils.download_range_func(None, [(task.get("start_time", 0), task.get("end_time", float('inf')))])
+            # Always apply download_ranges for cutting
+            ydl_opts['download_ranges'] = yt_dlp.utils.download_range_func(None, [(task.get("start_time", 0), task.get("end_time", float('inf')))])
+            
+            if fast_cut_mode:
+                # Fast Mode: Stream copy - instant but may be off by 1-2 seconds
+                ydl_opts['force_keyframes_at_cuts'] = False
+            else:
+                # Precise Mode: Force keyframes at cuts - frame-accurate but slower (re-encodes)
                 ydl_opts['force_keyframes_at_cuts'] = True
 
         # Config Format
@@ -1245,9 +1250,14 @@ class DownloaderEngine:
         elif format=="copy": cmd.extend(['-acodec', 'copy'])
         else: cmd.extend(['-acodec', 'aac'])
         return self.execute_ffmpeg_cmd(cmd + [o, '-y'], duration, callback)
-    def fast_cut(self, i, o, s, e, duration=0, callback=None):
+    def fast_cut(self, i, o, s, e, duration=0, callback=None, precise=False):
         # -ss before -i for fast seek, -to after -i for accurate end
-        return self.execute_ffmpeg_cmd(['-ss', s, '-i', i, '-to', e, '-c', 'copy', '-avoid_negative_ts', 'make_zero', o, '-y'], duration, callback)
+        if precise:
+            # Precise Mode: Re-encode at cut points for frame-accurate cutting
+            return self.execute_ffmpeg_cmd(['-ss', s, '-i', i, '-to', e, '-c:v', 'libx264', '-preset', 'fast', '-crf', '18', '-c:a', 'aac', '-avoid_negative_ts', 'make_zero', o, '-y'], duration, callback)
+        else:
+            # Fast Mode: Stream copy - instant but may be off by 1-2 seconds
+            return self.execute_ffmpeg_cmd(['-ss', s, '-i', i, '-to', e, '-c', 'copy', '-avoid_negative_ts', 'make_zero', o, '-y'], duration, callback)
     def convert_subtitle(self, i, o): return self.execute_ffmpeg_cmd(['-i', i, o, '-y'])
     def fix_rotation(self, i, o, rot="90"):
         vf = "transpose=1" # 90 Clockwise

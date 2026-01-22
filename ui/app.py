@@ -191,6 +191,7 @@ class YoutubeDownloaderApp(ctk.CTk):
         self.name_var = tk.StringVar()
         self.path_var = tk.StringVar(value=self.settings.get("save_path", os.getcwd()))
         self.cut_var = tk.BooleanVar(value=False)
+        self.fast_cut_mode_var = tk.BooleanVar(value=True)  # True = Fast, False = Precise
         self.start_chk_var = tk.BooleanVar(value=True)
         self.end_chk_var = tk.BooleanVar(value=True)
         self.type_var = tk.StringVar(value="video_1080")
@@ -482,8 +483,30 @@ class YoutubeDownloaderApp(ctk.CTk):
 
         ctk.CTkLabel(right_frame, text=self.T("lbl_time_fmt"), text_color="gray", font=("Segoe UI", 10, "italic")).pack(anchor="e")
         
-        # [NEW] Performance Note (Sunk style)
-        ctk.CTkLabel(right_frame, text=self.T("hint_cut_slow"), text_color="gray", font=("Segoe UI", 9, "italic")).pack(anchor="e")
+        # [NEW] Fast/Precise Cut Mode Toggle
+        cut_mode_frame = ctk.CTkFrame(right_frame, fg_color="transparent")
+        cut_mode_frame.pack(anchor="e", pady=2)
+        
+        self.fast_cut_radio = ctk.CTkRadioButton(
+            cut_mode_frame, text=self.T("chk_fast_cut"), 
+            variable=self.fast_cut_mode_var, value=True,
+            font=("Segoe UI", 10), text_color="#4CAF50",
+            command=self.on_cut_mode_changed
+        )
+        self.fast_cut_radio.pack(side="left", padx=(0, 10))
+        
+        self.precise_cut_radio = ctk.CTkRadioButton(
+            cut_mode_frame, text=self.T("chk_precise_cut"), 
+            variable=self.fast_cut_mode_var, value=False,
+            font=("Segoe UI", 10), text_color="#FF9800",
+            command=self.on_cut_mode_changed
+        )
+        self.precise_cut_radio.pack(side="left")
+        
+        # Tooltip label (shows description of current mode)
+        self.cut_mode_tooltip = ctk.CTkLabel(right_frame, text=self.T("tooltip_fast_cut"), 
+                                              text_color="gray", font=("Segoe UI", 9, "italic"))
+        self.cut_mode_tooltip.pack(anchor="e")
         
         time_row = ctk.CTkFrame(self.cut_card, fg_color="transparent")
         time_row.pack(fill="x", padx=10, pady=(0, 10))
@@ -1257,6 +1280,13 @@ class YoutubeDownloaderApp(ctk.CTk):
         end_state = state if self.cut_var.get() and not self.end_chk_var.get() else "disabled"
         self.end_entry.configure(state=end_state)
     
+    def on_cut_mode_changed(self):
+        """Update tooltip when Fast/Precise mode is toggled"""
+        if self.fast_cut_mode_var.get():
+            self.cut_mode_tooltip.configure(text=self.T("tooltip_fast_cut"))
+        else:
+            self.cut_mode_tooltip.configure(text=self.T("tooltip_precise_cut"))
+    
     def monitor_clipboard(self):
         """Monitor clipboard for auto-paste"""
         try:
@@ -1322,7 +1352,7 @@ class YoutubeDownloaderApp(ctk.CTk):
             
             # Cut info
             "cut_mode": self.cut_var.get(),
-            "cut_method": self.settings.get("cut_method", "download_then_cut"), # Pass method
+            "fast_cut_mode": self.fast_cut_mode_var.get(),  # True = Fast (stream copy), False = Precise (re-encode)
             "start_time": self._parse_time(self.start_entry.get()) if self.cut_var.get() else 0,
             "end_time": self._parse_time(self.end_entry.get()) if self.cut_var.get() else 0,
             
