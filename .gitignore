@@ -37,6 +37,7 @@ MANIFEST
 # Cookie files
 *.txt
 !requirements.txt
+!requirements-dev.txt
 
 # Temp & Binaries
 temp/
