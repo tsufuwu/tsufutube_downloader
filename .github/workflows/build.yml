@@ -59,11 +59,14 @@ jobs:
             dist/Tsufutube-Downloader-Windows-Portable.zip
             dist/Tsufutube-Downloader/
 
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress
+
       - name: Build Installer (Inno Setup)
+        shell: cmd
         run: |
-          choco install innosetup
           python prepare_installer.py
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" Tsufutube_Installer.iss
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" Tsufutube_Installer.iss
 
       - name: Upload Installer Artifact
         uses: actions/upload-artifact@v4
