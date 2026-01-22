@@ -11,16 +11,10 @@ import os
 # =========================================================================
 
 datas = [
-    ('assets', 'assets'), 
-    ('data.py', '.'), 
-    ('splash_screen.py', '.'), 
-    ('fetcher.py', '.'), 
-    ('bilibili_api.py', '.'), 
-    ('time_spinbox.py', '.'), 
-    ('updater.py', '.'),
-    ('platform_utils.py', '.'),
+    ('../assets', 'assets'), 
+    ('../modules', 'modules'),
     # Include .desktop file for Linux integration
-    ('assets/tsufutube.desktop', 'assets'),
+    ('../assets/tsufutube.desktop', 'assets'),
 ]
 
 binaries = []
@@ -49,7 +43,7 @@ hiddenimports += tmp_ret[2]
 # =========================================================================
 
 a = Analysis(
-    ['tsufutube_downloader.py'],
+    ['../tsufutube_downloader.py'],
     pathex=[],
     binaries=binaries,
     datas=datas,
@@ -87,7 +81,7 @@ exe_onefile = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='assets/icon.png',  # Linux uses PNG for icons
+    icon='../assets/icon.png',  # Linux uses PNG for icons
 )
 
 # =========================================================================

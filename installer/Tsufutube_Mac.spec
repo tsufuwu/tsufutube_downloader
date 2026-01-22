@@ -11,14 +11,8 @@ import os
 # =========================================================================
 
 datas = [
-    ('assets', 'assets'), 
-    ('data.py', '.'), 
-    ('splash_screen.py', '.'), 
-    ('fetcher.py', '.'), 
-    ('bilibili_api.py', '.'), 
-    ('time_spinbox.py', '.'), 
-    ('updater.py', '.'),
-    ('platform_utils.py', '.'),
+    ('../assets', 'assets'), 
+    ('../modules', 'modules'),
 ]
 
 binaries = []
@@ -45,7 +39,7 @@ hiddenimports += tmp_ret[2]
 # =========================================================================
 
 a = Analysis(
-    ['tsufutube_downloader.py'],
+    ['../tsufutube_downloader.py'],
     pathex=[],
     binaries=binaries,
     datas=datas,
@@ -80,7 +74,7 @@ exe = EXE(
     target_arch=None,  # Universal binary (or specify 'x86_64' / 'arm64')
     codesign_identity=None,  # Set to your Apple Developer ID for signing
     entitlements_file='entitlements.plist',  # Optional: for sandboxing
-    icon='assets/icon.icns',  # macOS uses .icns format
+    icon='../assets/icon.icns',  # macOS uses .icns format
 )
 
 # =========================================================================
@@ -104,7 +98,7 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     name='Tsufutube Downloader.app',
-    icon='assets/icon.icns',
+    icon='../assets/icon.icns',
     bundle_identifier='com.tsufutube.downloader',
     version='1.0.0',
     info_plist={
