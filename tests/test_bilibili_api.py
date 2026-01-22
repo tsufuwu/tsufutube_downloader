@@ -6,7 +6,7 @@ import os
 import sys
 
 # Import the module under test
-from bilibili_api import BilibiliAPI
+from modules.bilibili_api import BilibiliAPI
 
 
 class TestBilibiliAPIMixinKey:

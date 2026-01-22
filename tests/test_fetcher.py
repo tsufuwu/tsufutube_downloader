@@ -6,7 +6,7 @@ import sys
 import os
 
 # Import the module under test
-from fetcher import FastFetcher
+from modules.fetcher import FastFetcher
 
 
 class TestFastFetcherPlatformIdentification:

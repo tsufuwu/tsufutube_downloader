@@ -6,7 +6,7 @@ import os
 import sys
 
 # Import the module under test
-from core import DownloaderEngine
+from modules.core import DownloaderEngine
 
 
 class TestDownloaderEngineInit:

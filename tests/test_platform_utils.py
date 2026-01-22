@@ -7,7 +7,7 @@ import sys
 import platform
 
 # Import the module under test
-import platform_utils
+import modules.platform_utils as platform_utils
 
 
 class TestPlatformConstants:

@@ -6,7 +6,7 @@ import os
 import sys
 
 # Import the module under test
-from utils import resource_path, time_to_seconds
+from modules.utils import resource_path, time_to_seconds
 
 
 class TestResourcePath:

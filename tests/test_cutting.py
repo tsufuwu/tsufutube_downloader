@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock
-from core import DownloaderEngine
+from modules.core import DownloaderEngine
 
 class TestCuttingLogic:
     @pytest.fixture
