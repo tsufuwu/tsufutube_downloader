@@ -68,11 +68,11 @@ jobs:
       - name: Check Python Syntax
         run: |
           python -m py_compile tsufutube_downloader.py
-          python -m py_compile core.py
-          python -m py_compile fetcher.py
-          python -m py_compile utils.py
-          python -m py_compile platform_utils.py
-          python -m py_compile bilibili_api.py
+          python -m py_compile modules/core.py
+          python -m py_compile modules/fetcher.py
+          python -m py_compile modules/utils.py
+          python -m py_compile modules/platform_utils.py
+          python -m py_compile modules/bilibili_api.py
 
   build-check:
     name: Build Check
@@ -95,7 +95,7 @@ jobs:
       - name: Verify PyInstaller Spec
         run: |
           # Check that spec files are valid Python
-          python -m py_compile Tsufutube-Downloader.spec
-          python -m py_compile Tsufutube_Linux.spec
-          python -m py_compile Tsufutube_Mac.spec
+          python -m py_compile installer/Tsufutube-Downloader.spec
+          python -m py_compile installer/Tsufutube_Linux.spec
+          python -m py_compile installer/Tsufutube_Mac.spec
           echo "All spec files are valid!"
