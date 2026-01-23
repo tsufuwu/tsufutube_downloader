@@ -220,5 +220,10 @@ class PlaywrightEngine:
                     return None
                     
         except Exception as e:
-            print(f"[PlaywrightFallback] Error: {e}")
+            error_str = str(e)
+            print(f"[PlaywrightFallback] Error: {error_str}")
+            # Check if this is a "browser not installed" error
+            if "executable doesn't exist" in error_str.lower() or "executable does not exist" in error_str.lower():
+                # Return a special dict indicating browser needs install
+                return {"error": "PLAYWRIGHT_BROWSER_NOT_INSTALLED", "message": error_str}
             return None

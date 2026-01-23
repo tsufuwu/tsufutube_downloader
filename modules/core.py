@@ -720,6 +720,26 @@ class DownloaderEngine:
                                 pw = PlaywrightEngine(headless=True)
                                 sniff_data = pw.sniff_video(task["url"])
                                 
+                                # [FIX] Auto-install Playwright if missing
+                                if sniff_data and isinstance(sniff_data, dict) and sniff_data.get("error") == "PLAYWRIGHT_BROWSER_NOT_INSTALLED":
+                                    print("[Core] Playwright browser not found. Installing...")
+                                    callbacks.get('on_status', lambda x:None)("Đang cài đặt thành phần bổ trợ (Playwright)...")
+                                    try:
+                                        from .playwright_helper import install_playwright_chromium
+                                        success, msg = install_playwright_chromium()
+                                        if success:
+                                            print("[Core] Playwright installed. Retrying sniff...")
+                                            callbacks.get('on_status', lambda x:None)("Cài đặt xong! Đang thử lại...")
+                                            pw = PlaywrightEngine(headless=True)
+                                            sniff_data = pw.sniff_video(task["url"])
+                                        else:
+                                            print(f"[Core] Install failed: {msg}")
+                                            sniff_data = None 
+                                    except Exception as ie:
+                                        print(f"[Core] Install helper error: {ie}")
+                                        sniff_data = None
+
+                                
                                 if sniff_data and sniff_data.get("url"):
                                     print(f"[Core] Playwright Fallback Success: {sniff_data['url']}")
                                     callbacks.get('on_status', lambda x:None)("Fallback thành công! Đang tải...")

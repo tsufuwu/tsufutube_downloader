@@ -273,6 +273,27 @@ class FastFetcher:
                 info['_fetcher_tier'] = 1
                 return info, None
             
+            # Check for browser not installed error - trigger install
+            if error == "PLAYWRIGHT_BROWSER_NOT_INSTALLED":
+                print("[Fetcher] Playwright browser not installed. Triggering auto-install...")
+                try:
+                    from .playwright_helper import install_playwright_chromium
+                    success, msg = install_playwright_chromium()
+                    if success:
+                        print("[Fetcher] Playwright installed! Retrying Douyin fetch...")
+                        # Retry once after install
+                        dd2 = DouyinDownloader(headless=True)
+                        info2, error2 = dd2.get_video_info(url)
+                        if info2:
+                            d = info2.get('duration', 0)
+                            info2['duration_string'] = f"{int(d) // 60}:{int(d) % 60:02d}" if d else "??:??"
+                            info2['extractor_key'] = "Douyin"
+                            info2['_fetcher_tier'] = 1
+                            return info2, None
+                        return None, error2
+                except Exception as install_err:
+                    print(f"[Fetcher] Playwright install error: {install_err}")
+            
             return None, error or "Douyin fetch failed"
             
         except Exception as e:

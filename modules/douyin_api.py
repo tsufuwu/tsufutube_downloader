@@ -88,7 +88,11 @@ class DouyinDownloader:
                     return None, "Failed to extract video by any method."
 
         except Exception as e:
-            return None, f"Playwright Error: {str(e)}"
+            error_str = str(e)
+            # Check if this is a "browser not installed" error
+            if "executable doesn't exist" in error_str.lower() or "executable does not exist" in error_str.lower():
+                return None, "PLAYWRIGHT_BROWSER_NOT_INSTALLED"
+            return None, f"Playwright Error: {error_str}"
 
     def _clean_title(self, text):
         """Sanitize title: remove hashtags, newlines, and suffix."""
