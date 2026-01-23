@@ -789,20 +789,27 @@ class DownloaderEngine:
             from yt_dlp.utils import sanitize_filename
             clean_base_name = sanitize_filename(base_name)
             
+            # [FIX] Ensure save_path is absolute for correct existence check
+            abs_save_path = os.path.abspath(save_path)
+
+            # [FIX] Sanitize extension (remove leading dot)
+            clean_ext = final_ext.lstrip('.')
+
             def get_unique_name(directory, filename, ext):
                 counter = 1
                 new_filename = filename
                 while True:
-                    # Check cả file
                     cand_path = os.path.join(directory, f"{new_filename}.{ext}")
                     if not os.path.exists(cand_path):
                         return new_filename
                     new_filename = f"{filename} ({counter})"
                     counter += 1
             
-            unique_base_name = get_unique_name(save_path, clean_base_name, final_ext)
+            unique_base_name = get_unique_name(abs_save_path, clean_base_name, clean_ext)
             
             # 4. Gán lại vào outtmpl để yt-dlp dùng tên này
+            # IMPORTANT: Use the original save_path to keep relative paths if user intended, 
+            # but we already resolved collision using absolute path above.
             ydl_opts['outtmpl'] = os.path.join(save_path, f'{unique_base_name}.%(ext)s')
             
             # [CRITICAL] Nếu tên file đã bị đổi (tức là có trùng lặp), ta CẦN disable archive check
