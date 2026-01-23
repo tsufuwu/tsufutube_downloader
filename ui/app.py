@@ -1055,45 +1055,8 @@ class YoutubeDownloaderApp(ctk.CTk):
         # 2. Auto-start Registry
         if self.settings.get("run_on_startup", True):
             threading.Thread(target=set_autostart_registry, args=(True,), daemon=True).start()
-            
-        # 3. [NEW] Playwright Check & Auto-Install
-        def check_and_install_playwright():
-            try:
-                from modules import playwright_helper
-                is_installed, _ = playwright_helper.check_chromium_installed()
-                if not is_installed:
-                    print("Playwright Chromium not found. Installing...")
-                    
-                    # Notify UI: Start
-                    self.msg_queue.put(lambda: self.status_label.configure(
-                        text="⚙ Installing Playwright support components... (This happens once)", 
-                        text_color="#FF9800"
-                    ))
-                    self.msg_queue.put(lambda: self.download_btn.configure(state="disabled"))
-                    
-                    # Install
-                    success, msg = playwright_helper.install_playwright_chromium()
-                    
-                    # Notify UI: Result
-                    if success:
-                        print("Playwright installed successfully.")
-                        self.msg_queue.put(lambda: self.status_label.configure(
-                            text="✓ Ready (Playwright components installed)", 
-                            text_color="green"
-                        ))
-                    else:
-                        print(f"Playwright install failed: {msg}")
-                        self.msg_queue.put(lambda: self.status_label.configure(
-                            text=f"⚠ Component install failed: {msg}", 
-                            text_color="#f44336"
-                        ))
-                    
-                    # Re-enable button
-                    self.msg_queue.put(lambda: self.download_btn.configure(state="normal"))
-            except Exception as e:
-                print(f"Error in Playwright check: {e}")
-
-        threading.Thread(target=check_and_install_playwright, daemon=True).start()
+        
+        # Note: DrissionPage uses system Chrome/Edge, no browser installation needed
 
     def _extract_url(self, text):
         """Smartly extract the first valid URL from text"""
@@ -1186,6 +1149,12 @@ class YoutubeDownloaderApp(ctk.CTk):
             info, error = self.fetcher.fetch(url)
             
             if error:
+                 # [FIX] Intercept browser not found error (DrissionPage or legacy Playwright)
+                 if error in ("PLAYWRIGHT_BROWSER_NOT_INSTALLED", "BROWSER_NOT_FOUND"):
+                     if not cancel_event.is_set():
+                         safe_after(lambda: self._show_browser_not_found_error())
+                     return
+
                  print(f"Fetch Error (Tier {info.get('_fetcher_tier', '?') if info else '?'}): {error}")
                  if not cancel_event.is_set():
                      safe_after(lambda: self._on_fetch_error(f"Lỗi: {error[:60]}"))
@@ -1283,6 +1252,32 @@ class YoutubeDownloaderApp(ctk.CTk):
             self.thumb_label.configure(text="❌", image=None)
         except Exception as e:
             print(f"UI Error in _on_fetch_error: {e}")
+
+    def _show_browser_not_found_error(self):
+        """Show dialog when no browser is found (DrissionPage needs Chrome/Edge)."""
+        self.is_fetching_info = False
+        self.check_btn.configure(text=self.T("btn_check"), state="normal", fg_color=["#3B8ED0", "#1F6AA5"])
+        self.info_frame.pack_forget()
+        
+        import webbrowser
+        
+        ans = messagebox.askyesno(
+            "Cần cài đặt trình duyệt", 
+            "Tính năng này yêu cầu Google Chrome hoặc Microsoft Edge.\n\n"
+            "Vui lòng cài đặt một trong hai trình duyệt trên.\n\n"
+            "Bạn có muốn mở trang tải Chrome không?"
+        )
+        
+        if ans:
+            webbrowser.open("https://www.google.com/chrome/")
+        
+        self.status_label.configure(
+            text="⚠ Vui lòng cài đặt Chrome hoặc Edge để sử dụng tính năng này.", 
+            text_color="#f44336"
+        )
+
+    # Legacy alias for backward compatibility
+    _ask_install_playwright = _show_browser_not_found_error
     
     def _load_thumbnail(self, url, cancel_event):
         """Load thumbnail image in background"""

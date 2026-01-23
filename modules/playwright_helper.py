@@ -1,182 +1,86 @@
 # -*- coding: utf-8 -*-
 """
-Playwright browser management helper.
-Handles browser installation checks and auto-install functionality.
+DEPRECATED: Browser helper module.
+DrissionPage uses system browser, no installation needed.
+This file exists only for backward compatibility.
 """
-import subprocess
-import sys
-import os
-import shutil
-import time
 
-# Error message constants
-BROWSER_NOT_FOUND_ERROR = "PLAYWRIGHT_BROWSER_NOT_INSTALLED"
+BROWSER_NOT_FOUND_ERROR = "BROWSER_NOT_FOUND"
 
 
 def get_playwright_browsers_path():
-    """Get the Playwright browsers installation path."""
-    # Default path: %LOCALAPPDATA%\ms-playwright on Windows
-    if sys.platform == 'win32':
-        local_app_data = os.getenv('LOCALAPPDATA', '')
-        if local_app_data:
-            return os.path.join(local_app_data, 'ms-playwright')
-    elif sys.platform == 'darwin':  # macOS
-        return os.path.expanduser('~/Library/Caches/ms-playwright')
-    else:  # Linux
-        return os.path.expanduser('~/.cache/ms-playwright')
+    """Deprecated - DrissionPage uses system browser."""
     return None
 
 
 def check_chromium_installed():
     """
-    Check if Playwright chromium browser is installed.
-    Returns (is_installed: bool, path: str or None)
+    Check if a compatible browser is available.
+    DrissionPage uses system Chrome/Edge, so we just check if DrissionPage works.
+    Returns (is_available: bool, browser_path: str or None)
     """
-    browsers_path = get_playwright_browsers_path()
-    if not browsers_path or not os.path.exists(browsers_path):
-        print(f"[PlaywrightHelper] Browsers path not found: {browsers_path}")
+    try:
+        from DrissionPage import ChromiumPage, ChromiumOptions
+        # Try to detect browser
+        co = ChromiumOptions()
+        co.headless()
+        co.set_argument('--no-sandbox')
+        
+        # This will raise if no browser found
+        page = ChromiumPage(co)
+        page.quit()
+        return True, "System Chrome/Edge"
+    except ImportError:
         return False, None
-    
-    # Look for chromium folder (e.g., chromium-1200, chromium_headless-shell-1200)
-    for item in os.listdir(browsers_path):
-        if 'chromium' in item.lower():
-            chromium_path = os.path.join(browsers_path, item)
-            if os.path.isdir(chromium_path):
-                # Check if there's an executable inside
-                for root, dirs, files in os.walk(chromium_path):
-                    for f in files:
-                        if f.endswith('.exe') or f == 'chrome' or f == 'chromium':
-                            return True, os.path.join(root, f)
-    
-    return False, None
+    except Exception as e:
+        error_str = str(e).lower()
+        if "chrome" in error_str or "edge" in error_str or "browser" in error_str:
+            return False, None
+        # Other errors might mean browser exists but something else failed
+        return True, "System Browser"
 
 
 def install_playwright_chromium(callback=None):
     """
-    Install Playwright chromium browser.
-    
-    Args:
-        callback: Optional function(status, message) for progress updates
-    
-    Returns:
-        (success: bool, message: str)
+    Deprecated - DrissionPage uses system browser.
+    Returns instructions to install Chrome instead.
     """
-    try:
-        if callback:
-            callback("installing", "Đang cài đặt Playwright Chromium...")
-        
-        cmd = []
-        env = os.environ.copy()
-        
-        # Strategy 1: Find driver directly (Works for both Dev & Frozen if package is importable)
-        try:
-            import playwright
-            base_path = os.path.dirname(os.path.abspath(playwright.__file__))
-            driver_dir = os.path.join(base_path, 'driver', 'package', 'bin')
-            
-            if sys.platform == 'win32':
-                driver_exe = os.path.join(driver_dir, 'playwright.cmd')
-            else:
-                driver_exe = os.path.join(driver_dir, 'playwright')
-                
-            if os.path.exists(driver_exe):
-                print(f"[PlaywrightHelper] Found driver at: {driver_exe}")
-                cmd = [driver_exe, 'install']
-            else:
-                # Fallback: Invoke node.exe directly (common in some wheel distributions)
-                # Structure: .../site-packages/playwright/driver/node.exe
-                # CLI: .../site-packages/playwright/driver/package/cli.js
-                playwright_dir = os.path.join(base_path, 'driver')
-                package_dir = os.path.join(playwright_dir, 'package')
-                
-                node_exe = os.path.join(playwright_dir, 'node.exe')
-                cli_js = os.path.join(package_dir, 'cli.js')
-                
-                if os.path.exists(node_exe) and os.path.exists(cli_js):
-                    print(f"[PlaywrightHelper] Found node.exe at: {node_exe}")
-                    cmd = [node_exe, cli_js, 'install']
-                else:
-                    print(f"[PlaywrightHelper] Driver/Node not found. Checked: {driver_exe}, {node_exe}")
-                
-        except ImportError:
-            print("[PlaywrightHelper] Could not import playwright for driver detection")
-
-        # Strategy 2: Fallback to python -m (Only if Strategy 1 failed)
-        if not cmd:
-            print("[PlaywrightHelper] Falling back to 'python -m playwright'...")
-            cmd = [sys.executable, '-m', 'playwright', 'install']
-
-        if not cmd:
-            return False, "Could not determine installation command"
-
-        # Execute
-        print(f"[PlaywrightHelper] Running install command: {cmd}")
-        
-        # [FIX] Force PLAYWRIGHT_BROWSERS_PATH to be safe?
-        # env['PLAYWRIGHT_BROWSERS_PATH'] = get_playwright_browsers_path()
-        
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=1200,  # 20 minutes
-            creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0,
-            env=env
-        )
-        
-        if result.returncode == 0:
-            if callback:
-                callback("success", "Cài đặt thành công!")
-            return True, "Playwright Chromium installed successfully"
-        else:
-            error_msg = result.stderr or result.stdout or "Unknown error"
-            if callback:
-                callback("error", f"Lỗi: {error_msg}")
-            return False, f"Installation failed: {error_msg}"
-            
-    except subprocess.TimeoutExpired:
-        msg = "Installation timed out after 10 minutes"
-        if callback:
-            callback("error", msg)
-        return False, msg
-    except Exception as e:
-        msg = f"Installation error: {str(e)}"
-        if callback:
-            callback("error", msg)
-        return False, msg
+    if callback:
+        callback("error", "DrissionPage uses your system's Chrome/Edge browser.")
+    
+    return False, (
+        "DrissionPage uses your system's Chrome or Edge browser.\n"
+        "Please install Google Chrome or Microsoft Edge to use this feature.\n"
+        "Download Chrome: https://www.google.com/chrome/"
+    )
 
 
 def is_browser_not_found_error(error_message):
-    """
-    Check if the error message indicates Playwright browser is not installed.
-    """
+    """Check if error indicates browser not found."""
     if not error_message:
         return False
     
     error_lower = error_message.lower()
     indicators = [
-        "executable doesn't exist",
-        "executable does not exist",
-        "browsertype.launch",
-        "playwright install",
-        "browser was just installed",
-        "chromium_headless",
-        "chrome-headless-shell"
+        "browser_not_found",
+        "chrome not found",
+        "edge not found", 
+        "没有找到",
+        "no browser",
+        "browsernotfounderror"
     ]
     
     return any(indicator in error_lower for indicator in indicators)
 
 
 def get_browser_install_instructions():
-    """
-    Get user-friendly instructions for installing Playwright browsers.
-    """
+    """Get instructions for installing a browser."""
     return {
-        "title": "Cần cài đặt trình duyệt Playwright",
+        "title": "Cần cài đặt trình duyệt",
         "message": (
-            "Tính năng này yêu cầu trình duyệt Chromium của Playwright.\n\n"
-            "Bạn có muốn tự động cài đặt không?\n"
-            "(Cần kết nối internet, ~200MB)"
+            "Tính năng này yêu cầu Google Chrome hoặc Microsoft Edge.\n\n"
+            "Vui lòng cài đặt một trong hai trình duyệt trên.\n"
+            "Download Chrome: https://www.google.com/chrome/"
         ),
-        "manual_command": "python -m playwright install chromium"
+        "manual_command": "Tải Chrome tại: https://www.google.com/chrome/"
     }

@@ -253,10 +253,10 @@ class FastFetcher:
     
     def _fetch_douyin_api(self, url):
         """
-        Fetch Douyin info using custom DouyinDownloader (Playwright).
+        Fetch Douyin info using custom DouyinDownloader (DrissionPage).
         """
         try:
-            # Lazy import to avoid Playwright overhead if not used
+            # Lazy import to avoid overhead if not used
             try:
                 from .douyin_api import DouyinDownloader
             except ImportError:
@@ -273,26 +273,10 @@ class FastFetcher:
                 info['_fetcher_tier'] = 1
                 return info, None
             
-            # Check for browser not installed error - trigger install
-            if error == "PLAYWRIGHT_BROWSER_NOT_INSTALLED":
-                print("[Fetcher] Playwright browser not installed. Triggering auto-install...")
-                try:
-                    from .playwright_helper import install_playwright_chromium
-                    success, msg = install_playwright_chromium()
-                    if success:
-                        print("[Fetcher] Playwright installed! Retrying Douyin fetch...")
-                        # Retry once after install
-                        dd2 = DouyinDownloader(headless=True)
-                        info2, error2 = dd2.get_video_info(url)
-                        if info2:
-                            d = info2.get('duration', 0)
-                            info2['duration_string'] = f"{int(d) // 60}:{int(d) % 60:02d}" if d else "??:??"
-                            info2['extractor_key'] = "Douyin"
-                            info2['_fetcher_tier'] = 1
-                            return info2, None
-                        return None, error2
-                except Exception as install_err:
-                    print(f"[Fetcher] Playwright install error: {install_err}")
+            # Check for browser not found error (DrissionPage needs Chrome/Edge)
+            if error in ("BROWSER_NOT_FOUND", "PLAYWRIGHT_BROWSER_NOT_INSTALLED"):
+                print("[Fetcher] Browser not found. User needs to install Chrome/Edge.")
+                return None, "BROWSER_NOT_FOUND"
             
             return None, error or "Douyin fetch failed"
             

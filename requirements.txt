@@ -10,7 +10,6 @@ bilibili-api-python>=16.2.0
 
 # Optional but recommended
 
-# Douyin Support
-playwright>=1.41.0
-playwright-stealth>=1.0.6
+# Douyin/TikTok Support (uses system Chrome/Edge)
+DrissionPage>=4.0.0
 

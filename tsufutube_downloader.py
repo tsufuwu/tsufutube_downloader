@@ -279,32 +279,7 @@ if __name__ == "__main__":
                     splash_process = subprocess.Popen([sys.executable, splash_script], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=creation_flags)
         except: pass
 
-    # --- AUTO-INSTALL PLAYWRIGHT CHROMIUM (Silent background check) ---
-    # This runs in background while splash is showing
-    def check_and_install_playwright():
-        """Check if Playwright chromium is installed, auto-install if not."""
-        try:
-            from modules.playwright_helper import check_chromium_installed, install_playwright_chromium
-            
-            is_installed, _ = check_chromium_installed()
-            if not is_installed:
-                print("[Startup] Playwright Chromium not found. Installing...")
-                success, msg = install_playwright_chromium()
-                if success:
-                    print("[Startup] Playwright Chromium installed successfully!")
-                else:
-                    print(f"[Startup] Playwright install failed: {msg}")
-            else:
-                print("[Startup] Playwright Chromium already installed.")
-        except ImportError:
-            print("[Startup] Playwright helper not available, skipping browser check.")
-        except Exception as e:
-            print(f"[Startup] Playwright check error: {e}")
-    
-    # Run Playwright check in a separate thread to not block UI
-    import threading
-    playwright_thread = threading.Thread(target=check_and_install_playwright, daemon=True)
-    playwright_thread.start()
+    # Note: DrissionPage uses system Chrome/Edge, no browser installation needed
 
     # Now do the slow stuff while splash is showing
     app = None
