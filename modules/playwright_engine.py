@@ -38,15 +38,30 @@ class PlaywrightEngine:
                 print(f"[PlaywrightFallback] Launching browser for {url}...")
                 
                 # Launch args for stealth/stability
-                browser = p.chromium.launch(
-                    headless=self.headless,
-                    args=[
+                launch_args = [
                         '--disable-blink-features=AutomationControlled',
                         '--disable-gpu',
                         '--no-sandbox',
                         '--autoplay-policy=no-user-gesture-required'
-                    ]
-                )
+                ]
+                
+                try:
+                    browser = p.chromium.launch(
+                        headless=self.headless,
+                        args=launch_args
+                    )
+                except Exception as e:
+                    # Fallback for missing headless shell
+                    error_msg = str(e).lower()
+                    if "executable doesn't exist" in error_msg and "headless_shell" in error_msg:
+                        print("[PlaywrightFallback] Chrome-headless-shell missing. Retrying with standard Chromium binary...")
+                        launch_args.append('--headless=new')
+                        browser = p.chromium.launch(
+                            headless=False, # Use standard binary
+                            args=launch_args
+                        )
+                    else:
+                        raise e
                 
                 context = browser.new_context(
                     user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",

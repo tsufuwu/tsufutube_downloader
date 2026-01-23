@@ -7,6 +7,7 @@ import subprocess
 import sys
 import os
 import shutil
+import time
 
 # Error message constants
 BROWSER_NOT_FOUND_ERROR = "PLAYWRIGHT_BROWSER_NOT_INSTALLED"
@@ -33,6 +34,7 @@ def check_chromium_installed():
     """
     browsers_path = get_playwright_browsers_path()
     if not browsers_path or not os.path.exists(browsers_path):
+        print(f"[PlaywrightHelper] Browsers path not found: {browsers_path}")
         return False, None
     
     # Look for chromium folder (e.g., chromium-1200, chromium_headless-shell-1200)
@@ -63,14 +65,63 @@ def install_playwright_chromium(callback=None):
         if callback:
             callback("installing", "Đang cài đặt Playwright Chromium...")
         
-        # Get the playwright module path to run the install command
-        # Method 1: Try using 'playwright install chromium' directly via python -m
+        cmd = []
+        env = os.environ.copy()
+        
+        # Strategy 1: Find driver directly (Works for both Dev & Frozen if package is importable)
+        try:
+            import playwright
+            base_path = os.path.dirname(os.path.abspath(playwright.__file__))
+            driver_dir = os.path.join(base_path, 'driver', 'package', 'bin')
+            
+            if sys.platform == 'win32':
+                driver_exe = os.path.join(driver_dir, 'playwright.cmd')
+            else:
+                driver_exe = os.path.join(driver_dir, 'playwright')
+                
+            if os.path.exists(driver_exe):
+                print(f"[PlaywrightHelper] Found driver at: {driver_exe}")
+                cmd = [driver_exe, 'install']
+            else:
+                # Fallback: Invoke node.exe directly (common in some wheel distributions)
+                # Structure: .../site-packages/playwright/driver/node.exe
+                # CLI: .../site-packages/playwright/driver/package/cli.js
+                playwright_dir = os.path.join(base_path, 'driver')
+                package_dir = os.path.join(playwright_dir, 'package')
+                
+                node_exe = os.path.join(playwright_dir, 'node.exe')
+                cli_js = os.path.join(package_dir, 'cli.js')
+                
+                if os.path.exists(node_exe) and os.path.exists(cli_js):
+                    print(f"[PlaywrightHelper] Found node.exe at: {node_exe}")
+                    cmd = [node_exe, cli_js, 'install']
+                else:
+                    print(f"[PlaywrightHelper] Driver/Node not found. Checked: {driver_exe}, {node_exe}")
+                
+        except ImportError:
+            print("[PlaywrightHelper] Could not import playwright for driver detection")
+
+        # Strategy 2: Fallback to python -m (Only if Strategy 1 failed)
+        if not cmd:
+            print("[PlaywrightHelper] Falling back to 'python -m playwright'...")
+            cmd = [sys.executable, '-m', 'playwright', 'install']
+
+        if not cmd:
+            return False, "Could not determine installation command"
+
+        # Execute
+        print(f"[PlaywrightHelper] Running install command: {cmd}")
+        
+        # [FIX] Force PLAYWRIGHT_BROWSERS_PATH to be safe?
+        # env['PLAYWRIGHT_BROWSERS_PATH'] = get_playwright_browsers_path()
+        
         result = subprocess.run(
-            [sys.executable, '-m', 'playwright', 'install', 'chromium'],
+            cmd,
             capture_output=True,
             text=True,
-            timeout=300,  # 5 minutes timeout
-            creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
+            timeout=1200,  # 20 minutes
+            creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0,
+            env=env
         )
         
         if result.returncode == 0:
@@ -84,12 +135,7 @@ def install_playwright_chromium(callback=None):
             return False, f"Installation failed: {error_msg}"
             
     except subprocess.TimeoutExpired:
-        msg = "Installation timed out after 5 minutes"
-        if callback:
-            callback("error", msg)
-        return False, msg
-    except FileNotFoundError:
-        msg = "Python or Playwright not found"
+        msg = "Installation timed out after 10 minutes"
         if callback:
             callback("error", msg)
         return False, msg

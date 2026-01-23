@@ -1049,9 +1049,51 @@ class YoutubeDownloaderApp(ctk.CTk):
 
     # --- REQUIRED METHODS FROM ORIGINAL LOGIC (ADAPTED) ---
     def _run_background_startup_tasks(self):
+        # 1. Update Check
         threading.Thread(target=self.safe_check_updates, daemon=True).start()
-        if self.settings.get("run_on_on_startup", True):
+        
+        # 2. Auto-start Registry
+        if self.settings.get("run_on_startup", True):
             threading.Thread(target=set_autostart_registry, args=(True,), daemon=True).start()
+            
+        # 3. [NEW] Playwright Check & Auto-Install
+        def check_and_install_playwright():
+            try:
+                from modules import playwright_helper
+                is_installed, _ = playwright_helper.check_chromium_installed()
+                if not is_installed:
+                    print("Playwright Chromium not found. Installing...")
+                    
+                    # Notify UI: Start
+                    self.msg_queue.put(lambda: self.status_label.configure(
+                        text="⚙ Installing Playwright support components... (This happens once)", 
+                        text_color="#FF9800"
+                    ))
+                    self.msg_queue.put(lambda: self.download_btn.configure(state="disabled"))
+                    
+                    # Install
+                    success, msg = playwright_helper.install_playwright_chromium()
+                    
+                    # Notify UI: Result
+                    if success:
+                        print("Playwright installed successfully.")
+                        self.msg_queue.put(lambda: self.status_label.configure(
+                            text="✓ Ready (Playwright components installed)", 
+                            text_color="green"
+                        ))
+                    else:
+                        print(f"Playwright install failed: {msg}")
+                        self.msg_queue.put(lambda: self.status_label.configure(
+                            text=f"⚠ Component install failed: {msg}", 
+                            text_color="#f44336"
+                        ))
+                    
+                    # Re-enable button
+                    self.msg_queue.put(lambda: self.download_btn.configure(state="normal"))
+            except Exception as e:
+                print(f"Error in Playwright check: {e}")
+
+        threading.Thread(target=check_and_install_playwright, daemon=True).start()
 
     def _extract_url(self, text):
         """Smartly extract the first valid URL from text"""

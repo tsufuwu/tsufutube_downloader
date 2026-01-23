@@ -45,11 +45,26 @@ class DouyinDownloader:
                 ]
                 
                 print(f"[Douyin] Launching browser (Headless: {self.headless})...")
-                browser = p.chromium.launch(
-                    headless=self.headless, 
-                    args=browser_args
-                )
                 
+                try:
+                    browser = p.chromium.launch(
+                        headless=self.headless, 
+                        args=browser_args
+                    )
+                except Exception as e:
+                    # Fallback: If chrome-headless-shell is missing, try using standard chromium with --headless=new
+                    # This bypasses the need for the separate shell binary
+                    error_msg = str(e).lower()
+                    if "executable doesn't exist" in error_msg and "headless_shell" in error_msg:
+                        print("[Douyin] Chrome-headless-shell missing. Retrying with standard Chromium binary...")
+                        new_args = browser_args + ['--headless=new']
+                        browser = p.chromium.launch(
+                            headless=False, # Force Playwright to look for standard binary
+                            args=new_args
+                        )
+                    else:
+                        raise e
+
                 # Create Context with mobile emulation potentially? 
                 # No, desktop usually gets better quality JSON.
                 # Use Stealth if available
