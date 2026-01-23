@@ -6,7 +6,7 @@ class TikTokDownloader:
     def __init__(self):
         self.api_url = "https://www.tikwm.com/api/"
         self.headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             "Accept": "application/json",
         }
 
@@ -16,13 +16,23 @@ class TikTokDownloader:
         Returns (info_dict, error_message).
         """
         try:
+            # Method 1: POST
             params = {"url": url, "count": 12, "cursor": 0, "web": 1, "hd": 1}
-            response = requests.post(self.api_url, data=params, headers=self.headers, timeout=15)
-            
-            if response.status_code != 200:
-                return None, f"API Error: HTTP {response.status_code}"
-            
-            data = response.json()
+            try:
+                response = requests.post(self.api_url, data=params, headers=self.headers, timeout=15)
+                data = response.json()
+            except:
+                data = {"code": -1}
+
+            # Method 2: GET Fallback
+            if data.get("code") != 0:
+                print("[TikTokAPI] POST failed, trying GET...")
+                try:
+                    query = f"{self.api_url}?url={url}&hd=1"
+                    response = requests.get(query, headers=self.headers, timeout=15)
+                    data = response.json()
+                except Exception as e:
+                    return None, f"API Request Failed: {e}"
             
             if data.get("code") != 0:
                 msg = data.get("msg", "Unknown error")

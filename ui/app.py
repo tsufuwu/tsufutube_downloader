@@ -3048,8 +3048,28 @@ class YoutubeDownloaderApp(ctk.CTk):
 
     def create_history_context_menu(self):
         self.history_menu = tk.Menu(self, tearoff=0)
+        self.history_menu.add_command(label="Copy Video URL", command=self.history_copy_url) 
+        self.history_menu.add_separator()
         self.history_menu.add_command(label=self.T("ctx_open_file"), command=self.history_open_file)
         self.history_menu.add_command(label=self.T("ctx_open_folder"), command=self.history_open_folder)
+
+    def history_copy_url(self):
+        """Copy original video URL to clipboard"""
+        item = self.get_selected_history_item()
+        if item:
+            url = item.get("url", "")
+            if url:
+                self.clipboard_clear()
+                self.clipboard_append(url)
+                self.update() # Keep buffer
+                
+                # Feedback
+                self.status_label.configure(text="Copied to clipboard!", text_color="green")
+                self.after(3000, lambda: self.status_label.configure(text=self.T("lbl_paste_hint"), text_color="green"))
+            else:
+                messagebox.showinfo("Info", "No URL saved for this item (Old history)")
+        else:
+            messagebox.showinfo("Info", "Please select an item")
         self.history_menu.add_separator()
         self.history_menu.add_command(label=self.T("btn_tool_switch"), command=self.history_send_to_tools)
         self.history_menu.add_separator()

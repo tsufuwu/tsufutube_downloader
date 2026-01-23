@@ -247,6 +247,7 @@ class DownloaderEngine:
     def _identify_platform(self, url):
         if not url: return "UNKNOWN"
         if "instagram.com" in url: return "INSTAGRAM"
+        if "tiktok.com" in url: return "TIKTOK"
         if "douyin.com" in url: return "DOUYIN"
         if "dailymotion.com" in url or "dai.ly" in url: return "DAILYMOTION"
         if "bilibili.com" in url: return "BILIBILI_CN"
@@ -484,8 +485,12 @@ class DownloaderEngine:
         # using either cookiefile (priority) or cookiesfrombrowser (fallback)
         
         platform = self._identify_platform(task["url"])
+        print(f"[Core DEBUG] URL: {task['url']}")
+        print(f"[Core DEBUG] Platform Identified: '{platform}'")
+        
         if platform == "INSTAGRAM": return self._download_instagram(task, settings, callbacks)
         elif platform == "DOUYIN": return self._download_douyin(task, settings, callbacks)
+        elif platform == "TIKTOK": return self._download_tiktok(task, settings, callbacks)
         elif platform == "DAILYMOTION": return self._download_dailymotion(task, settings, callbacks)
         elif platform == "BILIBILI_CN":
             # [BILIBILI CN] Custom API Downloader (Fixed 412)
@@ -500,6 +505,141 @@ class DownloaderEngine:
                 return False, "Thiếu module bilibili_api.py", None
         elif platform == "FACEBOOK_STORY": return self._download_facebook_story(task, settings, callbacks)
         
+        return self._download_general_ytdlp(task, settings, callbacks)
+
+    def _download_tiktok(self, task, settings, callbacks):
+        """
+        Specialized TikTok Downloader using TikWM API (SnapTik-like).
+        Falls back to yt-dlp if API fails.
+        """
+        callbacks.get('on_status', lambda x:None)("Đang lấy link TikTok (No Watermark)...")
+        
+        try:
+            # Lazy import
+            try: from .tiktok_api import TikTokDownloader
+            except ImportError: raise Exception("Module tiktok_api missing")
+            
+            tt = TikTokDownloader()
+            info, error = tt.get_video_info(task["url"])
+            
+            if info and info.get("url"):
+                # [FIX] Handle Relative URLs
+                dl_url = info['url']
+                if dl_url.startswith("/"):
+                    dl_url = f"https://www.tikwm.com{dl_url}"
+                
+                # API Success! Direct Download
+                print(f"[TikTok] API Success. URL: {dl_url[:60]}...")
+                
+                # Check cut mode
+                cut_mode = task.get("cut_mode")
+                
+                # Setup paths
+                save_path = task.get("save_path") or settings.get("save_path", ".")
+                base_name = task.get("name", "") if task.get("name") else info.get('title', 'TikTok Video')
+                if cut_mode: base_name += " (Cut)"
+                
+                from yt_dlp.utils import sanitize_filename
+                clean_base_name = sanitize_filename(base_name)
+                abs_save_path = os.path.abspath(save_path)
+                
+                # Unique name
+                def get_unique_name(directory, filename, ext):
+                    counter = 1
+                    new_filename = filename
+                    while True:
+                        cand_path = os.path.join(directory, f"{new_filename}.{ext}")
+                        if not os.path.exists(cand_path):
+                            return new_filename
+                        new_filename = f"{filename} ({counter})"
+                        counter += 1
+                
+                unique_base_name = get_unique_name(abs_save_path, clean_base_name, "mp4")
+                target_file = os.path.join(abs_save_path, f"{unique_base_name}.mp4")
+                
+                # Manual Download
+                import requests
+                callbacks.get('on_status', lambda x:None)("Đang tải video...")
+                
+                # Download with retry
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    "Referer": "https://www.tiktok.com/" 
+                }
+                
+                s = requests.Session()
+                with s.get(dl_url, headers=headers, stream=True, timeout=30) as r:
+                    r.raise_for_status()
+                    total = int(r.headers.get('content-length', 0))
+                    dl = 0
+                    with open(target_file, 'wb') as f:
+                        for chunk in r.iter_content(chunk_size=65536):
+                            if self.is_cancelled: 
+                                f.close()
+                                os.remove(target_file)
+                                return False, "Đã hủy", None
+                            if chunk:
+                                f.write(chunk)
+                                dl += len(chunk)
+                                if total > 0 and dl % (1024*1024) < 65536:
+                                    per = (dl/total)*100
+                                    callbacks.get('on_progress', lambda x,y:None)(per, f"{per:.1f}%")
+                
+                # Final Size Check
+                if os.path.exists(target_file) and os.path.getsize(target_file) < 5120:
+                     print("[TikTok] API returned invalid small file. Falling back to yt-dlp...")
+                     try: os.remove(target_file)
+                     except: pass
+                     # Let it fall through to exception/fallback
+                     raise Exception("TikTok API invalid file")
+                
+                # Success
+                callbacks.get('on_status', lambda x:None)("Hoàn tất!")
+                callbacks.get('on_progress', lambda x,y:None)(100, "100%")
+                
+                # Process Cuts? (Copy paste logic or refactor?)
+                # For brevity, let's reuse Cut Logic if possible or replicate simple cut
+                # Reuse code logic is better but tricky to inject into _download_general_ytdlp
+                # We will duplicate simple cut logic here for stability
+                
+                final_path = target_file
+                
+                # Perform Cut Logic Duplication (Simplified)
+                if cut_mode and task.get("cut_method", "download_then_cut") == "download_then_cut":
+                     callbacks.get('on_status', lambda x:None)("MSG_CUT_WAIT")
+                     
+                     folder = os.path.dirname(final_path)
+                     name, ext = os.path.splitext(os.path.basename(final_path))
+                     cut_out = os.path.join(folder, f"{name}_cut{ext}")
+                     
+                     t_start = str(timedelta(seconds=task.get("start_time", 0)))
+                     end_t = task.get("end_time", 0)
+                     t_end = str(timedelta(seconds=end_t)) if end_t > 0 else None
+                     
+                     success, msg = self.fast_cut(final_path, cut_out, t_start, t_end) if not task.get("cut_correct_mode") else self.accurate_cut(final_path, cut_out, t_start, t_end)
+                     
+                     if success and os.path.exists(cut_out):
+                         try: os.remove(final_path)
+                         except: pass
+                         os.rename(cut_out, final_path)
+                
+                # History
+                size_mb = os.path.getsize(final_path) / (1024 * 1024)
+                hist = {
+                    "platform": "TikTok",
+                    "title": unique_base_name,
+                    "path": final_path,
+                    "format": "MP4",
+                    "size": f"{size_mb:.2f} MB",
+                    "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                    "url": task["url"] # [NEW] Save Original URL
+                }
+                return True, "Success", hist
+                
+        except Exception as e:
+            print(f"[TikTok] Custom API failed: {e}. Fallback to generic.")
+        
+        # Fallback
         return self._download_general_ytdlp(task, settings, callbacks)
 
     def _download_general_ytdlp(self, task, settings, callbacks, extra_opts=None):
@@ -863,6 +1003,18 @@ class DownloaderEngine:
                         try:
                             # Pass 'info' dict to process_ie_result
                             info = ydl.process_ie_result(ie_result=info, download=True)
+                            
+                            # [FIX] Validate Fallback Download Size
+                            # Sometimes yt-dlp downloads an error page (200-500 bytes) instead of video
+                            if info.get('extractor') == 'PlaywrightFallback':
+                                check_path = self._get_final_path(ydl, info)
+                                if check_path and os.path.exists(check_path):
+                                    f_size = os.path.getsize(check_path)
+                                    if f_size < 5120: # < 5KB is definitely not a video
+                                        print(f"[Core] Detected incomplete download ({f_size}B). Forcing Manual Fallback...")
+                                        try: os.remove(check_path)
+                                        except: pass
+                                        raise Exception(f"Incomplete download (Size: {f_size}B)")
                         except Exception as e:
                             # [FIX] If yt-dlp fails for PlaywrightFallback, try manual download
                             if info.get('extractor') == 'PlaywrightFallback':
@@ -883,22 +1035,35 @@ class DownloaderEngine:
                                 if os.path.exists(target_file): os.remove(target_file)
                                 
                                 try:
-                                    with requests.get(target_url, headers=headers, stream=True, timeout=30) as r:
+                                    # [FIX] Enhanced Manual Download
+                                    s = requests.Session()
+                                    # Ensure critical headers
+                                    if 'Referer' not in headers:
+                                         if "tiktok.com" in target_url or "tiktokcdn" in target_url:
+                                             headers['Referer'] = "https://www.tiktok.com/"
+                                    
+                                    print(f"[Core] Manual DL Headers: {headers.keys()}")
+                                    
+                                    with s.get(target_url, headers=headers, stream=True, timeout=(15, 120)) as r:
                                         r.raise_for_status()
                                         total_size = int(r.headers.get('content-length', 0))
                                         dl_size = 0
                                         with open(target_file, 'wb') as f:
-                                            for chunk in r.iter_content(chunk_size=8192):
+                                            for chunk in r.iter_content(chunk_size=65536):
                                                 if self.is_cancelled: break
                                                 if chunk:
                                                     f.write(chunk)
                                                     dl_size += len(chunk)
-                                                    # UI update
-                                                    if total_size > 0:
+                                                    # UI update (throttle)
+                                                    if total_size > 0 and dl_size % (1024*1024) < 65536: # Update roughly every MB
                                                         per = (dl_size / total_size) * 100
                                                         callbacks.get('on_progress', lambda x,y:None)(per, f"{per:.1f}%")
                                     
                                     if not self.is_cancelled:
+                                        # [FIX] Final Size Check
+                                        if os.path.exists(target_file) and os.path.getsize(target_file) < 5120:
+                                            raise Exception(f"Manual download incomplete ({os.path.getsize(target_file)}B)")
+                                            
                                         info['filepath'] = target_file
                                         print(f"[Core] Manual download success: {target_file}")
                                     else:
@@ -1010,15 +1175,16 @@ class DownloaderEngine:
             history_item = None
             if final_path and os.path.exists(final_path):
                 size_mb = os.path.getsize(final_path) / (1024 * 1024)
-                history_item = {
+                hist = {
                     "platform": info.get('extractor_key', 'Web'),
-                    "title": unique_base_name, # Dùng tên đã unique
+                    "title": unique_base_name, 
                     "path": final_path,
                     "format": os.path.splitext(final_path)[1].replace(".", "").upper(),
                     "size": f"{size_mb:.2f} MB",
-                    "date": datetime.now().strftime("%Y-%m-%d %H:%M")
+                    "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                    "url": task["url"]  # [NEW] Save Original URL
                 }
-            return True, "Success", history_item
+            return True, "Success", hist
 
         except Exception as e:
             if self.is_cancelled: return False, "Đã hủy", None
