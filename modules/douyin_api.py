@@ -90,6 +90,23 @@ class DouyinDownloader:
         except Exception as e:
             return None, f"Playwright Error: {str(e)}"
 
+    def _clean_title(self, text):
+        """Sanitize title: remove hashtags, newlines, and suffix."""
+        if not text: return "Douyin Video"
+        
+        # Remove suffix
+        text = text.replace(" - 抖音", "").replace(" - Douyin", "")
+        
+        # Remove hashtags (e.g. #fyp #funny)
+        # Regex: # followed by non-whitespace
+        text = re.sub(r'#\S+', '', text)
+        
+        # Remove newlines and extra spaces
+        text = text.replace('\n', ' ').replace('\r', '')
+        text = re.sub(r'\s+', ' ', text).strip()
+        
+        return text if text else "Douyin Video"
+
     def _fetch_network(self, page, url):
         """
         Method B: Intercept JSON response for high quality video
@@ -112,16 +129,15 @@ class DouyinDownloader:
                         play_addr = video_obj.get("play_addr", {})
                         url_list = play_addr.get("url_list", [])
                         
-                        # Get best URL (usually last one is highest quality or main CDN)
-                        # We specifically look for the one NOT starting with 'p' (preview) if possible, 
-                        # but Douyin usually gives good ones here.
-                        # Usually the 3rd or 4th link is best, or just pick the first valid one.
-                        # Let's take the first one that is non-empty.
+                        # Get best URL
                         video_url = next((u for u in url_list if u), None)
                         
                         if video_url:
+                            raw_title = aweme_detail.get("desc", "")
+                            clean_title = self._clean_title(raw_title)
+                            
                             final_data = {
-                                "title": aweme_detail.get("desc", f"Douyin {aweme_detail.get('aweme_id')}"),
+                                "title": clean_title,
                                 "url": video_url,
                                 "thumbnail": video_obj.get("cover", {}).get("url_list", [""])[0],
                                 "duration": video_obj.get("duration", 0) / 1000.0, # ms to sec
@@ -137,13 +153,12 @@ class DouyinDownloader:
         
         try:
             page.goto(url, timeout=30000)
-            # Wait a bit for requests to fly
-            # Sometimes we need to scroll or wait for initial load
+            # Wait a bit longer for network stability
             page.wait_for_timeout(5000) 
             
-            # Anti-bot: Random scroll
+            # Anti-bot: Scroll to trigger lazy load/requests
             page.mouse.wheel(0, 500)
-            page.wait_for_timeout(2000)
+            page.wait_for_timeout(3000)
             
             if found_event: return final_data
             
@@ -179,21 +194,31 @@ class DouyinDownloader:
             
             if not src_url: return None
             
-            # 2. Description
-            # Douyin title is usually in a p tag or h1
-            # Selectors vary, generic attempt:
-            title = page.title()
+            # 2. Description - Improved Scraping
+            title = ""
             try:
-                # Try to find specific description container
-                desc_el = page.query_selector('.desc-wrapper span') 
-                if desc_el: title = desc_el.inner_text()
-            except: pass
+                # Try specific data attributes first (most accurate)
+                desc_el = page.query_selector('[data-e2e="video-desc"]')
+                if desc_el:
+                    title = desc_el.inner_text()
+                else:
+                    # Fallback to meta description
+                    meta_desc = page.query_selector('meta[name="description"]')
+                    if meta_desc:
+                        title = meta_desc.get_attribute("content")
+                    else:
+                        # Final fallback: Page Title
+                        title = page.title()
+            except: 
+                title = page.title()
+            
+            clean_title = self._clean_title(title)
             
             return {
-                "title": title,
+                "title": clean_title,
                 "url": src_url,
                 "thumbnail": "", # Hard to get efficient cover from DOM without complex selectors
-                "duration": 0, # Not easily available in DOM unless scraping duration span
+                "duration": 0, 
                 "uploader": "Douyin User",
                 "extractor_key": "Douyin (DOM)"
             }

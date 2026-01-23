@@ -1173,6 +1173,8 @@ class YoutubeDownloaderApp(ctk.CTk):
             
             self.fetched_title = title
             self.fetched_duration = info.get('duration', 0)
+            self.fetched_info = info
+            self.last_checked_url = url
             
             # Extract subtitles
             self.official_subs = info.get('subtitles', {}) or {}
@@ -1233,9 +1235,12 @@ class YoutubeDownloaderApp(ctk.CTk):
     def _on_fetch_error(self, error_msg):
         """UI update after fetch error"""
         self.is_fetching_info = False
-        self.check_btn.configure(text=self.T("btn_check"), state="normal", fg_color=["#3B8ED0", "#1F6AA5"])
-        self.title_label.configure(text=f"Error: {error_msg}", text_color="red")
-        self.thumb_label.configure(text="❌", image=None)
+        try:
+            self.check_btn.configure(text=self.T("btn_check"), state="normal", fg_color=["#3B8ED0", "#1F6AA5"])
+            self.title_label.configure(text=f"Error: {error_msg}", text_color="red")
+            self.thumb_label.configure(text="❌", image=None)
+        except Exception as e:
+            print(f"UI Error in _on_fetch_error: {e}")
     
     def _load_thumbnail(self, url, cancel_event):
         """Load thumbnail image in background"""
@@ -1407,7 +1412,13 @@ class YoutubeDownloaderApp(ctk.CTk):
             "save_path": self.path_var.get(),
             "cookie_file": self.cookies_path_var.get(),
             "browser_source": self.browser_var.get() if hasattr(self, 'browser_var') else "none",
+            "name": self.name_ent.get().strip(),
         }
+        
+        # Use cached resolved info if available and URL matches
+        if self.fetched_title and getattr(self, 'last_checked_url', '') == url:
+             task_settings["resolved_url"] = self.fetched_info.get("url") if hasattr(self, 'fetched_info') else None
+             task_settings["info_title"] = self.fetched_title
         
         # Reset Cut Mode after adding (optional UX choice? No, keep it for repeated adds)
         # self.cut_var.set(False) 

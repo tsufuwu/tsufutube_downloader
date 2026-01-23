@@ -1315,3 +1315,283 @@ Traceback (most recent call last):
                     ^^^^^^^^^^
 NameError: name 'cut_method' is not defined. Did you mean: 'classmethod'?
 
+
+==================================================
+TIME: 2026-01-23 09:04:58.739967
+URL: https://www.tiktok.com/@vietphuongthoa98/video/7597826221543656725?is_from_webapp=1&sender_device=pc
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m unable to download video data: HTTP Error 403: Forbidden
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 3536, in process_info
+    success, real_download = self.dl(temp_filename, info_dict)
+                             ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 3278, in dl
+    return fd.download(name, new_info, subtitle)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\downloader\common.py", line 480, in download
+    ret = self.real_download(filename, info_dict)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\downloader\http.py", line 362, in real_download
+    establish_connection()
+    ~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\downloader\http.py", line 119, in establish_connection
+    ctx.data = self.ydl.urlopen(request)
+               ~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 4252, in urlopen
+    return self._request_director.send(req)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\common.py", line 117, in send
+    response = handler.send(request)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\_helper.py", line 194, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\common.py", line 359, in send
+    return self._send(request)
+           ~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\_requests.py", line 361, in _send
+    raise HTTPError(res, redirect_loop=max_redirects_exceeded)
+yt_dlp.networking.exceptions.HTTPError: HTTP Error 403: Forbidden
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\modules\core.py", line 839, in _download_general_ytdlp
+    info = ydl.process_ie_result(ie_result=info, download=True)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1911, in process_ie_result
+    ie_result = self.process_video_result(ie_result, download=download)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 3089, in process_video_result
+    self.process_info(new_info)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 189, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 3545, in process_info
+    self.report_error(f'unable to download video data: {err}')
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m unable to download video data: HTTP Error 403: Forbidden
+
+
+==================================================
+TIME: 2026-01-23 09:05:20.414202
+URL: https://www.tiktok.com/@maitrithuc2020/video/7597678718877814024?is_from_webapp=1&sender_device=pc
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m unable to download video data: HTTP Error 403: Forbidden
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 3536, in process_info
+    success, real_download = self.dl(temp_filename, info_dict)
+                             ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 3278, in dl
+    return fd.download(name, new_info, subtitle)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\downloader\common.py", line 480, in download
+    ret = self.real_download(filename, info_dict)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\downloader\http.py", line 362, in real_download
+    establish_connection()
+    ~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\downloader\http.py", line 119, in establish_connection
+    ctx.data = self.ydl.urlopen(request)
+               ~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 4252, in urlopen
+    return self._request_director.send(req)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\common.py", line 117, in send
+    response = handler.send(request)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\_helper.py", line 194, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\common.py", line 359, in send
+    return self._send(request)
+           ~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\_requests.py", line 361, in _send
+    raise HTTPError(res, redirect_loop=max_redirects_exceeded)
+yt_dlp.networking.exceptions.HTTPError: HTTP Error 403: Forbidden
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\modules\core.py", line 839, in _download_general_ytdlp
+    info = ydl.process_ie_result(ie_result=info, download=True)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1911, in process_ie_result
+    ie_result = self.process_video_result(ie_result, download=download)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 3089, in process_video_result
+    self.process_info(new_info)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 189, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 3545, in process_info
+    self.report_error(f'unable to download video data: {err}')
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m unable to download video data: HTTP Error 403: Forbidden
+
+
+==================================================
+TIME: 2026-01-23 09:05:55.753145
+URL: https://www.tiktok.com/@maitrithuc2020/video/7597678718877814024?is_from_webapp=1&sender_device=pc
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m unable to download video data: HTTP Error 403: Forbidden
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 3536, in process_info
+    success, real_download = self.dl(temp_filename, info_dict)
+                             ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 3278, in dl
+    return fd.download(name, new_info, subtitle)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\downloader\common.py", line 480, in download
+    ret = self.real_download(filename, info_dict)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\downloader\http.py", line 362, in real_download
+    establish_connection()
+    ~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\downloader\http.py", line 119, in establish_connection
+    ctx.data = self.ydl.urlopen(request)
+               ~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 4252, in urlopen
+    return self._request_director.send(req)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\common.py", line 117, in send
+    response = handler.send(request)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\_helper.py", line 194, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\common.py", line 359, in send
+    return self._send(request)
+           ~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\_requests.py", line 361, in _send
+    raise HTTPError(res, redirect_loop=max_redirects_exceeded)
+yt_dlp.networking.exceptions.HTTPError: HTTP Error 403: Forbidden
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\modules\core.py", line 839, in _download_general_ytdlp
+    info = ydl.process_ie_result(ie_result=info, download=True)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1911, in process_ie_result
+    ie_result = self.process_video_result(ie_result, download=download)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 3089, in process_video_result
+    self.process_info(new_info)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 189, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 3545, in process_info
+    self.report_error(f'unable to download video data: {err}')
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m unable to download video data: HTTP Error 403: Forbidden
+
+
+==================================================
+TIME: 2026-01-23 09:13:27.700245
+URL: https://www.tiktok.com/@djmievn/video/7584805497501388039?is_from_webapp=1&sender_device=pc
+ERROR TYPE: TypeError
+ERROR MSG: unsupported operand type(s) for %: 'dict' and 'dict'
+TRACEBACK:
+Traceback (most recent call last):
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 3536, in process_info
+    success, real_download = self.dl(temp_filename, info_dict)
+                             ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 3278, in dl
+    return fd.download(name, new_info, subtitle)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\downloader\common.py", line 480, in download
+    ret = self.real_download(filename, info_dict)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\downloader\http.py", line 362, in real_download
+    establish_connection()
+    ~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\downloader\http.py", line 119, in establish_connection
+    ctx.data = self.ydl.urlopen(request)
+               ~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 4252, in urlopen
+    return self._request_director.send(req)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\common.py", line 117, in send
+    response = handler.send(request)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\_helper.py", line 194, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\common.py", line 359, in send
+    return self._send(request)
+           ~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\networking\_requests.py", line 361, in _send
+    raise HTTPError(res, redirect_loop=max_redirects_exceeded)
+yt_dlp.networking.exceptions.HTTPError: HTTP Error 403: Forbidden
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\modules\core.py", line 840, in _download_general_ytdlp
+    info = ydl.process_ie_result(ie_result=info, download=True)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1911, in process_ie_result
+    ie_result = self.process_video_result(ie_result, download=download)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 3089, in process_video_result
+    self.process_info(new_info)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 189, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 3545, in process_info
+    self.report_error(f'unable to download video data: {err}')
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m unable to download video data: HTTP Error 403: Forbidden
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\modules\core.py", line 855, in _download_general_ytdlp
+    target_file = ydl_opts['outtmpl'] % {'ext': info.get('ext', 'mp4')}
+                  ~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TypeError: unsupported operand type(s) for %: 'dict' and 'dict'
+
+
+==================================================
+TIME: 2026-01-23 09:16:59.568392
+URL: https://www.tiktok.com/@djmievn/video/7584805497501388039?is_from_webapp=1
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m unable to download video data: HTTP Error 403: Forbidden
+TRACEBACK:
+Traceback (most recent call last):
+  File "D:\Tsufutube\modules\core.py", line 867, in _download_general_ytdlp
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\requests\models.py", line 1026, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 403 Client Error: Forbidden for url: https://v16-webapp-prime.tiktok.com/video/tos/alisg/tos-alisg-pve-0037c001/ogCjeFBRcDpBQdEEpgPTAcJuIfdzuDBEDdEEqQ/?a=1988&bti=ODszNWYuMDE6&ch=0&cr=3&dr=0&lr=all&cd=0%7C0%7C0%7C&cv=1&br=3362&bt=1681&cs=0&ds=6&ft=-Csk_m7nPD12NZz.fd-UxteFaY6e3wv25NcAp&mime_type=video_mp4&qs=0&rc=NjNlZzQ0PGZpZGQ3NGU4NkBpandwN3g5cmZkODMzODczNEA1NWBgNDIuNV8xNjU1X18yYSNlcG9rMmRzLy5hLS1kMWBzcw%3D%3D&btag=e00090000&expire=1769307485&l=202601231016529E2C5BEEB2B196A328AB&ply_type=2&policy=2&signature=57f2d16ff00ca505a41b6f0c745d78c9&tk=tt_chain_token
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\modules\core.py", line 888, in _download_general_ytdlp
+    raise e # Raise original yt-dlp error if manual also fails
+    ^^^^^^^
+  File "D:\Tsufutube\modules\core.py", line 845, in _download_general_ytdlp
+    info = ydl.process_ie_result(ie_result=info, download=True)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1911, in process_ie_result
+    ie_result = self.process_video_result(ie_result, download=download)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 3089, in process_video_result
+    self.process_info(new_info)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 189, in wrapper
+    return func(self, *args, **kwargs)
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 3545, in process_info
+    self.report_error(f'unable to download video data: {err}')
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\phult\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m unable to download video data: HTTP Error 403: Forbidden
+

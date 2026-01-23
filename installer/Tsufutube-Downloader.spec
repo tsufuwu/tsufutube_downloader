@@ -4,7 +4,8 @@ from PyInstaller.utils.hooks import collect_all
 # Paths are relative to the SPEC file location (installer/)
 datas = [('../assets', 'assets'), ('../modules', 'modules')]
 binaries = []
-hiddenimports = ['PIL._tkinter_finder', 'pystray', 'yt_dlp', 'yt_dlp.extractor', 'yt_dlp.downloader', 'yt_dlp.postprocessor', 'yt_dlp.utils']
+hiddenimports = ['PIL._tkinter_finder', 'pystray', 'yt_dlp', 'yt_dlp.extractor', 'yt_dlp.downloader', 'yt_dlp.postprocessor', 'yt_dlp.utils', 
+                 'modules.splash_screen', 'modules.tiktok_api', 'modules.douyin_api', 'modules.dailymotion_api', 'modules.bilibili_api']
 tmp_ret = collect_all('yt_dlp')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 

@@ -79,17 +79,29 @@ class PlaywrightEngine:
                     try:
                         # Check URL extension
                         u = response.url.lower()
+                        
+                        # [TikTok Fix] Filter out login/captcha videos
+                        # TikTok often returns a 'playback1.mp4' on the login page or captcha
+                        if "playback1.mp4" in u or "login" in u or "captcha" in u:
+                            return
+
                         if ".m3u8" in u or ".mp4" in u:
-                            # Filter out small segments if possible, but hard to know size yet
+                                    # Filter out small segments if possible, but hard to know size yet
                             # Just capture it.
+                            
+                            # [FIX] Capture all relevant headers with simpler logic
+                            all_h = response.request.all_headers()
+                            
                             found_video = {
                                 "url": response.url,
                                 "ext": "mp4" if ".mp4" in u else "m3u8",
                                 "source": "network",
                                 "headers": {
-                                    "User-Agent": response.request.all_headers().get("user-agent", ""),
-                                    "Cookie": response.request.all_headers().get("cookie", ""),
-                                    "Referer": response.request.all_headers().get("referer", ""),
+                                    "User-Agent": all_h.get("user-agent", ""),
+                                    "Cookie": all_h.get("cookie", ""),
+                                    "Referer": all_h.get("referer", "https://www.tiktok.com/"),
+                                    "Origin": all_h.get("origin", "https://www.tiktok.com"),
+                                    # Accept?
                                 }
                             }
                             return
@@ -98,16 +110,16 @@ class PlaywrightEngine:
                         ctype = response.header_value("content-type")
                         if ctype:
                             if "video/" in ctype or "mpegurl" in ctype.lower():
-                                header_dict = response.all_headers()
+                                all_h = response.request.all_headers()
                                 found_video = {
                                     "url": response.url,
                                     "ext": "mp4" if "mp4" in ctype else "m3u8",
                                     "source": "network",
                                     "headers": {
-                                        # Normalize headers for yt-dlp
-                                        "User-Agent": response.request.all_headers().get("user-agent", ""),
-                                        "Cookie": response.request.all_headers().get("cookie", ""),
-                                        "Referer": response.request.all_headers().get("referer", ""),
+                                        "User-Agent": all_h.get("user-agent", ""),
+                                        "Cookie": all_h.get("cookie", ""),
+                                        "Referer": all_h.get("referer", "https://www.tiktok.com/"),
+                                        "Origin": all_h.get("origin", "https://www.tiktok.com"),
                                     }
                                 }
                     except: pass

@@ -96,6 +96,11 @@ class FastFetcher:
                 info, error = self._fetch_dailymotion_api(url)
                 if info:
                     print(f"[Fetcher] Tier 1 SUCCESS: {info.get('title', '?')[:40]}")
+            elif platform == "TIKTOK":
+                print(f"[Fetcher] Tier 1: TikTok API (SnapTik-like)...")
+                info, error = self._fetch_tiktok_api(url)
+                if info:
+                    print(f"[Fetcher] Tier 1 SUCCESS: {info.get('title', '?')[:40]}")
         else:
             print(f"[Fetcher] Playlist detected, skipping Tier 1")
         
@@ -273,9 +278,6 @@ class FastFetcher:
         except Exception as e:
             return None, f"Douyin Fetch Error: {str(e)}"
 
-        except Exception as e:
-            return None, f"Douyin Fetch Error: {str(e)}"
-
     def _fetch_dailymotion_api(self, url):
         """
         Fetch Dailymotion info using Dailymotion Metadata API.
@@ -299,6 +301,30 @@ class FastFetcher:
             return None, error or "Dailymotion fetch failed"
         except Exception as e:
             return None, f"Dailymotion Fetch Error: {str(e)}"
+
+    def _fetch_tiktok_api(self, url):
+        """
+        Fetch TikTok info using custom TikTokDownloader (TikWM).
+        """
+        try:
+            try:
+                from .tiktok_api import TikTokDownloader
+            except ImportError:
+                return None, "Module tiktok_api missing"
+            
+            tt = TikTokDownloader()
+            info, error = tt.get_video_info(url)
+            
+            if info:
+                d = info.get('duration', 0)
+                info['duration_string'] = f"{int(d) // 60}:{int(d) % 60:02d}" if d else "??:??"
+                info['extractor_key'] = "TikTok"
+                info['_fetcher_tier'] = 1
+                return info, None
+            
+            return None, error or "TikTok fetch failed"
+        except Exception as e:
+            return None, f"TikTok Fetch Error: {str(e)}"
 
     # =========================================================================
     # TIER 2: yt-dlp extract_flat

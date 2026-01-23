@@ -13,8 +13,16 @@ if "--splash" in sys.argv:
         from modules import splash_screen
         splash_screen.main()
     except Exception as e:
-        # If splash fails, just exit silently
-        pass
+        # If splash fails, show error (critical for debugging frozen app)
+        try:
+            import tkinter.messagebox
+            import tkinter as tk
+            root = tk.Tk()
+            root.withdraw()
+            tkinter.messagebox.showerror("Splash Error", f"Failed to launch splash: {e}")
+            root.destroy()
+        except: pass
+        # Just exit silently after error to avoid hanging
     sys.exit(0)
 
 # --- FORCE YT-DLP IMPORT (Critical for PyInstaller bundling) ---
@@ -53,7 +61,7 @@ if __name__ == "__main__":
         else:
             # In dev mode, run the script directly
             script_dir = os.path.dirname(os.path.abspath(__file__))
-            splash_script = os.path.join(script_dir, "splash_screen.py")
+            splash_script = os.path.join(script_dir, "modules", "splash_screen.py")
             
             if os.path.exists(splash_script):
                 splash_process = subprocess.Popen(

@@ -404,15 +404,8 @@ class DownloaderEngine:
 
         lazy_import_ytdlp()
         ydl_opts = {'quiet': True, 'skip_download': True, 'noplaylist': True, 'ignoreerrors': True, 'socket_timeout': 30}
-        try:
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl: 
-                result = ydl.extract_info(url, download=False)
-                return result, None
-        except Exception as e:
-            # Return None for result, and error string
-            return None, str(e)
-
-        # [DOUYIN] Custom API
+        
+        # [DOUYIN] Custom API - BEFORE generic yt-dlp
         if platform == "DOUYIN":
             global DouyinDownloader
             if DouyinDownloader is None:
@@ -423,11 +416,12 @@ class DownloaderEngine:
                 try:
                     dd = DouyinDownloader(headless=True)
                     info, err = dd.get_video_info(url)
+                    if info: return info, None
                 except Exception as e:
                     pass
-            return None, "Douyin extraction failed"
+            # Fallthrough to yt-dlp if custom API fails
 
-        # [DAILYMOTION] Custom API
+        # [DAILYMOTION] Custom API - BEFORE generic yt-dlp
         if platform == "DAILYMOTION":
             global DailymotionDownloader
             if DailymotionDownloader is None:
@@ -440,6 +434,16 @@ class DownloaderEngine:
                     info, err = dm.get_video_info(url)
                     if info: return info, None
                 except: pass
+            # Fallthrough to yt-dlp if custom API fails
+
+        # Generic yt-dlp fallback
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl: 
+                result = ydl.extract_info(url, download=False)
+                return result, None
+        except Exception as e:
+            # Return None for result, and error string
+            return None, str(e)
 
     def _classify_error(self, e):
         msg = str(e).lower()
@@ -746,7 +750,17 @@ class DownloaderEngine:
                                     # [FIX] Apply sniffed headers (Cookie, UA) to yt-dlp
                                     # This is critical for Dailymotion m3u8 which checks UA/Sec-CH-UA
                                     if sniff_data.get("headers"):
-                                        ydl_opts["http_headers"] = sniff_data["headers"]
+                                        h = sniff_data["headers"]
+                                        ydl_opts["http_headers"] = h
+                                        # Explicitly set UA option for yt-dlp as it might override http_headers
+                                        if h.get("User-Agent"):
+                                            ydl_opts["user_agent"] = h["User-Agent"]
+                                        
+                                        # [FIX] Remove conflicting cookie options so yt-dlp uses ONLY the headers
+                                        if 'cookiefile' in ydl_opts: del ydl_opts['cookiefile']
+                                        if 'cookiesfrombrowser' in ydl_opts: del ydl_opts['cookiesfrombrowser']
+                                        
+                                        print(f"[DEBUG] Fallback Headers: UA={h.get('User-Agent')[:20]}..., Ref={h.get('Referer')}")
 
                                     # [FIX] Force conversion to MP4 for m3u8 streams
                                     # yt-dlp usually does this if 'merge_output_format' is set, which it is in _configure_format.
@@ -826,11 +840,62 @@ class DownloaderEngine:
                 # [CANCEL FIX] Wrap yt-dlp execution to capture and kill FFmpeg subprocess if needed
                 with self.CaptureSubprocess(self):
                     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                        # Pass 'info' dict to process_ie_result
-                        info = ydl.process_ie_result(ie_result=info, download=True)
+                        try:
+                            # Pass 'info' dict to process_ie_result
+                            info = ydl.process_ie_result(ie_result=info, download=True)
+                        except Exception as e:
+                            # [FIX] If yt-dlp fails for PlaywrightFallback, try manual download
+                            if info.get('extractor') == 'PlaywrightFallback':
+                                print(f"[Core] yt-dlp failed on fallback link ({e}). Trying manual download...")
+                                callbacks.get('on_status', lambda x:None)("Thử tải trực tiếp (Manual Download)...")
+                                
+                                # Use requests to download
+                                import requests
+                                target_url = info['url']
+                                headers = ydl_opts.get('http_headers', {})
+                                # Ensure we have UA
+                                if 'User-Agent' not in headers and ydl_opts.get('user_agent'):
+                                    headers['User-Agent'] = ydl_opts['user_agent']
+                                    
+                                # [FIX] Use safe path construction instead of outtmpl substitution which failed
+                                target_file = os.path.join(abs_save_path, f"{unique_base_name}.{info.get('ext', 'mp4')}")
+                                
+                                if os.path.exists(target_file): os.remove(target_file)
+                                
+                                try:
+                                    with requests.get(target_url, headers=headers, stream=True, timeout=30) as r:
+                                        r.raise_for_status()
+                                        total_size = int(r.headers.get('content-length', 0))
+                                        dl_size = 0
+                                        with open(target_file, 'wb') as f:
+                                            for chunk in r.iter_content(chunk_size=8192):
+                                                if self.is_cancelled: break
+                                                if chunk:
+                                                    f.write(chunk)
+                                                    dl_size += len(chunk)
+                                                    # UI update
+                                                    if total_size > 0:
+                                                        per = (dl_size / total_size) * 100
+                                                        callbacks.get('on_progress', lambda x,y:None)(per, f"{per:.1f}%")
+                                    
+                                    if not self.is_cancelled:
+                                        info['filepath'] = target_file
+                                        print(f"[Core] Manual download success: {target_file}")
+                                    else:
+                                        raise Exception("Cancelled")
+                                except Exception as me:
+                                    print(f"[Core] Manual download failed: {me}")
+                                    raise e # Raise original yt-dlp error if manual also fails
+                            else:
+                                raise e # Re-raise for normal videos
+
                         
                         # [FIX] Resolve final path using captured files (handles Merger/Renaming)
+                        # Ensure we check info['filepath'] if manual download set it
                         calc_path = self._get_final_path(ydl, info)
+                        if info.get('filepath'):
+                            captured_files.append(info['filepath'])
+
                         candidates = captured_files + [calc_path]
                         
                         # Find the last candidate that actually exists
@@ -1100,7 +1165,7 @@ class DownloaderEngine:
         
         global DailymotionDownloader
         if DailymotionDownloader is None:
-            try: from dailymotion_api import DailymotionDownloader
+            try: from .dailymotion_api import DailymotionDownloader
             except ImportError: return False, "Thiếu Dailymotion API", None
             
         try:
@@ -1120,11 +1185,25 @@ class DownloaderEngine:
 
     def _download_douyin(self, task, settings, callbacks):
         url = task["url"]
+        
+        # [OPTIMIZATION] Check for pre-resolved URL/Title from UI to avoid re-fetch
+        if task.get("resolved_url"):
+             callbacks.get('on_status', lambda x: None)("Đang tải từ cache info...")
+             direct_task = task.copy()
+             direct_task["url"] = task["resolved_url"]
+             # Use info_title if name is not set by user (prioritize explicit name, then info_title)
+             # task['name'] might be empty string if user didn't type anything
+             user_name = task.get("name", "").strip()
+             if not user_name and task.get("info_title"):
+                 direct_task["name"] = task["info_title"]
+             
+             return self._download_general_ytdlp(direct_task, settings, callbacks)
+
         callbacks.get('on_status', lambda x: None)("Đang tải Douyin (API)...")
         
         global DouyinDownloader
         if DouyinDownloader is None:
-            try: from douyin_api import DouyinDownloader
+            try: from .douyin_api import DouyinDownloader
             except ImportError: return False, "Thiếu module douyin_api", None
 
         try:
