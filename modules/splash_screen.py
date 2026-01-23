@@ -73,10 +73,10 @@ SPLASH_TEXT = {
 
 def resource_path(relative_path):
     """Get absolute path to resource for PyInstaller"""
-    try:
-        # PyInstaller creates a temp folder and stores path in _MEIPASS
-        base_path = sys._MEIPASS
-    except Exception:
+    if getattr(sys, 'frozen', False):
+        # OneDir Mode: Use directory of the executable
+        base_path = os.path.dirname(sys.executable)
+    else:
         # Dev Mode: Go up one level from 'modules'
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_path, relative_path)
@@ -139,6 +139,7 @@ def main():
         img_label = tk.Label(frame, image=photo, bg="#1a1a2e")
         img_label.image = photo  # Keep a reference
         img_label.pack(pady=(15, 5))
+        root.update() # Force paint immediately
     except Exception as e:
         # Fallback to emoji if image not found
         print(f"Could not load splash_art.png: {e}")

@@ -289,15 +289,18 @@ if __name__ == "__main__":
         error_msg = str(e)
     
     # Kill splash now that app is ready
+    # Kill splash now that app is ready
     if splash_process:
         try:
-            splash_process.terminate()
-            splash_process.wait(timeout=1)
+            # Force kill immediately on Windows for responsiveness
+            if os.name == 'nt':
+                 subprocess.run(['taskkill', '/F', '/PID', str(splash_process.pid)], 
+                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            else:
+                 splash_process.terminate()
         except:
-            try:
-                splash_process.kill()
-            except:
-                pass
+             try: splash_process.kill()
+             except: pass
     
     # Handle errors
     if error_msg:

@@ -8,10 +8,9 @@ except ImportError:
     winreg = None
 
 def resource_path(relative_path):
-    try:
-        # PyInstaller OneFile/OneDir
-        base = sys._MEIPASS
-    except:
+    if getattr(sys, 'frozen', False):
+        base = os.path.dirname(sys.executable)
+    else:
         # Dev Mode: 'modules' folder is where this file resides
         # We need to go up one level to root
         base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
