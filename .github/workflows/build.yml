@@ -33,9 +33,6 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
-      - name: Install Playwright
-        run: |
-          playwright install chromium
 
       - name: Build with PyInstaller
         run: |
@@ -132,9 +129,6 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
-      - name: Install Playwright
-        run: |
-          playwright install chromium
 
       - name: Verify and Create macOS Icon
         run: |
@@ -205,10 +199,6 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
-      - name: Install Playwright
-        run: |
-          playwright install chromium
-          playwright install-deps chromium
 
       - name: Build with PyInstaller
         run: |

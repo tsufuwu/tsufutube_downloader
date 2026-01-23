@@ -841,13 +841,9 @@ class DownloaderEngine:
                         retry_without_cookies = True
                         continue # Loop again
                     else:
-                        # [FALLBACK] Universal Playwright Fallback
-                        # If standard yt-dlp fails (even after cookie retry), try Playwright Sniffing
-                        # ONLY if we haven't already tried it to avoid infinite loops
-                        # and ONLY if the error seems like a blockage (403, 412, etc, or extractor error)
-                        
-                        print(f"[Core] yt-dlp failed ({err_msg}). Attempting Playwright Fallback...")
-                        callbacks.get('on_status', lambda x:None)("Lỗi yt-dlp. Đang thử Playwright Fallback...")
+                        # [FALLBACK LEVEL 1] Universal DrissionPage / BrowserEngine
+                        print(f"[Core] yt-dlp failed ({err_msg}). Attempting Browser Fallback (DrissionPage)...")
+                        callbacks.get('on_status', lambda x:None)("Lỗi yt-dlp. Đang thử Browser Fallback...")
                         
                         global PlaywrightEngine
                         if PlaywrightEngine is None:
@@ -855,91 +851,79 @@ class DownloaderEngine:
                             except ImportError: PlaywrightEngine = None
                             
                         fallback_success = False
+                        
+                        # --- TRY DRISSIONPAGE ---
                         if PlaywrightEngine:
                             try:
                                 pw = PlaywrightEngine(headless=True)
                                 sniff_data = pw.sniff_video(task["url"])
                                 
-                                # [FIX] Auto-install Playwright if missing
-                                if sniff_data and isinstance(sniff_data, dict) and sniff_data.get("error") == "PLAYWRIGHT_BROWSER_NOT_INSTALLED":
-                                    print("[Core] Playwright browser not found. Installing...")
-                                    callbacks.get('on_status', lambda x:None)("Đang cài đặt thành phần bổ trợ (Playwright)...")
-                                    try:
-                                        from .playwright_helper import install_playwright_chromium
-                                        success, msg = install_playwright_chromium()
-                                        if success:
-                                            print("[Core] Playwright installed. Retrying sniff...")
-                                            callbacks.get('on_status', lambda x:None)("Cài đặt xong! Đang thử lại...")
-                                            pw = PlaywrightEngine(headless=True)
-                                            sniff_data = pw.sniff_video(task["url"])
-                                        else:
-                                            print(f"[Core] Install failed: {msg}")
-                                            sniff_data = None 
-                                    except Exception as ie:
-                                        print(f"[Core] Install helper error: {ie}")
-                                        sniff_data = None
-
-                                
-                                if sniff_data and sniff_data.get("url"):
-                                    print(f"[Core] Playwright Fallback Success: {sniff_data['url']}")
-                                    callbacks.get('on_status', lambda x:None)("Fallback thành công! Đang tải...")
-                                    
-                                    # Create temp info dict for the direct link
+                                if sniff_data and isinstance(sniff_data, dict) and sniff_data.get("url"):
+                                    print(f"[Core] Browser Fallback Success: {sniff_data['url']}")
                                     info = {
                                         'id': 'fallback_' + str(int(time.time())),
                                         'title': sniff_data.get("title", task.get("name", "Unknown Video")),
                                         'url': sniff_data["url"],
                                         'ext': sniff_data.get("ext", "mp4"),
                                         'protocol': 'm3u8' if sniff_data.get("ext") == "m3u8" else 'https',
-                                        'extractor': 'PlaywrightFallback', # [FIX] Prevent KeyError
-                                        # Force direct download
+                                        'extractor': 'PlaywrightFallback',
                                     }
-                                    
-                                    # IMPORTANT: We need to break the main loop and proceed to step 2 (calculations)
-                                    # But step 2 relies on 'info' variable being set.
-                                    # So we set info here and BREAK.
+                                    if sniff_data.get("headers"): info["http_headers"] = sniff_data["headers"]
                                     fallback_success = True
-                                    # We might need to adjust ydl_opts for direct link?
-                                    # [UI] Update Progress & Status as requested
-                                    # "Blue progress bar" -> We can't directly control color here easily without app.py changes, 
-                                    # but we can send the specific message.
-                                    # We simulate a "full load" state to reassure user.
-                                    callbacks.get('on_progress', lambda x,y:None)(101, "SPECIAL_MECHANISM") 
-                                    callbacks.get('on_status', lambda x:None)("Đang tải bằng cơ chế chuyên biệt, vui lòng đợi...")
-                                    
-                                    # [FIX] Apply sniffed headers (Cookie, UA) to yt-dlp
-                                    # This is critical for Dailymotion m3u8 which checks UA/Sec-CH-UA
-                                    if sniff_data.get("headers"):
-                                        h = sniff_data["headers"]
-                                        ydl_opts["http_headers"] = h
-                                        # Explicitly set UA option for yt-dlp as it might override http_headers
-                                        if h.get("User-Agent"):
-                                            ydl_opts["user_agent"] = h["User-Agent"]
-                                        
-                                        # [FIX] Remove conflicting cookie options so yt-dlp uses ONLY the headers
-                                        if 'cookiefile' in ydl_opts: del ydl_opts['cookiefile']
-                                        if 'cookiesfrombrowser' in ydl_opts: del ydl_opts['cookiesfrombrowser']
-                                        
-                                        print(f"[DEBUG] Fallback Headers: UA={h.get('User-Agent')[:20]}..., Ref={h.get('Referer')}")
 
-                                    # [FIX] Force conversion to MP4 for m3u8 streams
-                                    # yt-dlp usually does this if 'merge_output_format' is set, which it is in _configure_format.
-                                    # But let's double check/enforce it for robustness.
-                                    if 'merge_output_format' not in ydl_opts:
-                                         ydl_opts['merge_output_format'] = 'mp4'
-                                    
-                                    # The subsequent code uses 'info' to prepare filename and then runs 'process_ie_result'.
-                                    # process_ie_result can handle a dict with 'url'.
-                                    pass 
-                                else:
-                                    print("[Core] Playwright Fallback found nothing.")
+                                elif sniff_data and sniff_data.get("error") in ("BROWSER_NOT_FOUND", "PLAYWRIGHT_BROWSER_NOT_INSTALLED"):
+                                    # Don't fail immediately, try UC next
+                                    print("[Core] DrissionPage browser missing. Trying UC next...")
+                                    pass
                             except Exception as pe:
-                                print(f"[Core] Playwright Fallback Error: {pe}")
-                        
+                                print(f"[Core] Browser Fallback Error: {pe}")
+
+                        # --- TRY UNDETECTED CHROMEDRIVER (UC) [LEVEL 2] ---
+                        if not fallback_success:
+                            print("[Core] Browser Fallback failed/skipped. Attempting Undetected-Chromedriver (UC)...")
+                            callbacks.get('on_status', lambda x:None)("Đang thử cơ chế mạnh nhất (UC)...")
+                            
+                            try:
+                                from .uc_engine import UndetectedChromeEngine
+                                uc = UndetectedChromeEngine(headless=True)
+                                uc_data = uc.sniff_video(task["url"])
+                                
+                                if uc_data and uc_data.get("url"):
+                                    print(f"[Core] UC Success: {uc_data['url']}")
+                                    info = {
+                                        'id': 'uc_fallback_' + str(int(time.time())),
+                                        'title': "UC Video " + str(int(time.time())),
+                                        'url': uc_data["url"],
+                                        'ext': uc_data.get("ext", "mp4"),
+                                        'protocol': 'https',
+                                        'extractor': 'UCFallback',
+                                    }
+                                    fallback_success = True
+                                else:
+                                    print(f"[Core] UC found nothing: {uc_data}")
+                                    if uc_data and uc_data.get("error") == "MODULE_MISSING":
+                                         print("[Core] undetected-chromedriver module missing.")
+                            
+                            except Exception as uce:
+                                print(f"[Core] UC Error: {uce}")
+
                         if fallback_success:
-                             break # Exit the while True loop, proceeding to filename calc with 'info'
+                            # Set special flag for UI
+                            callbacks.get('on_status', lambda x:None)("Fallback thành công! Đang tải...")
+                            callbacks.get('on_progress', lambda x,y:None)(101, "SPECIAL_MECHANISM")
+                            
+                            # Handle headers if any from fallback
+                            if info.get("http_headers"):
+                                ydl_opts["http_headers"] = info["http_headers"]
+                                if 'cookiefile' in ydl_opts: del ydl_opts['cookiefile']
+                            
+                            # Ensure mp4 merge for m3u8
+                            if 'merge_output_format' not in ydl_opts:
+                                 ydl_opts['merge_output_format'] = 'mp4'
+
+                            break # Exit while loop to proceed with download
                         
-                        # If Fallback failed, re-raise original error to show Cookie Helper
+                        # If ALL fallbacks failed, re-raise original error
                         raise e
             
             if not info: return False, "Không lấy được info", None
@@ -1426,6 +1410,37 @@ class DownloaderEngine:
 
     def _download_bilibili(self, task, settings, callbacks):
         url = task["url"]
+        
+        # [BBDown PRIORITY]
+        try:
+            from .bbdown_engine import BBDownEngine
+            bb = BBDownEngine()
+            if bb.is_available():
+                callbacks.get('on_status', lambda x: None)("Phát hiện BBDown. Đang tải bằng cơ chế ưu tiên...")
+                
+                save_path = settings.get("save_path", ".")
+                # BBDown handles filename automatically usually, but we can set work dir
+                
+                success, msg = bb.download(url, save_path, 
+                    callback=lambda p, m: callbacks.get('on_progress', lambda x,y:None)(p, m)
+                )
+                
+                if success:
+                    return True, "BBDown Success", {
+                        "platform": "Bilibili (BBDown)", 
+                        "title": "BBDown Video", 
+                        "path": save_path,
+                        "format": "MP4", 
+                        "size": "Unknown", 
+                        "date": datetime.now().strftime("%Y-%m-%d %H:%M")
+                    }
+                else:
+                    print(f"[Core] BBDown failed: {msg}. Falling back to API...")
+            else:
+                 print("[Core] BBDown not found. Using API...")
+        except Exception as e:
+             print(f"[Core] BBDown check error: {e}")
+
         callbacks.get('on_status', lambda x: None)("Đang kết nối Bilibili API...")
         
         # Regex BVID
