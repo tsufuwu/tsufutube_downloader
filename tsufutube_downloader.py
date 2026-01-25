@@ -44,34 +44,38 @@ if __name__ == "__main__":
     # --- LAUNCH SPLASH SCREEN IMMEDIATELY ---
     # We spawn a separate process for the splash screen so it animates smoothly
     # while the main process (this one) loads heavy imports.
+    # Skip splash when running silently (e.g., on Windows startup)
     splash_process = None
-    try:
-        import subprocess
-        
-        # Get creation flags for hiding console window (cross-platform)
-        creation_flags = platform_utils.get_subprocess_creation_flags() if platform_utils else 0
-        
-        # Check if running bundled
-        if getattr(sys, 'frozen', False):
-            # In bundled exe, running the exe with --splash flag IS the splash screen
-            splash_process = subprocess.Popen(
-                [sys.executable, '--splash'],
-                creationflags=creation_flags
-            )
-        else:
-            # In dev mode, run the script directly
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            splash_script = os.path.join(script_dir, "modules", "splash_screen.py")
+    show_splash = "--silent" not in sys.argv
+    
+    if show_splash:
+        try:
+            import subprocess
             
-            if os.path.exists(splash_script):
+            # Get creation flags for hiding console window (cross-platform)
+            creation_flags = platform_utils.get_subprocess_creation_flags() if platform_utils else 0
+            
+            # Check if running bundled
+            if getattr(sys, 'frozen', False):
+                # In bundled exe, running the exe with --splash flag IS the splash screen
                 splash_process = subprocess.Popen(
-                    [sys.executable, splash_script],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
+                    [sys.executable, '--splash'],
                     creationflags=creation_flags
                 )
-    except Exception as e:
-        print(f"Splash subprocess error: {e}")
+            else:
+                # In dev mode, run the script directly
+                script_dir = os.path.dirname(os.path.abspath(__file__))
+                splash_script = os.path.join(script_dir, "modules", "splash_screen.py")
+                
+                if os.path.exists(splash_script):
+                    splash_process = subprocess.Popen(
+                        [sys.executable, splash_script],
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        creationflags=creation_flags
+                    )
+        except Exception as e:
+            print(f"Splash subprocess error: {e}")
 
     # --- PLATFORM-SPECIFIC INITIALIZATION ---
     if platform_utils:

@@ -37,6 +37,11 @@ UninstallDisplayIcon={app}\{#MyAppExeName}
 WizardStyle=modern
 ShowLanguageDialog=yes
 
+; Auto-close running application during install/update
+CloseApplications=force
+CloseApplicationsFilter=*.exe
+RestartApplications=no
+
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "vietnamese"; MessagesFile: "Vietnamese.isl"
