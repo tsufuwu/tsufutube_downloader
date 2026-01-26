@@ -173,14 +173,14 @@ jobs:
         run: |
           curl -L -o ffmpeg.zip https://evermeet.cx/ffmpeg/ffmpeg-6.0.zip
           curl -L -o ffprobe.zip https://evermeet.cx/ffmpeg/ffprobe-6.0.zip
-          unzip -o ffmpeg.zip
-          unzip -o ffprobe.zip
-          mv ffmpeg ffmpeg_bin
-          mv ffprobe ffprobe_bin
+          mkdir -p temp_ffmpeg
+          unzip -o -d temp_ffmpeg ffmpeg.zip
+          unzip -o -d temp_ffmpeg ffprobe.zip
           mkdir -p ffmpeg
-          mv ffmpeg_bin ffmpeg/ffmpeg
-          mv ffprobe_bin ffmpeg/ffprobe
+          mv temp_ffmpeg/ffmpeg ffmpeg/
+          mv temp_ffmpeg/ffprobe ffmpeg/
           chmod +x ffmpeg/ffmpeg ffmpeg/ffprobe
+          rm -rf temp_ffmpeg
 
       - name: Build with PyInstaller
         run: |
