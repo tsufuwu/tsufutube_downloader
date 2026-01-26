@@ -13,6 +13,7 @@ import os
 datas = [
     ('../assets', 'assets'), 
     ('../modules', 'modules'),
+    ('../ffmpeg', 'ffmpeg'),
     # Include .desktop file for Linux integration
     ('../assets/tsufutube.desktop', 'assets'),
 ]
