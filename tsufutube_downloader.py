@@ -228,14 +228,14 @@ if __name__ == "__main__":
             # Minimal Tk instance - no extra imports
             root = tk.Tk()
             root.title("🌐 Language")
-            root.geometry("220x350")
+            root.geometry("300x450")
             root.resizable(False, False)
             root.configure(bg="#2b2b2b")
             
             # Center on screen
             root.update_idletasks()
-            x = (root.winfo_screenwidth() - 220) // 2
-            y = (root.winfo_screenheight() - 320) // 2
+            x = (root.winfo_screenwidth() - 300) // 2
+            y = (root.winfo_screenheight() - 450) // 2
             root.geometry(f"+{x}+{y}")
             root.attributes("-topmost", True)
             

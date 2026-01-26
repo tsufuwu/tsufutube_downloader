@@ -22,6 +22,7 @@ AppUpdatesURL={#MyAppURL}
 ; Install to local AppData (doesn't require admin privileges)
 DefaultDirName={userappdata}\{#MyAppName}
 DisableProgramGroupPage=yes
+DisableDirPage=no
 ; Require lowest permissions (User Mode Install)
 PrivilegesRequired=lowest
 
