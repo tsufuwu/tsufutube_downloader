@@ -455,7 +455,7 @@ class DownloaderEngine:
         if any(k in msg for k in cookie_keywords): 
             return "ERR_COOKIE", "Video yêu cầu đăng nhập/Cookie."
         
-        if "ffmpeg" in msg: return "ERR_SYSTEM", "Thiếu file ffmpeg.exe."
+        if "ffmpeg" in msg: return "ERR_SYSTEM", "Thiếu file ffmpeg."
         return "ERR_UNKNOWN", f"Lỗi: {msg[:100]}..."
 
     # =========================================================================

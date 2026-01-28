@@ -8,13 +8,20 @@ except ImportError:
     winreg = None
 
 def resource_path(relative_path):
-    if getattr(sys, 'frozen', False):
-        base = os.path.dirname(sys.executable)
-    else:
-        # Dev Mode: 'modules' folder is where this file resides
-        # We need to go up one level to root
-        base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(base, relative_path)
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        if getattr(sys, 'frozen', False):
+             # Fallback for frozen if _MEIPASS is somehow missing (rare)
+             base_path = os.path.dirname(sys.executable)
+        else:
+             # Dev Mode: 'modules' folder is where this file resides
+             # We need to go up one level to root
+             base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    return os.path.join(base_path, relative_path)
 
 def time_to_seconds(t):
     try:

@@ -163,7 +163,7 @@ class YoutubeDownloaderApp(ctk.CTk):
             with open(locale_path, "r", encoding="utf-8") as f:
                 self.translations = json.load(f)
         except Exception as e:
-            print(f"Error loading locale {self.lang}: {e}")
+            print(f"Error loading locale {self.lang} from {locale_path if 'locale_path' in locals() else 'unknown'}: {e}")
             self.translations = {}
         self.download_queue = []
         self.cookies_path_var = tk.StringVar(value=self.settings.get("cookie_file", ""))
