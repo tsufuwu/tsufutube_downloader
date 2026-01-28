@@ -39,6 +39,13 @@ datas += tmp_ret[0]
 binaries += tmp_ret[1]
 hiddenimports += tmp_ret[2]
 
+# [FIX] Explicitly collect certifi to ensure SSL CA bundle is present
+# This fixes "SSL: CERTIFICATE_VERIFY_FAILED" or connection drops in frozen apps
+tmp_cert = collect_all('certifi')
+datas += tmp_cert[0]
+binaries += tmp_cert[1]
+hiddenimports += tmp_cert[2]
+
 # =========================================================================
 #  ANALYSIS
 # =========================================================================

@@ -57,6 +57,13 @@ class DownloaderEngine:
         try:
              self.temp_dir = os.path.join(tempfile.gettempdir(), "tsufutube_cache")
              os.makedirs(self.temp_dir, exist_ok=True)
+             
+             # [Linux Fix] SSL Cert Patch for Frozen App
+             # Point to the bundled certifi cacert.pem if available
+             if getattr(sys, 'frozen', False) and sys.platform.startswith('linux'):
+                 import certifi
+                 os.environ['SSL_CERT_FILE'] = certifi.where()
+                 os.environ['REQUESTS_CA_BUNDLE'] = certifi.where()
         except:
              self.temp_dir = os.path.join(os.getcwd(), "temp")
              os.makedirs(self.temp_dir, exist_ok=True)
