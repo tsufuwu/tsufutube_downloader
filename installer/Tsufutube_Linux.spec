@@ -31,6 +31,9 @@ hiddenimports = [
     'customtkinter',
     # Linux-specific
     'gi',  # For GTK integration if available
+    # [CRITICAL] Crypto libraries for YouTube Signature Solving
+    'Cryptodome',
+    'brotli',
 ]
 
 # Collect all yt_dlp modules

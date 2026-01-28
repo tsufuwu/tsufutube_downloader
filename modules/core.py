@@ -789,8 +789,16 @@ class DownloaderEngine:
         geo = settings.get("geo_bypass_country", "None")
         if geo and isinstance(geo, str) and geo != "None": ydl_opts['geo_bypass_country'] = geo
         
-        proxy = settings.get("proxy_url")
         if proxy and isinstance(proxy, str) and proxy.strip(): ydl_opts['proxy'] = proxy.strip()
+
+        # [FIX] Force Android Client for YouTube to bypass robust signature checks
+        # This reduces likelihood of "Signature solving failed" bans
+        ydl_opts['extractor_args'] = {
+            'youtube': {
+                'player_client': ['android', 'web'],
+                'player_skip': ['web_creator'], # Skip clients known to cause CAPTCHAs
+            }
+        }
 
         # Archive
         if settings.get("use_archive", False):
