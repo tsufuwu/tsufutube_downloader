@@ -451,9 +451,9 @@ class DownloaderEngine:
         if "412" in msg: return "ERR_WBI", "Bilibili chặn (Lỗi 412). Vui lòng cập nhật Cookie."
         
         # Cookie/Login related errors - return specific code for smart guidance
-        cookie_keywords = ["sign in", "confirm your age", "age-restricted", "member-only", "private", "login required", "cookies"]
+        cookie_keywords = ["sign in", "confirm your age", "age-restricted", "member-only", "private", "login required", "cookies", "bot"]
         if any(k in msg for k in cookie_keywords): 
-            return "ERR_COOKIE", "Video yêu cầu đăng nhập/Cookie."
+            return "ERR_COOKIE", "Video yêu cầu xác thực (Bot/Cookie/Tuổi). Vui lòng cập nhật Cookie."
         
         if "ffmpeg" in msg: return "ERR_SYSTEM", "Thiếu file ffmpeg."
         return "ERR_UNKNOWN", f"Lỗi: {msg[:100]}..."
@@ -949,6 +949,56 @@ class DownloaderEngine:
 
                             break # Exit while loop to proceed with download
                         
+                        # [FALLBACK LEVEL 3] OAuth2 for Bot Verification
+                        # If error is specifically "Sign in / Bot" and we haven't tried OAuth2 yet
+                        if "sign in" in err_msg or "bot" in err_msg:
+                            print(f"[Core] Bot detection ({err_msg}). Attempting OAuth2...")
+                            callbacks.get('on_status', lambda x:None)("Phát hiện Bot Check. Đang thử OAuth2... (Xem Terminal)")
+                            
+                            # Clone opts
+                            oauth_opts = ydl_opts.copy()
+                            oauth_opts.update({
+                                'username': 'oauth2',
+                                'password': '',
+                                'quiet': False
+                            })
+                            # Remove cookie args/auth headers if any to ensure clean auth
+                            if 'cookiesfrombrowser' in oauth_opts: del oauth_opts['cookiesfrombrowser']
+                            if 'cookiefile' in oauth_opts: del oauth_opts['cookiefile']
+                            
+                            # [GUI FIX] Custom Logger to capture Device Code prompt
+                            # Standard yt-dlp prints this to stdout, which is invisible in GUI.
+                            class OAuthLogger:
+                                def debug(self, msg): self.check(msg)
+                                def warning(self, msg): self.check(msg)
+                                def error(self, msg): self.check(msg)
+                                def check(self, msg):
+                                    if "google.com/device" in msg:
+                                        # Extract code from message
+                                        # Msg: "To give yt-dlp access... go to https://www.google.com/device and enter code ABCD-EFGH"
+                                        # We relay this entire message to the Status UI so user can see it
+                                        callbacks.get('on_status', lambda x:None)(f"HÀNH ĐỘNG: Xem log/console để lấy mã xác thực Google! (Hoặc tìm: google.com/device)")
+                                        print(f"\n[URGENT] {msg}\n")
+                                        
+                                        # Try to extract code specifically for cleaner UI
+                                        import re
+                                        code_match = re.search(r'code\s+([A-Z0-9-]+)', msg)
+                                        if code_match:
+                                            c = code_match.group(1)
+                                            callbacks.get('on_status', lambda x:None)(f"Vào google.com/device nhập mã: {c}")
+
+                            oauth_opts['logger'] = OAuthLogger()
+
+                            try:
+                                with yt_dlp.YoutubeDL(oauth_opts) as ydl_oauth:
+                                    info = ydl_oauth.extract_info(task["url"], download=False)
+                                    # If success, update ydl_opts for subsequent download step
+                                    ydl_opts.update(oauth_opts)
+                                    break # Success, exit loop
+                            except Exception as oe:
+                                print(f"[Core] OAuth2 failed: {oe}")
+                                # Proceed to raise e
+
                         # If ALL fallbacks failed, re-raise original error
                         raise e
             
@@ -1407,17 +1457,16 @@ class DownloaderEngine:
             info, err = dd.get_video_info(url)
             
             if not info:
-                return False, f"Lỗi lấy info Douyin: {err}", None
-            
+                # [FIX] Fallback to generic yt-dlp (which has Playwright/UC fallback)
+                print(f"[Douyin] Tier 1 API failed ({err}). Falling back to Tier 2 (yt-dlp/Generic)...")
+                callbacks.get('on_status', lambda x: None)(f"API Douyin lỗi ({err}). Đang thử cơ chế dự phòng (Tier 2)...")
+                return self._download_general_ytdlp(task, settings, callbacks)
+
             # Download file from URL
             video_url = info.get("url")
-            if not video_url: return False, "Không tìm thấy link video", None
-            
-            # Use requests or curl or ytdlp generic to download the file
-            # Since we have direct link, using yt-dlp generic is safest for consistent hook behavior
-            # BUT direct file URL might not work well if headers required.
-            # Douyin links usually expire or check UA.
-            # Let's use Requests to download manualy or use yt-dlp on the direct URL.
+            if not video_url: 
+                 print("[Douyin] No video URL found. Falling back...")
+                 return self._download_general_ytdlp(task, settings, callbacks)
             
             # Use yt-dlp generic to download direct URL -> easiest integration with existing hooks
             callbacks.get('on_status', lambda x: None)("Đang tải xuống video...")
@@ -1432,7 +1481,8 @@ class DownloaderEngine:
             return self._download_general_ytdlp(direct_task, settings, callbacks)
 
         except Exception as e:
-            return False, f"Douyin Error: {e}", None
+            print(f"[Douyin] Tier 1 Exception: {e}. Falling back...")
+            return self._download_general_ytdlp(task, settings, callbacks)
 
     def _download_bilibili(self, task, settings, callbacks):
         url = task["url"]

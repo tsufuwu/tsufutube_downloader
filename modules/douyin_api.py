@@ -63,7 +63,24 @@ class DouyinDownloader:
             
             # Try Method A: DOM Scraping (primary for DrissionPage)
             print("[Douyin] Extracting video info from DOM...")
-            result = self._fetch_dom(page, url)
+            
+            # [FIX] Retry Loop for "Disconnected" errors
+            result = None
+            for attempt in range(3):
+                try:
+                    if attempt > 0:
+                         print(f"[Douyin] Retry {attempt+1}/3: Reloading page...")
+                         page.get(url)
+                         page.wait.load_start()
+                    
+                    result = self._fetch_dom(page, url)
+                    if result: break
+                except Exception as dom_err:
+                    print(f"[Douyin] DOM attempt {attempt+1} failed: {dom_err}")
+                    import time
+                    time.sleep(1)
+            
+            # Close browser
             
             # Close browser
             try:

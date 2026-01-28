@@ -1449,7 +1449,7 @@ class YoutubeDownloaderApp(ctk.CTk):
             "save_path": self.path_var.get(),
             "cookie_file": self.cookies_path_var.get(),
             "browser_source": self.browser_var.get() if hasattr(self, 'browser_var') else "none",
-            "name": self.name_ent.get().strip(),
+            "name": self.name_var.get().strip(),
         }
         
         # Use cached resolved info if available and URL matches
