@@ -56,33 +56,50 @@ def get_ffmpeg_path() -> str:
     """
     Get the path to FFmpeg executable.
     - Windows: Look for bundled ffmpeg.exe in app directory
-    - MacOS/Linux: Try bundled first, then system FFmpeg
+    - MacOS/Linux: Look in sys._MEIPASS (bundled), ensure +x permission, then fallback to system
     """
+    # Check PyInstaller Temp Dir (sys._MEIPASS) first for bundled assets
+    # Fallback to exe dir (folder mode) or dev dir
+    base_dir = getattr(sys, '_MEIPASS', get_executable_dir())
     exe_dir = get_executable_dir()
     
     if IS_WINDOWS:
-        # Windows: bundled ffmpeg
-        bundled = os.path.join(exe_dir, "ffmpeg", "ffmpeg.exe")
-        if os.path.exists(bundled):
-            return bundled
-        # Fallback to PATH
+        # Windows: bundled ffmpeg in _MEIPASS or next to exe
+        params = [
+            os.path.join(base_dir, "ffmpeg", "ffmpeg.exe"),
+            os.path.join(exe_dir, "ffmpeg", "ffmpeg.exe")
+        ]
+        for p in params:
+            if os.path.exists(p): return p
+            
         return "ffmpeg.exe"
     else:
         # MacOS/Linux: try bundled first
         bundled_paths = [
-            os.path.join(exe_dir, "ffmpeg", "ffmpeg"),
-            os.path.join(exe_dir, "bin", "ffmpeg"),
-            os.path.join(exe_dir, "Resources", "ffmpeg"),  # MacOS .app bundle
+            os.path.join(base_dir, "ffmpeg", "ffmpeg"),
+            os.path.join(base_dir, "bin", "ffmpeg"),
+            os.path.join(base_dir, "Resources", "ffmpeg"),  # MacOS .app
+            os.path.join(exe_dir, "ffmpeg", "ffmpeg")       # Folder mode fallback
         ]
+        
         for path in bundled_paths:
-            if os.path.exists(path) and os.access(path, os.X_OK):
+            if os.path.exists(path):
+                # [CRITICAL FIX] Ensure executable permission on Linux/Mac
+                # PyInstaller extraction might lose +x flag
+                try:
+                    st = os.stat(path)
+                    os.chmod(path, st.st_mode | 0o111) # Add +x
+                except Exception as e:
+                    print(f"Warning: Failed to set +x on {path}: {e}")
+                
                 return path
         
         # Try system FFmpeg
         try:
             result = subprocess.run(["which", "ffmpeg"], capture_output=True, text=True)
             if result.returncode == 0:
-                return result.stdout.strip()
+                path = result.stdout.strip()
+                if path: return path
         except:
             pass
         
