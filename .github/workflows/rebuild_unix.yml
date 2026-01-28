@@ -1,0 +1,177 @@
+name: Rebuild Unix (Mac/Linux)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+jobs:
+  # =========================================================================
+  #  BUILD MACOS
+  # =========================================================================
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+
+      - name: Verify and Create macOS Icon
+        run: |
+          # Check if icon.icns already exists
+          if [ -f "assets/icon.icns" ]; then
+            echo "Using existing assets/icon.icns"
+            ls -la assets/icon.icns
+          else
+            echo "Creating icon.icns from icon.png..."
+            mkdir -p icon.iconset
+            # Use logo.png if icon.png doesn't work
+            SOURCE_PNG="assets/icon.png"
+            if [ ! -f "$SOURCE_PNG" ]; then
+              SOURCE_PNG="assets/logo.png"
+            fi
+            echo "Using source: $SOURCE_PNG"
+            sips -z 16 16     "$SOURCE_PNG" --out icon.iconset/icon_16x16.png
+            sips -z 32 32     "$SOURCE_PNG" --out icon.iconset/icon_16x16@2x.png
+            sips -z 32 32     "$SOURCE_PNG" --out icon.iconset/icon_32x32.png
+            sips -z 64 64     "$SOURCE_PNG" --out icon.iconset/icon_32x32@2x.png
+            sips -z 128 128   "$SOURCE_PNG" --out icon.iconset/icon_128x128.png
+            sips -z 256 256   "$SOURCE_PNG" --out icon.iconset/icon_128x128@2x.png
+            sips -z 256 256   "$SOURCE_PNG" --out icon.iconset/icon_256x256.png
+            sips -z 512 512   "$SOURCE_PNG" --out icon.iconset/icon_256x256@2x.png
+            sips -z 512 512   "$SOURCE_PNG" --out icon.iconset/icon_512x512.png
+            sips -z 1024 1024 "$SOURCE_PNG" --out icon.iconset/icon_512x512@2x.png
+            iconutil -c icns icon.iconset -o assets/icon.icns
+            rm -rf icon.iconset
+          fi
+
+      - name: Setup FFmpeg
+        run: |
+          curl -L -o ffmpeg.zip https://evermeet.cx/ffmpeg/ffmpeg-6.0.zip
+          curl -L -o ffprobe.zip https://evermeet.cx/ffmpeg/ffprobe-6.0.zip
+          mkdir -p temp_ffmpeg
+          unzip -o -d temp_ffmpeg ffmpeg.zip
+          unzip -o -d temp_ffmpeg ffprobe.zip
+          mkdir -p ffmpeg
+          mv temp_ffmpeg/ffmpeg ffmpeg/
+          mv temp_ffmpeg/ffprobe ffmpeg/
+          chmod +x ffmpeg/ffmpeg ffmpeg/ffprobe
+          rm -rf temp_ffmpeg
+
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller installer/Tsufutube_Mac.spec
+
+      - name: Create DMG
+        run: |
+          hdiutil create -volname "Tsufutube Downloader" -srcfolder "dist/Tsufutube Downloader.app" -ov -format UDZO "dist/Tsufutube-Downloader-macOS.dmg"
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build
+          path: dist/Tsufutube-Downloader-macOS.dmg
+
+  # =========================================================================
+  #  BUILD LINUX
+  # =========================================================================
+  build-linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-tk upx
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+
+      - name: Setup FFmpeg
+        run: |
+          wget https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
+          tar -xf ffmpeg-release-amd64-static.tar.xz
+          mkdir -p ffmpeg
+          # Find the directory name (it changes with version)
+          FFMPEG_DIR=$(find . -maxdepth 1 -type d -name "ffmpeg-*-static")
+          mv "$FFMPEG_DIR/ffmpeg" ffmpeg/
+          mv "$FFMPEG_DIR/ffprobe" ffmpeg/
+          chmod +x ffmpeg/ffmpeg ffmpeg/ffprobe
+
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller installer/Tsufutube_Linux.spec
+
+      - name: Create Archive
+        run: |
+          cd dist
+          tar -czvf Tsufutube-Downloader-Linux-x64.tar.gz tsufutube-downloader
+          cd ..
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: dist/Tsufutube-Downloader-Linux-x64.tar.gz
+
+  # =========================================================================
+  #  CREATE RELEASE
+  # =========================================================================
+  release:
+    needs: [build-macos, build-linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download macOS Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build
+          path: artifacts/macos
+
+      - name: Download Linux Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build
+          path: artifacts/linux
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: Tsufutube Downloader ${{ github.event.inputs.version }} - Unix Rebuild
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            artifacts/macos/Tsufutube-Downloader-macOS.dmg
+            artifacts/linux/Tsufutube-Downloader-Linux-x64.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -74,7 +74,16 @@ def get_ffmpeg_path() -> str:
             
         return "ffmpeg.exe"
     else:
-        # MacOS/Linux: try bundled first
+        # MacOS/Linux: Priority 1 - System FFmpeg (Most reliable)
+        try:
+            result = subprocess.run(["which", "ffmpeg"], capture_output=True, text=True)
+            if result.returncode == 0:
+                path = result.stdout.strip()
+                if path: return path
+        except:
+            pass
+
+        # Priority 2 - Bundled FFmpeg (Fallback)
         bundled_paths = [
             os.path.join(base_dir, "ffmpeg", "ffmpeg"),
             os.path.join(base_dir, "bin", "ffmpeg"),
@@ -93,15 +102,6 @@ def get_ffmpeg_path() -> str:
                     print(f"Warning: Failed to set +x on {path}: {e}")
                 
                 return path
-        
-        # Try system FFmpeg
-        try:
-            result = subprocess.run(["which", "ffmpeg"], capture_output=True, text=True)
-            if result.returncode == 0:
-                path = result.stdout.strip()
-                if path: return path
-        except:
-            pass
         
         # Fallback
         return "ffmpeg"
