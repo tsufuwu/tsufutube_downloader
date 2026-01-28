@@ -328,7 +328,7 @@ class DownloaderEngine:
                 
                 # Create Temp Profile Structure
                 # yt-dlp needs: User Data/Local State AND User Data/Default/Cookies
-                import shutil
+
                 bg_root = os.path.join(self.temp_dir, f"shadow_{b_key}")
                 bg_default = os.path.join(bg_root, "Default")
                 os.makedirs(bg_default, exist_ok=True)
@@ -410,8 +410,25 @@ class DownloaderEngine:
                         }
                 except: pass
 
+        if platform == "BILIBILI_CN":
+            # [BILIBILI CN] ... existing logic ...
+            pass # (Simplified for replacement context)
+
         lazy_import_ytdlp()
-        ydl_opts = {'quiet': True, 'skip_download': True, 'noplaylist': True, 'ignoreerrors': True, 'socket_timeout': 30}
+        ydl_opts = {
+            'quiet': True, 
+            'skip_download': True, 
+            'noplaylist': True, 
+            'ignoreerrors': True, 
+            'socket_timeout': 30,
+            # [FIX] Force Android Client for info fetching too
+            'extractor_args': {
+                'youtube': {
+                    'player_client': ['android', 'web'],
+                    'player_skip': ['web_creator'],
+                }
+            }
+        }
         
         # [DOUYIN] Custom API - BEFORE generic yt-dlp
         if platform == "DOUYIN":

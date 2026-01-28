@@ -1563,7 +1563,14 @@ class YoutubeDownloaderApp(ctk.CTk):
         dialog.geometry("500x420")
         dialog.resizable(False, False)
         dialog.transient(self)
-        dialog.grab_set()
+        
+        # [Linux Fix] Wait for visibility before grab to prevent TclError
+        dialog.update_idletasks()
+        try:
+            dialog.wait_visibility()
+            dialog.grab_set()
+            dialog.focus_set()
+        except: pass
         
         # Center dialog
         dialog.update_idletasks()
