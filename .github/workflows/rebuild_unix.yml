@@ -111,6 +111,9 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
+          # [CRITICAL] Force upgrade yt-dlp to fix "Signature solving failed"
+          # [CRITICAL] Install pycryptodomex for better encryption handling
+          pip install --upgrade yt-dlp pycryptodomex
           pip install pyinstaller
 
 
