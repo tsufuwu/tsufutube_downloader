@@ -1,0 +1,15 @@
+# Core Dependencies
+yt-dlp>=2024.1.0
+customtkinter>=5.2.0
+pillow>=10.0.0
+pystray>=0.19.0
+
+# Optional Features
+instaloader>=4.10.0
+bilibili-api-python>=16.2.0
+
+# Optional but recommended
+
+# Douyin/TikTok Support (uses system Chrome/Edge)
+DrissionPage>=4.0.0
+undetected-chromedriver>=3.5.0
