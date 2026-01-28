@@ -644,7 +644,33 @@ class DownloaderEngine:
 
     def _download_general_ytdlp(self, task, settings, callbacks, extra_opts=None):
         lazy_import_ytdlp()
-        if not os.path.exists(self.ffmpeg_path): return False, "Thiếu file ffmpeg.exe", None
+        
+        # [DEBUG] Print FFmpeg Path and Version
+        print(f"[Core DEBUG] Checking FFmpeg Path: '{self.ffmpeg_path}'")
+        if self.ffmpeg_path:
+            try:
+                # Check exist
+                if not os.path.exists(self.ffmpeg_path) and not any(os.access(os.path.join(p, self.ffmpeg_path), os.X_OK) for p in os.environ["PATH"].split(os.pathsep)):
+                     print(f"[Core DEBUG] FFmpeg path not found: {self.ffmpeg_path}")
+                else:
+                    # Check execute
+                    vcmd = [self.ffmpeg_path, "-version"]
+                    vproc = subprocess.run(vcmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                    if vproc.returncode == 0:
+                        print(f"[Core DEBUG] FFmpeg Version: {vproc.stdout.splitlines()[0]}")
+                    else:
+                         print(f"[Core DEBUG] FFmpeg Execution Failed: {vproc.stderr}")
+            except Exception as e:
+                 print(f"[Core DEBUG] FFmpeg Check Exception: {e}")
+
+        if not os.path.exists(self.ffmpeg_path): 
+             # On Linux, if checking 'ffmpeg' command, os.path.exists might return false if not absolute.
+             # but shutil.which should have handled it in platform_utils.
+             # If using system buffer, 'ffmpeg' string works for subprocess, but os.path.exists fails.
+             # We should rely on earlier check or shutil.which
+             import shutil
+             if not shutil.which(self.ffmpeg_path) and not os.path.exists(self.ffmpeg_path):
+                 return False, f"Thiếu file ffmpeg ({self.ffmpeg_path})", None
 
         # Prioritize Task Settings -> Global Settings
         save_path = task.get("save_path") or settings.get("save_path", ".")
