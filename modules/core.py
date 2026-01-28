@@ -748,18 +748,40 @@ class DownloaderEngine:
         # --- CẤU HÌNH CƠ BẢN ---
         ydl_opts = {
             'progress_hooks': [progress_hook],
-            'postprocessor_hooks': [pp_hook], # Báo status khi cắt/gộp
-            'noplaylist': not task.get("is_plist"),
-            'force_overwrites': True, # Ta sẽ quản lý tên file thủ công nên để True để yt-dlp ghi vào đích đã chọn
-            'ignoreerrors': False,
+            'postprocessor_hooks': [pp_hook],
+            'outtmpl': os.path.join(save_path, f'%(title)s.%(ext)s'),
+            'color': 'no_color',
+            'retries': 10,
+            'fragment_retries': 10,
+            'socket_timeout': 60,
+            'ignoreerrors': False, # Critical: Stop on error
+            
+            # [FIX LINUX HLS] Force Native HLS Downloader
+            # Solves "fragment not found" and "empty file" on restricted envs
+            'hls_prefer_native': True, 
+            'hls_use_mpegts': True,
+            'http_chunk_size': 10485760, # 10MB chunks
+            
+            # Force IPv4 if IPv6 is flaky
+            'source_address': '0.0.0.0', 
+            
+            # Additional headers
+            'http_headers': {
+                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                 'Accept-Language': 'en-US,en;q=0.9',
+            },
+            
+            'continuedl': True,
+            'noprogress': True,
+            'quiet': True,
+            'writethumbnail': False, 
+            'writeautomaticsub': False,
+            'writesubtitles': False,
+            
+            # [FFmpeg Path] Ensure explicit path is used
             'ffmpeg_location': self.ffmpeg_path,
-            'socket_timeout': 30,
-            'addmetadata': settings.get("add_metadata", False),
-            'writethumbnail': settings.get("embed_thumbnail", False),
-            'geo_bypass': True,
-            'live_from_start': True,
-            # [REMOVED] sleep_interval settings were causing extra delays
-        }
+        }    # [REMOVED] sleep_interval settings were causing extra delays
+
         
 
         
