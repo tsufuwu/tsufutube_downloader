@@ -57,13 +57,6 @@ class DownloaderEngine:
         try:
              self.temp_dir = os.path.join(tempfile.gettempdir(), "tsufutube_cache")
              os.makedirs(self.temp_dir, exist_ok=True)
-             
-             # [Linux Fix] SSL Cert Patch for Frozen App
-             # Point to the bundled certifi cacert.pem if available
-             if getattr(sys, 'frozen', False) and sys.platform.startswith('linux'):
-                 import certifi
-                 os.environ['SSL_CERT_FILE'] = certifi.where()
-                 os.environ['REQUESTS_CA_BUNDLE'] = certifi.where()
         except:
              self.temp_dir = os.path.join(os.getcwd(), "temp")
              os.makedirs(self.temp_dir, exist_ok=True)
@@ -328,7 +321,7 @@ class DownloaderEngine:
                 
                 # Create Temp Profile Structure
                 # yt-dlp needs: User Data/Local State AND User Data/Default/Cookies
-
+                import shutil
                 bg_root = os.path.join(self.temp_dir, f"shadow_{b_key}")
                 bg_default = os.path.join(bg_root, "Default")
                 os.makedirs(bg_default, exist_ok=True)
@@ -410,25 +403,8 @@ class DownloaderEngine:
                         }
                 except: pass
 
-        if platform == "BILIBILI_CN":
-            # [BILIBILI CN] ... existing logic ...
-            pass # (Simplified for replacement context)
-
         lazy_import_ytdlp()
-        ydl_opts = {
-            'quiet': True, 
-            'skip_download': True, 
-            'noplaylist': True, 
-            'ignoreerrors': True, 
-            'socket_timeout': 30,
-            # [FIX] Force Android Client for info fetching too
-            'extractor_args': {
-                'youtube': {
-                    'player_client': ['android', 'web'],
-                    'player_skip': ['web_creator'],
-                }
-            }
-        }
+        ydl_opts = {'quiet': True, 'skip_download': True, 'noplaylist': True, 'ignoreerrors': True, 'socket_timeout': 30}
         
         # [DOUYIN] Custom API - BEFORE generic yt-dlp
         if platform == "DOUYIN":
@@ -765,40 +741,18 @@ class DownloaderEngine:
         # --- CẤU HÌNH CƠ BẢN ---
         ydl_opts = {
             'progress_hooks': [progress_hook],
-            'postprocessor_hooks': [pp_hook],
-            'outtmpl': os.path.join(save_path, f'%(title)s.%(ext)s'),
-            'color': 'no_color',
-            'retries': 10,
-            'fragment_retries': 10,
-            'socket_timeout': 60,
-            'ignoreerrors': False, # Critical: Stop on error
-            
-            # [FIX LINUX HLS] Force Native HLS Downloader
-            # Solves "fragment not found" and "empty file" on restricted envs
-            'hls_prefer_native': True, 
-            'hls_use_mpegts': True,
-            'http_chunk_size': 10485760, # 10MB chunks
-            
-            # Force IPv4 if IPv6 is flaky
-            'source_address': '0.0.0.0', 
-            
-            # Additional headers
-            'http_headers': {
-                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                 'Accept-Language': 'en-US,en;q=0.9',
-            },
-            
-            'continuedl': True,
-            'noprogress': True,
-            'quiet': True,
-            'writethumbnail': False, 
-            'writeautomaticsub': False,
-            'writesubtitles': False,
-            
-            # [FFmpeg Path] Ensure explicit path is used
+            'postprocessor_hooks': [pp_hook], # Báo status khi cắt/gộp
+            'noplaylist': not task.get("is_plist"),
+            'force_overwrites': True, # Ta sẽ quản lý tên file thủ công nên để True để yt-dlp ghi vào đích đã chọn
+            'ignoreerrors': False,
             'ffmpeg_location': self.ffmpeg_path,
-        }    # [REMOVED] sleep_interval settings were causing extra delays
-
+            'socket_timeout': 30,
+            'addmetadata': settings.get("add_metadata", False),
+            'writethumbnail': settings.get("embed_thumbnail", False),
+            'geo_bypass': True,
+            'live_from_start': True,
+            # [REMOVED] sleep_interval settings were causing extra delays
+        }
         
 
         
@@ -808,15 +762,6 @@ class DownloaderEngine:
         
         proxy = settings.get("proxy_url")
         if proxy and isinstance(proxy, str) and proxy.strip(): ydl_opts['proxy'] = proxy.strip()
-
-        # [FIX] Force Android Client for YouTube to bypass robust signature checks
-        # This reduces likelihood of "Signature solving failed" bans
-        ydl_opts['extractor_args'] = {
-            'youtube': {
-                'player_client': ['android', 'web'],
-                'player_skip': ['web_creator'], # Skip clients known to cause CAPTCHAs
-            }
-        }
 
         # Archive
         if settings.get("use_archive", False):
