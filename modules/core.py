@@ -789,6 +789,7 @@ class DownloaderEngine:
         geo = settings.get("geo_bypass_country", "None")
         if geo and isinstance(geo, str) and geo != "None": ydl_opts['geo_bypass_country'] = geo
         
+        proxy = settings.get("proxy_url")
         if proxy and isinstance(proxy, str) and proxy.strip(): ydl_opts['proxy'] = proxy.strip()
 
         # [FIX] Force Android Client for YouTube to bypass robust signature checks
