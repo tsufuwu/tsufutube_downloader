@@ -1943,3 +1943,141 @@ Traceback (most recent call last):
     raise DownloadError(message, exc_info)
 yt_dlp.utils.DownloadError: [0;31mERROR:[0m unable to download video data: HTTP Error 403: Forbidden
 
+
+==================================================
+TIME: 2026-01-30 11:37:34.277509
+URL: https://www.youtube.com/watch?v=xNegy6GsfYw&list=RDxNegy6GsfYw&start_radio=1
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m [youtube] xNegy6GsfYw: Requested format is not available. Use --list-formats for a list of available formats
+TRACEBACK:
+Traceback (most recent call last):
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1852, in __extract_info
+    return self.process_ie_result(ie_result, download, extra_info)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1911, in process_ie_result
+    ie_result = self.process_video_result(ie_result, download=download)
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 3051, in process_video_result
+    raise ExtractorError(
+        'Requested format is not available. Use --list-formats for a list of available formats',
+        expected=True, video_id=info_dict['id'], ie=info_dict['extractor'])
+yt_dlp.utils.ExtractorError: [youtube] xNegy6GsfYw: Requested format is not available. Use --list-formats for a list of available formats
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\modules\core.py", line 1013, in _download_general_ytdlp
+    raise e
+  File "D:\Tsufutube\modules\core.py", line 855, in _download_general_ytdlp
+    info = ydl.extract_info(task["url"], download=False)
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1696, in wrapper
+    return func(self, *args, **kwargs)
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1852, in __extract_info
+    return self.process_ie_result(ie_result, download, extra_info)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1931, in process_ie_result
+    return self.extract_info(
+           ~~~~~~~~~~~~~~~~~^
+        ie_result['url'], download,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        ie_key=ie_result.get('ie_key'),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        extra_info=extra_info)
+        ^^^^^^^^^^^^^^^^^^^^^^
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1685, in extract_info
+    return self.__extract_info(url, self.get_info_extractor(key), download, extra_info, process)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1714, in wrapper
+    self.report_error(str(e), e.format_traceback())
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m [youtube] xNegy6GsfYw: Requested format is not available. Use --list-formats for a list of available formats
+
+
+==================================================
+TIME: 2026-01-30 13:20:36.039715
+URL: http://t.cn/AXqT6XOg
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m unable to download video data: HTTP Error 403: Forbidden
+TRACEBACK:
+Traceback (most recent call last):
+  File "D:\Tsufutube\modules\core.py", line 1170, in _download_general_ytdlp
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "d:\Tsufutube\.venv\Lib\site-packages\requests\models.py", line 1026, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 403 Client Error: Forbidden for url: https://f.video.weibocdn.com/u0/RTMW0j5Agx08uWO2AZ4A01041200bR130E010.mp4?label=mp4_720p&template=720x1560.24.0&media_id=5260743696646186&tp=8x8A3El:YTkl0eM8&us=0&ori=1&bf=4&ot=v&ps=3lckmu&uid=3ZoTIp&ab=,15568-g4,8012-g2,3601-g42,8013-g0&Expires=1769757599&ssig=Uquh2kdcrh&KID=unistore,video
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\modules\core.py", line 1195, in _download_general_ytdlp
+    raise e # Raise original yt-dlp error if manual also fails
+    ^^^^^^^
+  File "D:\Tsufutube\modules\core.py", line 1075, in _download_general_ytdlp
+    info = ydl.process_ie_result(ie_result=info, download=True)
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1911, in process_ie_result
+    ie_result = self.process_video_result(ie_result, download=download)
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 3089, in process_video_result
+    self.process_info(new_info)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 189, in wrapper
+    return func(self, *args, **kwargs)
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 3545, in process_info
+    self.report_error(f'unable to download video data: {err}')
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m unable to download video data: HTTP Error 403: Forbidden
+
+
+==================================================
+TIME: 2026-01-30 13:21:52.924071
+URL: http://t.cn/AXqTaAe1
+ERROR TYPE: DownloadError
+ERROR MSG: [0;31mERROR:[0m unable to download video data: HTTP Error 403: Forbidden
+TRACEBACK:
+Traceback (most recent call last):
+  File "D:\Tsufutube\modules\core.py", line 1170, in _download_general_ytdlp
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "d:\Tsufutube\.venv\Lib\site-packages\requests\models.py", line 1026, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 403 Client Error: Forbidden for url: https://f.video.weibocdn.com/o0/vrsH5Q21lx08uWOFTxb201041203Jadk0E020.mp4?label=mp4_1080p&template=1080x1920.24.0&media_id=5260745051668578&tp=8x8A3El:YTkl0eM8&us=0&ori=1&bf=4&ot=v&ps=3lckmu&uid=3ZoTIp&ab=,15568-g4,3601-g42,8013-g0&Expires=1769757681&ssig=Qyz6zaHfhD&KID=unistore,video
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Tsufutube\modules\core.py", line 1195, in _download_general_ytdlp
+    raise e # Raise original yt-dlp error if manual also fails
+    ^^^^^^^
+  File "D:\Tsufutube\modules\core.py", line 1075, in _download_general_ytdlp
+    info = ydl.process_ie_result(ie_result=info, download=True)
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1911, in process_ie_result
+    ie_result = self.process_video_result(ie_result, download=download)
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 3089, in process_video_result
+    self.process_info(new_info)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 189, in wrapper
+    return func(self, *args, **kwargs)
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 3545, in process_info
+    self.report_error(f'unable to download video data: {err}')
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1154, in report_error
+    self.trouble(f'{self._format_err("ERROR:", self.Styles.ERROR)} {message}', *args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "d:\Tsufutube\.venv\Lib\site-packages\yt_dlp\YoutubeDL.py", line 1093, in trouble
+    raise DownloadError(message, exc_info)
+yt_dlp.utils.DownloadError: [0;31mERROR:[0m unable to download video data: HTTP Error 403: Forbidden
+

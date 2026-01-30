@@ -8,6 +8,7 @@ import re
 import shutil
 import sys
 import tempfile
+import uuid # [FIX] Unique cookie filenames
 
 # --- LAZY IMPORT WRAPPER ---
 yt_dlp = None
@@ -668,7 +669,7 @@ class DownloaderEngine:
              # but shutil.which should have handled it in platform_utils.
              # If using system buffer, 'ffmpeg' string works for subprocess, but os.path.exists fails.
              # We should rely on earlier check or shutil.which
-             import shutil
+             # [FIX] Removing local import shutil to avoid UnboundLocalError
              if not shutil.which(self.ffmpeg_path) and not os.path.exists(self.ffmpeg_path):
                  return False, f"Thiếu file ffmpeg ({self.ffmpeg_path})", None
 
@@ -797,11 +798,16 @@ class DownloaderEngine:
         print(f"[DEBUG] Cookie - cookie_file: '{user_cookie_file}'")
         
         if user_cookie_file and os.path.exists(user_cookie_file):
-            # [FIX] Copy cookie file to temp to avoid PermissionError 
+            # [FIX] Copy cookie file to temp with UNIQUE name to avoid PermissionError 
             # (yt-dlp tries to SAVE cookies back which fails on restricted paths like Desktop)
             try:
-                temp_cookie_copy = os.path.join(self.temp_dir, "user_cookies_copy.txt")
+                # Use uuid to ensure uniqueness across concurrent tasks or retries
+                unique_cookie_name = f"cookies_{uuid.uuid4()}.txt"
+                temp_cookie_copy = os.path.join(self.temp_dir, unique_cookie_name)
+                
+                # Use copy2 but don't fail if we can't preserve metadata
                 shutil.copy2(user_cookie_file, temp_cookie_copy)
+                
                 ydl_opts['cookiefile'] = temp_cookie_copy
                 print(f"[DEBUG] Cookie - Using temp cookiefile: {ydl_opts['cookiefile']}")
             except Exception as e:
@@ -826,6 +832,10 @@ class DownloaderEngine:
             if cut_method == "direct_cut":
                 ydl_opts['download_ranges'] = yt_dlp.utils.download_range_func(None, [(task.get("start_time", 0), task.get("end_time", float('inf')))])
                 ydl_opts['force_keyframes_at_cuts'] = True
+
+        # [FIX] Reverted ios client default due to "format not available" errors.
+        # We will rely on fallbacks if default fails.
+        # ydl_opts['extractor_args'] = {'youtube': {'player_client': ['ios']}}
 
         # Config Format
         self._configure_format(ydl_opts, dtype, task.get("subs", []), task.get("download_sub", False), settings)
@@ -1076,7 +1086,59 @@ class DownloaderEngine:
                                         except: pass
                                         raise Exception(f"Incomplete download (Size: {f_size}B)")
                         except Exception as e:
-                            # [FIX] If yt-dlp fails for PlaywrightFallback, try manual download
+                            # [FIX] Download Phase Fallback Logic
+                            # If yt-dlp fails here (e.g. 403 Forbidden even after info extraction),
+                            # we MUST try the browser fallback mechanism.
+                            
+                            err_msg = str(e).lower()
+                            print(f"[Core] yt-dlp Download Error: {err_msg}")
+                            
+                            # Check if we should try fallback
+                            # If it was ALREADY a fallback (PlaywrightFallback), stepping into this block logic below handles it (manual download)
+                            # But if it was a standard yt-dlp download that failed, 'info' is safe to overwrite or ignore.
+                            
+                            should_try_fallback = False
+                            if info.get('extractor') == 'PlaywrightFallback':
+                                # Already in fallback mode, proceed to manual download logic below
+                                pass 
+                            else:
+                                # Standard download failed. Trigger fallback sniffing.
+                                print(f"[Core] Standard Download Failed. Triggering Browser Fallback...")
+                                callbacks.get('on_status', lambda x:None)("Lỗi tải xuống. Đang thử Browser Fallback...")
+                                
+                                if PlaywrightEngine is None:
+                                    try: from .playwright_engine import PlaywrightEngine
+                                    except ImportError: PlaywrightEngine = None
+                                
+                                sniff_data = None
+                                if PlaywrightEngine:
+                                    try:
+                                        pw = PlaywrightEngine(headless=True)
+                                        sniff_data = pw.sniff_video(task["url"])
+                                    except Exception as pe: print(f"[Core] PW Fallback Error: {pe}")
+                                
+                                if not sniff_data or not sniff_data.get("url"):
+                                    # Try UC
+                                    try:
+                                        from .uc_engine import UndetectedChromeEngine
+                                        uc = UndetectedChromeEngine(headless=True)
+                                        uc_data = uc.sniff_video(task["url"])
+                                        if uc_data and uc_data.get("url"): sniff_data = uc_data
+                                    except Exception as uce: print(f"[Core] UC Fallback Error: {uce}")
+                                
+                                if sniff_data and sniff_data.get("url"):
+                                    print(f"[Core] Fallback Sniff Success: {sniff_data['url']}")
+                                    # Update info with new direct URL for Manual Download
+                                    info['url'] = sniff_data['url']
+                                    info['extractor'] = 'PlaywrightFallback' # Treat as fallback now
+                                    if sniff_data.get("headers"): 
+                                        ydl_opts["http_headers"] = sniff_data["headers"]
+                                    
+                                    should_try_fallback = True
+                                else:
+                                    print("[Core] All fallbacks failed during download phase.")
+                            
+                            # Proceed to manual download if it's a fallback (original or just switched)
                             if info.get('extractor') == 'PlaywrightFallback':
                                 print(f"[Core] yt-dlp failed on fallback link ({e}). Trying manual download...")
                                 callbacks.get('on_status', lambda x:None)("Thử tải trực tiếp (Manual Download)...")

@@ -87,6 +87,9 @@ class BrowserEngine:
             # Get title
             title = self._extract_title(page)
             
+            # [FIX] Capture Headers for 403 bypass (Weibo etc)
+            headers = self._extract_headers(page)
+            
             # Close browser
             try:
                 page.quit()
@@ -96,6 +99,7 @@ class BrowserEngine:
             if found_video:
                 found_video["title"] = title
                 found_video["extractor_key"] = "BrowserEngine"
+                if headers: found_video["headers"] = headers # Pass captured headers
                 print(f"[BrowserEngine] Success! Found: {found_video['url'][:50]}...")
                 return found_video
             else:
@@ -222,6 +226,31 @@ class BrowserEngine:
             print(f"[BrowserEngine] DOM extraction error: {e}")
         
         return None
+
+    def _extract_headers(self, page):
+        """Extract headers (Cookie, UA, Referer) from current page session."""
+        try:
+            headers = {}
+            
+            # 1. User Agent
+            try: headers['User-Agent'] = page.user_agent
+            except: pass
+            
+            # 2. Cookies (Format: "key=value; key2=value2")
+            try:
+                cookies = page.cookies.as_dict()
+                cookie_str = "; ".join([f"{k}={v}" for k, v in cookies.items()])
+                if cookie_str: headers['Cookie'] = cookie_str
+            except: pass
+            
+            # 3. Referer
+            try: headers['Referer'] = page.url
+            except: pass
+            
+            return headers
+        except Exception as e:
+            print(f"[BrowserEngine] Header extraction error: {e}")
+            return {}
 
     def _extract_title(self, page):
         """Extract page title."""
